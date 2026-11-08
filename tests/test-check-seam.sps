@@ -665,7 +665,7 @@
 ;; library may import. And a library added to an entry passes there too,
 ;; once that library imports the name. So the list is written out here
 ;; whole, each name with its libraries.
-(test-equal "library-only-chez-names, written out whole: define-ftype, foreign-alloc, foreign-free, foreign-procedure, foreign-entry, load-shared-object, ftype-set!, foreign-callable, foreign-callable-entry-point, lock-object, fork-thread, disable-interrupts, enable-interrupts, make-pseudo-random-generator and pseudo-random-generator-next!, each with the libraries it is kept to"
+(test-equal "library-only-chez-names, written out whole: define-ftype, foreign-alloc, foreign-free, foreign-procedure, foreign-entry, load-shared-object, ftype-set!, foreign-callable, foreign-callable-entry-point, lock-object, current-directory, fork-thread, disable-interrupts, enable-interrupts, make-pseudo-random-generator and pseudo-random-generator-next!, each with the libraries it is kept to"
   '((define-ftype (curl private layouts))
     (foreign-alloc (curl private memory))
     (foreign-free (curl private memory))
@@ -676,6 +676,7 @@
     (foreign-callable (curl private transfer))
     (foreign-callable-entry-point (curl private transfer))
     (lock-object (curl private transfer))
+    (current-directory (curl private transfer))
     (fork-thread (curl private engine))
     (disable-interrupts (curl private engine))
     (enable-interrupts (curl private engine))

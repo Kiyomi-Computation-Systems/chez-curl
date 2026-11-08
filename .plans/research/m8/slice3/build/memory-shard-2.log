@@ -1,0 +1,45 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-check-floors.sps
+test-memory: pass tests/test-check-floors.sps
+=== tests/test-check-seam.sps
+test-memory: pass tests/test-check-seam.sps
+=== tests/test-constants.sps
+test-memory: pass tests/test-constants.sps
+=== tests/test-cookies.sps
+test-memory: pass tests/test-cookies.sps
+=== tests/test-curl-testing.sps
+test-memory: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+test-memory: pass tests/test-discovery.sps
+=== tests/test-headers.sps
+test-memory: pass tests/test-headers.sps
+=== tests/test-library-loading.sps
+test-memory: pass tests/test-library-loading.sps
+=== tests/test-mailbox.sps
+test-memory: pass tests/test-mailbox.sps
+=== tests/test-memory-safety.sps
+test-memory: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+test-memory: pass tests/test-native.sps
+=== tests/test-proxy.sps
+test-memory: pass tests/test-proxy.sps
+=== tests/test-require-threaded.sps
+test-memory: pass tests/test-require-threaded.sps
+=== tests/test-stream-call.sps
+test-memory: pass tests/test-stream-call.sps
+=== tests/test-stream.sps
+test-memory: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+test-memory: pass tests/test-transfer-tls.sps
+=== tests/test-unsupported.sps
+test-memory: pass tests/test-unsupported.sps
+=== tests/test-upload.sps
+test-memory: pass tests/test-upload.sps
+=== tests/test-variadic.sps
+test-memory: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+test-memory: pass tests/test-verify.sps
+=== tests/test-version.sps
+test-memory: pass tests/test-version.sps
+test-memory: ran 21, passed 21, failed 0, hung 0
+exit 0 seconds 977

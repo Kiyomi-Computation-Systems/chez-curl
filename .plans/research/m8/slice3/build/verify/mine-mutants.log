@@ -1,0 +1,16 @@
+mutants start 2026-11-07T18:10:02Z, 3 chosen
+mutant mine-type-refuses-quote: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes' neighbours: a type holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or " at each place, or a leading U+FEFF, is made
+mutant mine-engine-open-skipped: SURVIVED in 8 s
+  tests/test-multipart.sps exit=0
+=== tests/test-multipart.sps
+%%%% Starting test multipart
+test-multipart: libcurl "8.20.0" measured ("8.20.0" (request-size . head-and-body) (after-grown-h1 response 200 unterminated) (after-shrunk-h1 failed perform-failed 26) (after-shrunk-none-h1 failed perform-failed 26) (after-removed-h1 failed perform-failed 26) (after-fifo-h1 response 200 whole held) (after-grown-h2 response 200 unterminated) (after-shrunk-h2 failed perform-failed 26) (after-removed-h2 failed perform-failed 26) (after-fifo-h2 response 200 whole held) (resend-kill-data response 200 whole 2) (resend-kill-file response 200 whole 2) (resend-refused-data response 200 whole 2) (resend-307-data response 200 whole 1) (resend-307-file response 200 whole 1) (resend-reset-file failed perform-failed 55 1))
+# of expected passes      56
+exit=tests/test-multipart.sps 0
+
+mutant mine-default-filename-unchecked: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL a file part's default filename, its path's last component, is held by the filename's rules: a " or U+0001 there is refused as the filename's part-bytes, and a filename of the part's own lets the same path through
+mutants done: 2 of 3 caught

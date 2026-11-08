@@ -244,7 +244,13 @@
     (curlshe-ok . "CURLSHE_OK")
     (curlshe-bad-option . "CURLSHE_BAD_OPTION")
     (curlshe-in-use . "CURLSHE_IN_USE")
-    (curlinfo-cookielist . "CURLINFO_COOKIELIST")))
+    (curlinfo-cookielist . "CURLINFO_COOKIELIST")
+    (curlform-copyname . "CURLFORM_COPYNAME")
+    (curlform-copycontents . "CURLFORM_COPYCONTENTS")
+    (curlform-end . "CURLFORM_END")
+    (curl-formadd-ok . "CURL_FORMADD_OK")
+    (curl-formadd-unknown-option . "CURL_FORMADD_UNKNOWN_OPTION")
+    (curl-formadd-disabled . "CURL_FORMADD_DISABLED")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -1106,7 +1112,10 @@
 ;; of it the headers may hold, in the headers' own spelling. A Declaration
 ;; is (RESULT (PARAMETER ...)), or (RESULT (PARAMETER ... "...")
 ;; (variadic CHEZ-TYPE ...)) for a variadic entry, naming the Chez types a
-;; binding may pass after its named parameters. Most entries have one
+;; binding may pass after its named parameters, one of them; or, for
+;; curl_formadd, (variadic-run CHEZ-TYPE ...), the one run of Chez types its
+;; binding passes there, a form of one field: two options, each an int,
+;; each with a string, then CURLFORM_END. Most entries have one
 ;; declaration. curl_url_get has two: 7.85.0's curl/urlapi.h takes a
 ;; CURLU *, and 8.x's a const CURLU *, and the floor lane compiles against
 ;; the first. Every row's declarations are checked against the headers,
@@ -1150,6 +1159,17 @@
     ("curl_share_init" ("CURLSH *" ()))
     ("curl_share_cleanup" ("CURLSHcode" ("CURLSH *")))
     ("curl_share_setopt" ("CURLSHcode" ("CURLSH *" "CURLSHoption" "...") (variadic int)))
+    ("curl_mime_init" ("curl_mime *" ("CURL *")))
+    ("curl_mime_free" ("void" ("curl_mime *")))
+    ("curl_mime_addpart" ("curl_mimepart *" ("curl_mime *")))
+    ("curl_mime_name" ("CURLcode" ("curl_mimepart *" "const char *")))
+    ("curl_mime_data" ("CURLcode" ("curl_mimepart *" "const char *" "size_t")))
+    ("curl_mime_filedata" ("CURLcode" ("curl_mimepart *" "const char *")))
+    ("curl_mime_filename" ("CURLcode" ("curl_mimepart *" "const char *")))
+    ("curl_mime_type" ("CURLcode" ("curl_mimepart *" "const char *")))
+    ("curl_formadd" ("CURLFORMcode" ("struct curl_httppost **" "struct curl_httppost **" "...")
+                     (variadic-run int uptr int uptr int)))
+    ("curl_formfree" ("void" ("struct curl_httppost *")))
     ("memcpy" ("void *" ("void *" "const void *" "size_t")))
     ("strlen" ("size_t" ("const char *")))))
 
@@ -1197,7 +1217,8 @@
     ("CURLMcode" int)
     ("CURLMoption" int)
     ("CURLSHcode" int)
-    ("CURLSHoption" int)))
+    ("CURLSHoption" int)
+    ("CURLFORMcode" int)))
 
 ;; bytevector-rows : (Listof String)
 ;; The rows whose pointers may be bound u8*: the checked copies' memcpy.
@@ -1237,21 +1258,26 @@
 ;; declaration-fits? : String Declaration (Listof Any) Any -> Boolean
 ;; Whether a binding of ENTRY with PARAMETERS and RESULT fits DECLARATION:
 ;; its result, and each named parameter, by chez-fits?; for a variadic
-;; declaration, exactly one more parameter, one of the Chez types it names.
+;; declaration, exactly one more parameter, one of the Chez types it names,
+;; or, for a variadic-run, exactly the run it names.
 (define (declaration-fits? entry declaration parameters result)
   (let* ((c-result (car declaration))
          (c-params (cadr declaration))
          (variadic? (and (pair? c-params) (equal? (list-ref c-params (- (length c-params) 1)) "...")))
          (named (if variadic? (reverse (cdr (reverse c-params))) c-params))
-         (extra (if (= (length declaration) 3) (cdr (caddr declaration)) '())))
+         (run? (and (= (length declaration) 3) (eq? (car (caddr declaration)) 'variadic-run)))
+         (extra (if (= (length declaration) 3) (cdr (caddr declaration)) '()))
+         (tail (cond ((not variadic?) 0) (run? (length extra)) (else 1))))
     (and (list? parameters)
          (chez-fits? entry result c-result)
-         (= (length parameters) (+ (length named) (if variadic? 1 0)))
+         (= (length parameters) (+ (length named) tail))
          (for-all (lambda (chez c-type) (chez-fits? entry chez c-type))
-                  (if variadic? (reverse (cdr (reverse parameters))) parameters)
+                  (list-head parameters (length named))
                   named)
          (or (not variadic?)
-             (and (memq (list-ref parameters (- (length parameters) 1)) extra) #t)))))
+             (if run?
+                 (equal? (list-tail parameters (length named)) extra)
+                 (and (memq (list-ref parameters (- (length parameters) 1)) extra) #t))))))
 
 ;; declaration-shaped? : Any -> Boolean
 (define (declaration-shaped? d)
@@ -1265,7 +1291,7 @@
          (if variadic?
              (and (= (length d) 3)
                   (let ((v (caddr d)))
-                    (and (list? v) (pair? v) (eq? (car v) 'variadic) (pair? (cdr v))
+                    (and (list? v) (pair? v) (memq (car v) '(variadic variadic-run)) (pair? (cdr v))
                          (for-all symbol? (cdr v)))))
              (= (length d) 2)))
        (not (member "..." (if (pair? (cadr d)) (reverse (cdr (reverse (cadr d)))) '())))
@@ -1606,7 +1632,7 @@
 ;; define with typedef enum. c-type-map maps each to int, and nothing else.
 (define enum-names
   '("CURLcode" "CURLversion" "CURLoption" "CURLINFO" "CURLHcode" "CURLUcode" "CURLUPart"
-    "CURLMcode" "CURLMoption" "CURLSHcode" "CURLSHoption"))
+    "CURLMcode" "CURLMoption" "CURLSHcode" "CURLSHoption" "CURLFORMcode"))
 
 ;; enums-in : (Listof String) -> (Listof String)
 ;; The names TOKENS give a typedef enum: typedef enum [TAG] { ... } NAME ;
@@ -2098,12 +2124,12 @@
 (define (type<? a b) (string<? (written a) (written b)))
 (define (type-sorted types) (list-sort type<? types))
 
-(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the eleven enums to int"
+(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the twelve enums to int"
   '(("void" void) ("int" int) ("unsigned int" unsigned-int) ("long" long) ("size_t" size_t)
     ("curl_off_t" integer-64)
     ("CURLcode" int) ("CURLversion" int) ("CURLoption" int) ("CURLINFO" int)
     ("CURLHcode" int) ("CURLUcode" int) ("CURLUPart" int) ("CURLMcode" int)
-    ("CURLMoption" int) ("CURLSHcode" int) ("CURLSHoption" int))
+    ("CURLMoption" int) ("CURLSHcode" int) ("CURLSHoption" int) ("CURLFORMcode" int))
   c-type-map)
 
 ;; expected-fits : (Listof (Pairof (List String String) (Listof Type)))
@@ -2128,6 +2154,7 @@
     (("x" "CURLMoption") int)
     (("x" "CURLSHcode") int)
     (("x" "CURLSHoption") int)
+    (("x" "CURLFORMcode") int)
     (("x" "double"))
     (("x" "CURL *") uptr void*)
     (("x" "CURLU *") uptr void*)
@@ -2149,6 +2176,10 @@
     (("x" "struct curl_waitfd []") uptr void*)
     (("x" "CURLMsg *") uptr void*)
     (("x" "struct CURLMsg *") uptr void* (* curl-msg))
+    (("x" "curl_mime *") uptr void*)
+    (("x" "curl_mimepart *") uptr void*)
+    (("x" "struct curl_httppost *") uptr void*)
+    (("x" "struct curl_httppost **") uptr void*)
     (("memcpy" "void *") uptr void* u8*)
     (("memcpy" "const void *") uptr void* u8*)
     (("memcpy" "const char *") uptr void* u8* string)))
@@ -2173,11 +2204,12 @@
 ;; The variadic rows: which types each may pass after its named parameters.
 (define (variadic-list row)
   (let ((d (cadr row)))
-    (and (= (length d) 3) (cdr (caddr d)))))
+    (and (= (length d) 3) (caddr d))))
 
-(test-equal "the variadic rows are curl_easy_setopt's, curl_easy_getinfo's, curl_multi_setopt's and curl_share_setopt's alone: setopt passes exactly long, integer-64 and uptr, getinfo exactly uptr, its destination, never int, multi_setopt exactly long, and share_setopt exactly int, the type libcurl's va_arg reads for SHARE"
-  '(("curl_easy_setopt" (long integer-64 uptr)) ("curl_easy_getinfo" (uptr))
-    ("curl_multi_setopt" (long)) ("curl_share_setopt" (int)))
+(test-equal "the variadic rows are curl_easy_setopt's, curl_easy_getinfo's, curl_multi_setopt's, curl_share_setopt's and curl_formadd's alone: setopt passes exactly long, integer-64 and uptr, getinfo exactly uptr, its destination, never int, multi_setopt exactly long, share_setopt exactly int, the type libcurl's va_arg reads for SHARE, and formadd exactly the run int, uptr, int, uptr, int, two options with a string each, then CURLFORM_END, each option an int, as libcurl's va_arg reads a CURLformoption"
+  '(("curl_easy_setopt" (variadic long integer-64 uptr)) ("curl_easy_getinfo" (variadic uptr))
+    ("curl_multi_setopt" (variadic long)) ("curl_share_setopt" (variadic int))
+    ("curl_formadd" (variadic-run int uptr int uptr int)))
   (map (lambda (row) (list (car row) (variadic-list row)))
        (filter (lambda (row) (and (pair? (cdr row)) (variadic-list row))) prototype-rows)))
 
@@ -2324,6 +2356,25 @@
           (declaration-fits? "curl_easy_getinfo" getinfo '(uptr int int) 'int)
           (declaration-fits? "curl_easy_setopt" setopt '(uptr int) 'int)
           (declaration-fits? "curl_easy_setopt" setopt '(uptr int long long) 'int))))
+
+;; curl_formadd's run: the binding's whole variadic tail must be the run,
+;; neither one of its types alone, nor the run cut short or grown, nor a
+;; type changed at any of its five places.
+(test-equal "a variadic-run declaration: its named parameters by the map, then exactly the run it names, each of its five places checked; one type of it alone fails"
+  '(#t #f #f #f #f #f #f #f #f #f)
+  (let ((formadd '("CURLFORMcode" ("struct curl_httppost **" "struct curl_httppost **" "...")
+                   (variadic-run int uptr int uptr int))))
+    (map (lambda (parameters) (declaration-fits? "curl_formadd" formadd parameters 'int))
+         '((uptr uptr int uptr int uptr int)
+           (uptr uptr int)
+           (uptr uptr int uptr int uptr)
+           (uptr uptr int uptr int uptr int int)
+           (long uptr int uptr int uptr int)
+           (uptr uptr long uptr int uptr int)
+           (uptr uptr int int int uptr int)
+           (uptr uptr int uptr long uptr int)
+           (uptr uptr int uptr int int int)
+           (uptr uptr int uptr int uptr long)))))
 
 ;; --- each constant and each field, against the headers -------------------------------------
 

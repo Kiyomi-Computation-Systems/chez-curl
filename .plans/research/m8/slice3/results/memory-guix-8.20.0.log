@@ -1,0 +1,37 @@
+[guix-8.20.0] tree /home/kishu/src/chez-curl/build/m8s3/work.YS2PJl/probe chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme 10.4.0 libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0 probe sha256 d1ac9e49378e2cc8 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=/tmp/m8s3-vg-guix.vg
+[guix-8.20.0] origin {"node":"v24.18.0","pid":45,"http":"127.0.0.1:39313","raw":"127.0.0.1:37025","h2c":"127.0.0.1:38895","https":"127.0.0.1:36461","https-expired":"127.0.0.1:34293","https-wrong-host":"127.0.0.1:35827","https-untrusted":"127.0.0.1:39881","raw-tls":"127.0.0.1:40913","h2":"127.0.0.1:34313"}
+[guix-8.20.0] stand-in ctl=33639 raw=35943 h2c=33079
+[guix-8.20.0] probe lane=guix-8.20.0 libcurl=8.20.0 GnuTLS/3.8.13 mime=#t probe=((formadd . 0) (mime-init . made))
+[guix-8.20.0] load lane=guix-8.20.0 version=8.20.0 probe=((formadd . 0) (mime-init . made)) mime=#t counts-after-load=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[guix-8.20.0] cell load multipart-post outcome=(status 200 version http/1.1) body=parts http method=POST cl=153 te=- expect=- ct=multipart/form-data;_boundary=------------------------OoUYOtAg3oZV2HLaC0kTUQ bytes=153 sha256=540f85781b6aee1d6b8eddb68d614be6e4df12871eb3ed242a4205d9842ddf65 boundary=------------------------OoUYOtAg3oZV2HLaC0kTUQ preamble=0 closed=1 epilogue=2 count=1
+[guix-8.20.0] part 0 headers=Content-Disposition: form-data; name="a" len=5 sha256=8ed3f6ad685b959e pattern=bad@0 data=alpha
+[guix-8.20.0] 
+[guix-8.20.0] cell load get outcome=(status 200 version http/1.1) body=status 200
+[guix-8.20.0] 
+[guix-8.20.0] cell load bytevector-post outcome=(status 200 version http/1.1) body=sink http method=POST cl=5 te=- expect=- ct=- bytes=5 sha256=2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 pattern=bad@0 arrivals=1 gap=0.6@0 seen=1
+[guix-8.20.0] 
+[guix-8.20.0] cell load curl-request-check outcome=(other passed)
+[guix-8.20.0] load counts-at-end=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[guix-8.20.0] cell memory string face=h1 method=post asked=(s string:7) outcome=(status 200 version http/1.1) sizes=(335) [s meta=same data=same] ms=24.6
+[guix-8.20.0]   | parts http method=POST cl=155 te=- expect=- ct=multipart/form-data;_boundary=------------------------sW3dPD1oWeN2ZnZLLLG2yA bytes=155 sha256=458db718237092760c2f42da5e2aa8458b2664755783983dec13bd736602aa1f boundary=------------------------sW3dPD1oWeN2ZnZLLLG2yA preamble=0 closed=1 epilogue=2 count=1
+[guix-8.20.0]   | part 0 headers=Content-Disposition: form-data; name="s" len=7 sha256=992b3299061eb2b2 pattern=bad@0 data=Holiday
+[guix-8.20.0] cell memory bytes face=h1 method=post asked=(b bytes:3 filename:b.bin) outcome=(status 200 version http/1.1) sizes=(349) [b meta=same data=same] ms=9.0
+[guix-8.20.0]   | parts http method=POST cl=169 te=- expect=- ct=multipart/form-data;_boundary=------------------------5hhiaZTF8kzy7UKa2fyL3w bytes=169 sha256=a264bcd29c114a73ebfd8ae683c963256e18037235178ae43110464064e58ae4 boundary=------------------------5hhiaZTF8kzy7UKa2fyL3w preamble=0 closed=1 epilogue=2 count=1
+[guix-8.20.0]   | part 0 headers=Content-Disposition: form-data; name="b"; filename="b.bin" len=3 sha256=039058c6f2c0cb49 pattern=bad@0 data=\x01\x02\x03
+[guix-8.20.0] cell memory file face=h1 method=post asked=(f file:mem.bin type:text/plain) outcome=(status 200 version http/1.1) sizes=(3375) [f meta=same data=same] ms=45.4
+[guix-8.20.0]   | parts http method=POST cl=3194 te=- expect=- ct=multipart/form-data;_boundary=------------------------XchINJ6CETTnuPgX51IHCY bytes=3194 sha256=ee38510f4928f40e16fbfb05328cfba36e60edc008dd9d3e81196413955a7acf boundary=------------------------XchINJ6CETTnuPgX51IHCY preamble=0 closed=1 epilogue=2 count=1
+[guix-8.20.0]   | part 0 headers=Content-Disposition: form-data; name="f"; filename="mem.bin"|Content-Type: text/plain len=3000 sha256=e8ca4bf83f56152c pattern=ok data=-
+[guix-8.20.0] cell memory mixed-h2 face=h2 method=post asked=(s string:1)(f file:mem.bin) outcome=(status 200 version http/2) sizes=(3484) [s meta=same data=same] [f meta=default-type:Content-Type: application/octet-stream data=same] ms=642.3
+[guix-8.20.0]   | parts h2 method=POST cl=3305 te=- expect=- ct=multipart/form-data;_boundary=------------------------3wfRLzkFXszWYF9ay3Fhy9 bytes=3305 sha256=5b24fdb5f4353959ac2556a75d7fc00f7d1313378208b0490dfd0a765031a28e boundary=------------------------3wfRLzkFXszWYF9ay3Fhy9 preamble=0 closed=1 epilogue=2 count=2
+[guix-8.20.0]   | part 0 headers=Content-Disposition: form-data; name="s" len=1 sha256=2d711642b726b044 pattern=bad@0 data=x
+[guix-8.20.0]   | part 1 headers=Content-Disposition: form-data; name="f"; filename="mem.bin"|Content-Type: application/octet-stream len=3000 sha256=e8ca4bf83f56152c pattern=ok data=-
+[guix-8.20.0] cell memory unreadable face=h1 method=post asked=(s string:1)(f file:mem-unreadable) outcome=(failed part-file #f none "" size=0) sizes=() ms=4.8
+[guix-8.20.0] cell memory cancel sunk-before=sunk 0
+[guix-8.20.0] 
+[guix-8.20.0] cell memory cancel outcome=(failed cancelled #f none "" size=#f) sizes=()
+[guix-8.20.0] cell memory timeout outcome=(failed perform-failed 28 timeout "Operation timed out after 4007 milliseconds with 0 bytes received" size=2162688) sizes=(2162688)
+[guix-8.20.0] memory counts=((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0) (mime . 0))
+[guix-8.20.0] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[guix-8.20.0] program exit=0
+[guix-8.20.0] valgrind valgrind-3.27.0 log /tmp/m8s3-vg-guix.vg: ==74== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0] took about 27 s

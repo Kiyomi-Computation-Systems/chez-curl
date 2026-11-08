@@ -1,0 +1,11 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== build/m8s3/gate/more.sps
+test-memory: FAIL build/m8s3/gate/more.sps (exit 0, but guix-glibc-locpath suppressed 2 blocks, and covers exactly one, lost when libp11-kit loads)
+  log: build/memory/more.log
+  Valgrind's log: build/memory/more.valgrind
+  ==842==    definitely lost: 0 bytes in 0 blocks
+  ==842==         suppressed: 422 bytes in 3 blocks
+  ==842== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
+  | more: newlocale answered 0
+test-memory: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:515: test-memory] Error 1

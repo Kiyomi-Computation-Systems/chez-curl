@@ -42,7 +42,9 @@
           curl-readfunc-pause curl-readfunc-abort curl-seekfunc-ok curl-seekfunc-cantseek
           curl-prereqfunc-ok curl-prereqfunc-abort seek-set
           curlshopt-share curlshopt-unshare curl-lock-data-cookie
-          curlshe-ok curlshe-bad-option curlshe-in-use curlinfo-cookielist)
+          curlshe-ok curlshe-bad-option curlshe-in-use curlinfo-cookielist
+          curlform-copyname curlform-copycontents curlform-end curl-formadd-ok
+          curl-formadd-unknown-option curl-formadd-disabled)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -582,4 +584,32 @@
   (define curlshe-ok 0)
   (define curlshe-bad-option 1)
   (define curlshe-in-use 2)
-  (define curlinfo-cookielist #x40001C))
+  (define curlinfo-cookielist #x40001C)
+
+  ;; The load's mime probe's (ADR-0039, amended 2026-11-06, decision 4 made
+  ;; exact; the M8 plan, section 3.4), curl/curl.h, each the same from 7.85.0
+  ;; to 8.23.0, where 8.x marks the form API deprecated: CURLformoption, an
+  ;; enum, and CURLFORMcode, the answer of curl_formadd.
+  ;;
+  ;; curlform-copyname : Positive-Integer
+  ;;                                     CURLFORM_COPYNAME, 1: a field's name,
+  ;;                                     which libcurl copies
+  ;; curlform-copycontents : Positive-Integer
+  ;;                                     CURLFORM_COPYCONTENTS, 4: its contents,
+  ;;                                     copied
+  ;; curlform-end : Positive-Integer     CURLFORM_END, 17: the list's end
+  ;; curl-formadd-ok : Natural           CURL_FORMADD_OK, 0: the field was added,
+  ;;                                     the probe's yes
+  ;; curl-formadd-unknown-option : Positive-Integer
+  ;;                                     CURL_FORMADD_UNKNOWN_OPTION, 4: an option
+  ;;                                     libcurl does not know; tests/test-variadic.sps
+  ;;                                     alone reads it
+  ;; curl-formadd-disabled : Positive-Integer
+  ;;                                     CURL_FORMADD_DISABLED, 7: libcurl built
+  ;;                                     without the form API, or without mime
+  (define curlform-copyname 1)
+  (define curlform-copycontents 4)
+  (define curlform-end 17)
+  (define curl-formadd-ok 0)
+  (define curl-formadd-unknown-option 4)
+  (define curl-formadd-disabled 7))

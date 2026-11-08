@@ -1,0 +1,40 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T14:58:52Z mode=probe tree=probe lanes= nomime785 nomime823 cpuset=12-17 args=load
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane nomime785: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/m8/mime-files/nomime-7.85.0/include NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node NOFILES=1 
+[nomime785] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /src/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4 node v24.18.0 probe sha256 6d06ee0321a8e515 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=unset
+[nomime785] origin {"node":"v24.18.0","pid":2390,"http":"127.0.0.1:35365","raw":"127.0.0.1:36609","h2c":"127.0.0.1:42123","https":"127.0.0.1:43969","https-expired":"127.0.0.1:37809","https-wrong-host":"127.0.0.1:43711","https-untrusted":"127.0.0.1:37579","raw-tls":"127.0.0.1:39985","h2":"127.0.0.1:45879"}
+[nomime785] probe lane=nomime785 libcurl=7.85.0 OpenSSL/3.0.13 mime=#f probe=((formadd . 7) (mime-init . made))
+[nomime785] load lane=nomime785 version=7.85.0 probe=((formadd . 7) (mime-init . made)) mime=#f counts-after-load=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[nomime785] cell load multipart-post outcome=(refused curl-submit multipart-unsupported body multipart)
+[nomime785] cell load get outcome=(status 200 version http/1.1) body=status 200
+[nomime785] 
+[nomime785] cell load bytevector-post outcome=(status 200 version http/1.1) body=sink http method=POST cl=5 te=- expect=- ct=- bytes=5 sha256=2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 pattern=bad@0 arrivals=1 gap=1.4@0 seen=1
+[nomime785] 
+[nomime785] cell load curl-request-check outcome=(refused curl-request-check multipart-unsupported body multipart)
+[nomime785] load counts-at-end=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[nomime785] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[nomime785] program exit=0
+[nomime785] took about 1 s
+== lane nomime823: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/m8/mime-files/nomime-8.23.0/include NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node NOFILES=1 
+[nomime823] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /src/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4 node v24.18.0 probe sha256 6d06ee0321a8e515 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=unset
+[nomime823] origin {"node":"v24.18.0","pid":2459,"http":"127.0.0.1:44045","raw":"127.0.0.1:37171","h2c":"127.0.0.1:37075","https":"127.0.0.1:35733","https-expired":"127.0.0.1:45157","https-wrong-host":"127.0.0.1:36809","https-untrusted":"127.0.0.1:46513","raw-tls":"127.0.0.1:46147","h2":"127.0.0.1:44169"}
+[nomime823] probe lane=nomime823 libcurl=8.23.0 OpenSSL/3.0.13 mime=#f probe=((formadd . 7) (mime-init . null))
+[nomime823] load lane=nomime823 version=8.23.0 probe=((formadd . 7) (mime-init . null)) mime=#f counts-after-load=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[nomime823] cell load multipart-post outcome=(refused curl-submit multipart-unsupported body multipart)
+[nomime823] cell load get outcome=(status 200 version http/1.1) body=status 200
+[nomime823] 
+[nomime823] cell load bytevector-post outcome=(status 200 version http/1.1) body=sink http method=POST cl=5 te=- expect=- ct=- bytes=5 sha256=2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 pattern=bad@0 arrivals=1 gap=0.6@0 seen=1
+[nomime823] 
+[nomime823] cell load curl-request-check outcome=(refused curl-request-check multipart-unsupported body multipart)
+[nomime823] load counts-at-end=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[nomime823] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[nomime823] program exit=0
+[nomime823] took about 1 s

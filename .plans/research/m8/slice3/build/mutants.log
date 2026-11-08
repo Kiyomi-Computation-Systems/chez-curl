@@ -1,0 +1,146 @@
+mutants start 2026-11-07T17:10:44Z, 31 chosen
+control: passes tests/test-library-loading.sps=0 tests/test-multipart.sps=0 tests/test-native.sps=0 tests/test-origin-tls.sps=0 tests/test-origin.sps=0 tests/test-request.sps=0 tests/test-transfer.sps=0 tests/test-unsupported.sps=0
+mutant probe-7-as-yes: CAUGHT in 56 s
+  tests/test-library-loading.sps exit=1
+    FAIL decoy formadd-disabled, with --multipart: curl_formadd's CURL_FORMADD_DISABLED, 7, and no post: the load loads, and a multipart body is multipart-unsupported, naming the probe's answers
+mutant probe-null-as-yes: CAUGHT in 56 s
+  tests/test-library-loading.sps exit=1
+    FAIL decoy mime-init-null, with --multipart: curl_mime_init's NULL, with curl_formadd's 0: no mime, nothing to free, and a multipart body is multipart-unsupported
+mutant probe-other-as-yes: CAUGHT in 58 s
+  tests/test-library-loading.sps exit=1
+    FAIL decoy formadd-other, with --multipart: curl_formadd's CURL_FORMADD_INCOMPLETE, 5, a code no build answers the load's form: counted as no
+mutant byte-low-edge-down: CAUGHT in 7 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes: a name holding any char U+0000 to U+001F or U+007F, or ", at its start, in its middle and at its end, is refused, named by its part and field
+    FAIL part-bytes: a filename holding any char U+0000 to U+001F or U+007F, or ", at its start, in its middle and at its end, is refused, named by its part and field
+    FAIL part-bytes: a type holding any char U+0000 to U+001F or U+007F, at its start, in its middle and at its end, is refused, named by its part and field
+mutant byte-low-edge-up: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes' neighbours: a name holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or a leading U+FEFF, is made
+    FAIL part-bytes' neighbours: a filename holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or a leading U+FEFF, is made
+    FAIL part-bytes' neighbours: a type holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or " at each place, or a leading U+FEFF, is made
+mutant byte-del-edge-down: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes: a name holding any char U+0000 to U+001F or U+007F, or ", at its start, in its middle and at its end, is refused, named by its part and field
+    FAIL part-bytes' neighbours: a name holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or a leading U+FEFF, is made
+    FAIL part-bytes: a filename holding any char U+0000 to U+001F or U+007F, or ", at its start, in its middle and at its end, is refused, named by its part and field
+    FAIL part-bytes' neighbours: a filename holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or a leading U+FEFF, is made
+    FAIL part-bytes: a type holding any char U+0000 to U+001F or U+007F, at its start, in its middle and at its end, is refused, named by its part and field
+    FAIL part-bytes' neighbours: a type holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or " at each place, or a leading U+FEFF, is made
+mutant byte-del-edge-up: CAUGHT in 4 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes' neighbours: a name holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or a leading U+FEFF, is made
+    FAIL part-bytes' neighbours: a filename holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or a leading U+FEFF, is made
+    FAIL part-bytes' neighbours: a type holding U+0020, U+0021, U+0023, U+007E or U+00E9 at each place, or " at each place, or a leading U+FEFF, is made
+    FAIL the scenarios' origin starts with the PKI, serves them all, and stops
+mutant quote-let-in: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes: a name holding any char U+0000 to U+001F or U+007F, or ", at its start, in its middle and at its end, is refused, named by its part and field
+    FAIL part-bytes: a filename holding any char U+0000 to U+001F or U+007F, or ", at its start, in its middle and at its end, is refused, named by its part and field
+    FAIL a file part's default filename, its path's last component, is held by the filename's rules: a " or U+0001 there is refused as the filename's part-bytes, and a filename of the part's own lets the same path through
+    FAIL no secret printed: one secret in a part's value, name, filename, type and path, through every refusal of section 3.7 a full libcurl makes and every shape's assertion violation, part-file at the request, at submit and from the engine, and mime-failed by the private seam; each condition, the request, 
+mutant content-type-blank-kept: CAUGHT in 12 s
+  tests/test-request.sps exit=1
+    FAIL sent-header-lines for a multipart body: each header as its line, then Expect: alone, for post, put, patch and delete, unless an Expect header, in any case, is given; never Content-Type:
+  tests/test-multipart.sps exit=1
+    FAIL each part kind and its options, byte for byte at the origin, over HTTP/1.1: a string's UTF-8; a bytevector's bytes; a file's, its filename its path's last component; a filename and a type given; and libcurl's default types, text/plain for .TXT in any case, application/octet-stream for a file of no k
+    FAIL the default types, by the filename's extension, for a data part with a filename: text/plain, text/html, image/gif, image/jpeg, image/png, image/svg+xml, application/pdf and application/xml; none for .json, .csv and none at all; a file part's application/octet-stream there
+    FAIL every method that sends a body, over HTTP/1.1, h2c and h2: post, put, patch and delete each send multipart/form-data with the body's own boundary, every part form-data, the body whole, no Expect, closed by its delimiter
+    FAIL a data part of 1 MiB and one byte, over HTTP/1.1: the body whole, and no Expect, so no second's wait
+    FAIL the header cap beside a multipart body: 1,000 header lines answer the report; 1,001 refuse the transfer, header-limit, too large
+    FAIL each metadata string and the list, changed once the request is made, then submitted: the origin gets the name, filename and type the request was made with, and the path's file
+    ... and 13 more
+mutant mimepost-not-last: CAUGHT in 6 s
+  tests/test-request.sps exit=1
+    FAIL method-settings for a multipart body, written out: the method's own first, CUSTOMREQUEST for put, patch and delete, then MIMEPOST alone, last, at the mime's placeholder, in place of POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; post, libcurl's own POST, MIMEPOST alone; and sends-body? takes it for every m
+mutant mime-freed-before-cleanup: CAUGHT in 19 s
+  tests/test-transfer.sps exit=1
+    FAIL free-transfer!, read from transfer.sls, frees the other way round from start-transfer!'s making, but a multipart body's mime: the easy handle, then the mime, after curl_easy_cleanup, then the hatch's string lists, the header list, the error buffer, the CURLU, then the key, each freed before its reco
+  tests/test-multipart.sps exit=0
+mutant engine-check-skipped: CAUGHT in 13 s
+  tests/test-multipart.sps exit=1
+    FAIL the engine's check, before the transfer's setup: a path removed, made a directory, or made a FIFO after the submit's stat fails the transfer part-file, no code, nothing sent, a request size of 0, the origin never counting it; a symbolic link to a regular file passes
+mutant resolved-at-submit: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-file at submit: a path that is not absolute, through the private seam that sets one unresolved, is refused, whether or not the working directory holds the file; the seam's absolute path passes
+    FAIL curl-request-body answers a copy of a multipart body: fresh pairs, fresh name, filename, type and path strings, each path resolved, the data as given; a change to it reaches neither the request nor a second answer
+    FAIL a relative path is resolved as the request is made: submitted from another directory, whose file of that name differs, the origin gets the first directory's file
+    FAIL the high level takes a part's data and a relative path once, as the call starts: a retry, its first transfer answered 503 by fail=1, sends the bytes and the file the call began with, though the caller's bytevector and the working directory changed during its wait
+mutant accessor-uncopied: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL curl-request-body answers a copy of a multipart body: fresh pairs, fresh name, filename, type and path strings, each path resolved, the data as given; a change to it reaches neither the request nor a second answer
+    FAIL the accessor's copy changed: its name, its path and its pairs, then submitted: the origin gets what the request was made with
+mutant relative-refusal-removed: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-file at submit: a path that is not absolute, through the private seam that sets one unresolved, is refused, whether or not the working directory holds the file; the seam's absolute path passes
+mutant data-copied-when-made: CAUGHT in 7 s
+  tests/test-multipart.sps exit=1
+    FAIL curl-request-body answers a copy of a multipart body: fresh pairs, fresh name, filename, type and path strings, each path resolved, the data as given; a change to it reaches neither the request nor a second answer
+    FAIL a part's data is copied at submit, not when the request is made: a bytevector and a string changed before the submit are sent changed; changed after the submit returns, held by the gate before the mime is made, the submit's bytes are sent
+mutant high-level-copies-at-each-submit: CAUGHT in 7 s
+  tests/test-multipart.sps exit=1
+    FAIL the high level takes a part's data and a relative path once, as the call starts: a retry, its first transfer answered 503 by fail=1, sends the bytes and the file the call began with, though the caller's bytevector and the working directory changed during its wait
+mutant session-content-type-kept: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL the high level's multipart key: a post sends the parts, the session's Content-Type header dropped; through a 307 and a 308 each hop sends them again, whole; a 303 sends a get with no body; a group, http-parallel's two calls, sends each
+mutant multipart-beside-form: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL the high level: multipart beside body or form is multipart-beside-body, field multipart, value #f; body beside form keeps body-and-form; multipart with get or head is body-not-allowed, field multipart, value the method; a call's own Content-Type beside it is the low level's multipart-content-type; a
+mutant decoy-switch-unread: CAUGHT in 57 s
+  tests/test-library-loading.sps exit=1
+    FAIL decoy formadd-disabled, with --multipart: curl_formadd's CURL_FORMADD_DISABLED, 7, and no post: the load loads, and a multipart body is multipart-unsupported, naming the probe's answers
+mutant abandoned-mime-freed: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL a failed engine that abandons a live multipart transfer's easy handle keeps its mime: one easy handle and one mime stay counted; the control, which frees the handle, frees the mime too, nothing counted
+mutant mime-free-unowned: CAUGHT in 3 s
+  tests/test-native.sps exit=1
+    FAIL every exported native procedure that takes a handle, called on this thread with a handle another thread made, raises &curl-wrong-thread from its own name, carrying the maker's thread and this one
+    FAIL the handles freed on the thread that made them, every count is zero
+mutant submit-stat-skipped: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-file at submit: a file removed once the request is made is refused by curl-request-check, as a submit's own stat, named by its part; the request whose file stays passes
+mutant submit-content-type-unchecked: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL multipart-content-type at submit: a header's name changed to Content-Type after the request is made is refused by the submit's check
+mutant unsupported-unchecked: CAUGHT in 56 s
+  tests/test-library-loading.sps exit=1
+    FAIL decoy formadd-disabled, with --multipart: curl_formadd's CURL_FORMADD_DISABLED, 7, and no post: the load loads, and a multipart body is multipart-unsupported, naming the probe's answers
+    FAIL decoy formadd-other, with --multipart: curl_formadd's CURL_FORMADD_INCOMPLETE, 5, a code no build answers the load's form: counted as no
+    FAIL decoy mime-init-null, with --multipart: curl_mime_init's NULL, with curl_formadd's 0: no mime, nothing to free, and a multipart body is multipart-unsupported
+mutant mime-options-unowned: CAUGHT in 15 s
+  tests/test-unsupported.sps exit=1
+    FAIL each owned option and twin, written out here, is refused as owned-option where the loaded libcurl knows it, by id, and as unknown-option where it does not, before anything native, each with a value its type takes
+    FAIL MIMEPOST, the body field's, and MIME_OPTIONS, owned and never set, are refused as owned-option, with values their types take, before anything native; their neighbour EXPECT_100_TIMEOUT_MS is taken, and kept as attached
+  tests/test-transfer.sps exit=1
+    FAIL owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, a multipart body's MIMEPOST, st
+mutant filedata-as-mime-failed: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL a part libcurl refuses fails the transfer before it starts, its mime freed: mime-failed for curl_mime_name's 43, part-file for curl_mime_filedata's 26, each with its code, a request size of 0, nothing sent; and every count is zero after
+mutant origin-bar-unescaped: CAUGHT in 157 s
+  tests/test-origin.sps exit=1
+    FAIL http /parts, two parts by Content-Length: the report, whole, each part's headers, length, hash, pattern and escaped data, then eof; /seen reads 1
+    FAIL http /parts?lines=6: the answer carries 6 header lines in all, x-p0 to x-p3 before Content-Length and Connection
+    FAIL http /parts with Expect: 100-continue: a 100 at once, then the report
+    FAIL http /parts?hold=1 with Expect: counted as its head arrives, its 100 and its report only once /raw/release names its key, 800 ms on; held without Expect, answered at once
+    FAIL http /parts?fail=2: the first two requests of its key answered 503, each with its report, the third 200
+  tests/test-origin-tls.sps exit=1
+    FAIL https /parts, two parts by Content-Length: the report, parts https, whole, then eof
+    FAIL https /parts with Expect: 100-continue: a 100 at once, then the report
+    FAIL h2c POST /parts, two parts in one DATA frame: the report, whole frames, then eof; /seen then reads 1
+    FAIL h2c POST /parts?fail=1: the first request of its key answered :status 503 with its report, the second 200
+    FAIL h2c POST /parts with expect 100-continue: a HEADERS frame of :status 100 at once, then the report, whole frames
+    FAIL h2c POST /parts?hold=1 with expect 100-continue, its DATA 2000 ms after its HEADERS: counted as its HEADERS arrive, its 100 only once /raw/release names its key, 800 ms on; then the report, whole frames
+    ... and 4 more
+mutant origin-hold-ignored: CAUGHT in 79 s
+  tests/test-origin.sps exit=1
+    FAIL http /parts?hold=1 with Expect: counted as its head arrives, its 100 and its report only once /raw/release names its key, 800 ms on; held without Expect, answered at once
+mutant origin-fail-ignored: CAUGHT in 154 s
+  tests/test-origin.sps exit=1
+    FAIL http /parts?fail=2: the first two requests of its key answered 503, each with its report, the third 200
+  tests/test-origin-tls.sps exit=1
+    FAIL h2c POST /parts?fail=1: the first request of its key answered :status 503 with its report, the second 200
+    FAIL h2 POST /parts?fail=1: the first request of its key answered :status 503 with its report, the second 200
+mutant table-call-dropped: CAUGHT in 3 s
+  tests/test-native.sps exit=1
+    FAIL every export of (curl private native) is one the wrong-thread table calls, or one written out as taking no handle a thread owns, and none is both
+mutants done: 31 of 31 caught

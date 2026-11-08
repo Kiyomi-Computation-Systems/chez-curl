@@ -9,18 +9,19 @@ close-out under **Close-outs**, newest first.
 - **M8, multipart, the header cap, the docs and v0.1.0:** in progress. The
   [M8 plan](2026-11-06-m8-plan.md) merged as PR #49 (`74d7aca`), CI passing all eight jobs on it.
   Five slices: the memory job in two; the header cap; multipart; the docs; the release. Slice 1,
-  the memory job in two, merged as PR #50 (`9fdb9f3`); its close-out is below. Slice 2, the header
-  cap (the plan, §3.3 and §5), is built and reviewed on `feat/m8-header-cap`, not yet merged:
-  measured first through a prototype in the engine on the five Linux lanes
-  ([research](research/m8/slice2/)), then two answers by the maintainer, each the recommended
-  option (ADR-0040, amended, decisions 5 and 6): `SUPPRESS_CONNECT_HEADERS` owned, and
-  `HTTP_TRANSFER_DECODING` the hatch's. Every transfer's header callable caps its response
-  headers at 1,000 lines and 102,400 bytes, `header-limit`, of `&curl-too-large`, the recorded
-  reason winning over libcurl's code, 0 among them; `test-headers` holds the edges, every head
-  kind and a per-version table. Two traps found and reproduced: Node's HTTP/2 send limit, and
-  8.20.0's 417 resend on a new connection under the gate. The Mac ran `make test` on it,
-  2026-11-07, at `dd6888c`: 42 of 42, `test-headers`' 8.7.1 row matching in every cell
-  ([log](research/m8/slice2/mac/mac-8.7.1-make-test.log)).
+  the memory job in two, merged as PR #50 (`9fdb9f3`), and slice 2, the header cap, as PR #51
+  (`bd54721`); their close-outs are below. Slice 3, multipart (the plan, §3.4 and §6), is built,
+  reviewed and fixed on `feat/m8-multipart`, not yet merged: measured first through a prototype in
+  the engine on the five Linux lanes and the two builds without mime
+  ([research](research/m8/slice3/)), then four answers by the maintainer, each the recommended
+  option (ADR-0039 and ADR-0023, amended 2026-11-07): `curl-request-body` answers a copy, and a
+  relative path is refused at submit; a grown file, and a pseudo-file whose size is not its
+  content, are documented by version; and `curl-request-with` takes a `url` key, through which the
+  high level builds each hop. The Mac ran it, 2026-11-07, at `424cb5b`
+  ([logs](research/m8/slice3/mac/)): `make check-variadic` passed all 37 steps on `tarm64osx`, the
+  `curl_formadd` use watched failing there; `make test` passed 42 of 43, and `test-multipart`, run
+  twice, filled its 8.7.1 row and failed one test of its own, which the macOS `/private/var`
+  symbolic link exposed, fixed and reproduced on Linux; at `b74407a` it passed there, 73 of 73.
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
@@ -258,6 +259,54 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-07 — M8 slice 2: the header cap (PR #51, `bd54721`)
+
+- **Measured first** ([`research/m8/slice2/`](research/m8/slice2/)), through a prototype in the
+  engine on the five Linux lanes, two runs each: the edges, buffered and streamed, over HTTP/1.1
+  and HTTP/2; every head kind counted across the transfer; nghttp2's limit on a head comes first
+  only on 7.85.0 and 8.5.0; 8.5.0's lost HTTP/2 trailer refusal; and `SUPPRESS_CONNECT_HEADERS`
+  hiding a `CONNECT` answer from the callable on every lane. The callable costs about 0.4 to
+  1.3 µs a line natively, and 21 to 25 ms a 1,000-line response under the gate.
+- **Decided by the maintainer,** each the recommended option (ADR-0040, amended, decisions 5 and
+  6): `SUPPRESS_CONNECT_HEADERS` owned; `HTTP_TRANSFER_DECODING` the hatch's. Mine: the origin's
+  HTTP/2 faces raise `maxSendHeaderBlockLength` alone.
+- **Built** (the plan, §3.3): the header callable on every transfer; 1,000 lines and 102,400
+  bytes a transfer; `header-limit`, of `&curl-too-large`, the recorded reason winning over
+  libcurl's code, 0 among them; a status line `HTTP/`, a digit, an optional `.` and digit, then a
+  space, at a head's start alone; a mark seam holding the refusal of every later call;
+  `tests/test-headers.sps`, 43 tests and a table of 12 cases by five libcurls; the origin's head
+  routes, `/raw/head417` keyed and `/proxy-arm`; test-transfer's two cases as cap tests.
+- **Watched failing:** 22 mutants of the builder's and 4 of mine.
+- **Reviewed** (Opus, read-only): no blocker; one major, reproduced: no test held that a status
+  line is exempt only at a head's start. Fixed with the strict pattern and lines named
+  `HTTP/1.1 x-NNNNNN`; six minors fixed too. **One hole left, recorded:** a trailer section's
+  first line that matches the pattern counts one line under, once a section.
+- **The Mac ran `make test`,** 2026-11-07, at `dd6888c`: 42 of 42, `test-headers`' 8.7.1 row
+  matching in every cell ([log](research/m8/slice2/mac/mac-8.7.1-make-test.log)).
+- **CI:** at `71974bc`, all nine jobs passed
+  ([jobs](research/m8/slice2/ci/pr51-run-42371025005-jobs.txt), memory logs beside it): `memory-1`
+  took 19 min 6 s and `memory-2` 19 min 2 s, `test-headers` 40.2 s under the gate, in shard 2.
+  `main`'s push run for `bd54721` (42375048679) passed all nine
+  ([jobs](research/m8/slice2/ci/main-run-42375048679-jobs.txt)): `memory-1` 17 min 8 s, `memory-2`
+  19 min 24 s.
+- **Subagents,** each Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | measure | 541k | 94 min |
+  | build | 905k | 150 min |
+  | the 417 trap, reproduced | — | 7.5 min |
+  | adversarial review | 333k | 19 min |
+  | fix round | 152k | 56 min |
+- **Traps recorded** (`traps.md`, AGENTS.md): Node's HTTP/2 send limit, dropping a trailer block
+  on Node 24 and resetting it on Node 20; 8.20.0's 417 resend on a new connection under the gate.
+- **Learned:**
+  - a classifier needs test inputs built to look like the class it skips, not only plain ones:
+    nothing generated a header line that looked like a status line, so the exemption's place went
+    untested;
+  - a claim in an agent's report is a claim until a kept log shows it: the 417 trap's mechanism,
+    and "every process", held only once reproduced, and the second as 1 of 2.
 
 ### 2026-11-06 — M8 slice 1: the memory job in two (PR #50, `9fdb9f3`)
 

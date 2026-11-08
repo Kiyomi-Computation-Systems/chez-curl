@@ -1,0 +1,454 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T15:16:38Z mode=probe tree=probe lanes= floor openssl gnutls current cpuset=12-17 args=race fifo
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane floor: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node  
+[floor] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0 probe sha256 9d95c6782c5bee26 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=unset
+[floor] origin {"node":"v20.10.0","pid":2390,"http":"127.0.0.1:39453","raw":"127.0.0.1:36191","h2c":"127.0.0.1:32889","https":"127.0.0.1:39517","https-expired":"127.0.0.1:41737","https-wrong-host":"127.0.0.1:41309","https-untrusted":"127.0.0.1:37517","raw-tls":"127.0.0.1:36775","h2":"127.0.0.1:41627"}
+[floor] stand-in ctl=36227 raw=32899 h2c=33361
+[floor] probe lane=floor libcurl=7.85.0 OpenSSL/3.0.13 mime=#t probe=((formadd . 0) (mime-init . made))
+[floor] cell race reset-in-big-part-1 kind=big face=fraw outcome=(failed perform-failed 55 send-receive "Send failure: Connection reset by peer" size=193) sizes=(193)
+[floor]   | ev 2 t=791.2 req face=raw conn=36532 tag=rk1 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 3 t=791.7 answer face=raw conn=36532 tag=rk1 idx=0 status=200
+[floor]   | ev 4 t=794.5 req face=raw conn=36532 tag=rk1 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------b39a7dc8f7e350e5" auth=no head="POST /sink?drop=1&at=head&tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------b39a7dc8f7e350e5\r\n\r\n"
+[floor]   | ev 5 t=794.5 drop face=raw conn=36532 tag=rk1 idx=1 at=head buffered_body_bytes=0
+[floor] cell race reset-in-big-part-2 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(386)
+[floor]   | ev 8 t=799.0 req face=raw conn=36542 tag=rk2 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 9 t=799.1 answer face=raw conn=36542 tag=rk2 idx=0 status=200
+[floor]   | ev 10 t=799.9 req face=raw conn=36542 tag=rk2 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------3bf896b6fbca7154" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------3bf896b6fbca7154\r\n\r\n"
+[floor]   | ev 11 t=800.0 drop face=raw conn=36542 tag=rk2 idx=1 at=head buffered_body_bytes=0
+[floor]   | ev 14 t=800.3 req face=raw conn=36556 tag=rk2 idx=0 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------3bf896b6fbca7154" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------3bf896b6fbca7154\r\n\r\n"
+[floor]   | ev 15 t=815.1 body face=raw conn=36556 tag=rk2 idx=0 framing=cl declared=4194604 got=4194604 chunks=0 fnv=f0af5d95 first="--------------------------3bf896b6fbca71"
+[floor]   | ev 16 t=821.7 part face=raw conn=36556 tag=rk2 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[floor]   | ev 17 t=821.7 part face=raw conn=36556 tag=rk2 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[floor]   | ev 18 t=821.7 part face=raw conn=36556 tag=rk2 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------3bf896b6fbca7154 boundary_len=40
+[floor]   | ev 19 t=821.8 answer face=raw conn=36556 tag=rk2 idx=0 status=200
+[floor] cell race reset-in-big-part-3 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(386)
+[floor]   | ev 22 t=826.6 req face=raw conn=36564 tag=rk3 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 23 t=826.6 answer face=raw conn=36564 tag=rk3 idx=0 status=200
+[floor]   | ev 24 t=827.4 req face=raw conn=36564 tag=rk3 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------e2bbce009aa07b30" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------e2bbce009aa07b30\r\n\r\n"
+[floor]   | ev 25 t=827.5 drop face=raw conn=36564 tag=rk3 idx=1 at=head buffered_body_bytes=0
+[floor]   | ev 28 t=827.9 req face=raw conn=36576 tag=rk3 idx=0 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------e2bbce009aa07b30" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------e2bbce009aa07b30\r\n\r\n"
+[floor]   | ev 29 t=839.5 body face=raw conn=36576 tag=rk3 idx=0 framing=cl declared=4194604 got=4194604 chunks=0 fnv=ef602ef4 first="--------------------------e2bbce009aa07b"
+[floor]   | ev 30 t=845.6 part face=raw conn=36576 tag=rk3 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[floor]   | ev 31 t=845.6 part face=raw conn=36576 tag=rk3 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[floor]   | ev 32 t=845.6 part face=raw conn=36576 tag=rk3 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------e2bbce009aa07b30 boundary_len=40
+[floor]   | ev 33 t=845.8 answer face=raw conn=36576 tag=rk3 idx=0 status=200
+[floor] cell race reset-in-big-part-4 kind=big face=fraw outcome=(failed perform-failed 55 send-receive "Send failure: Connection reset by peer" size=193) sizes=(193)
+[floor]   | ev 36 t=852.5 req face=raw conn=36592 tag=rk4 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 37 t=852.5 answer face=raw conn=36592 tag=rk4 idx=0 status=200
+[floor]   | ev 38 t=853.4 req face=raw conn=36592 tag=rk4 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------f919e0d4a9701a77" auth=no head="POST /sink?drop=1&at=head&tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------f919e0d4a9701a77\r\n\r\n"
+[floor]   | ev 39 t=853.4 drop face=raw conn=36592 tag=rk4 idx=1 at=head buffered_body_bytes=65343
+[floor] cell race reset-in-big-part-5 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(386)
+[floor]   | ev 42 t=855.6 req face=raw conn=36604 tag=rk5 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 43 t=855.7 answer face=raw conn=36604 tag=rk5 idx=0 status=200
+[floor]   | ev 44 t=856.0 req face=raw conn=36604 tag=rk5 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------c184584366e6ebb0" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------c184584366e6ebb0\r\n\r\n"
+[floor]   | ev 45 t=856.0 drop face=raw conn=36604 tag=rk5 idx=1 at=head buffered_body_bytes=0
+[floor]   | ev 48 t=856.4 req face=raw conn=36620 tag=rk5 idx=0 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------c184584366e6ebb0" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------c184584366e6ebb0\r\n\r\n"
+[floor]   | ev 49 t=869.0 body face=raw conn=36620 tag=rk5 idx=0 framing=cl declared=4194604 got=4194604 chunks=0 fnv=e565c368 first="--------------------------c184584366e6eb"
+[floor]   | ev 50 t=875.1 part face=raw conn=36620 tag=rk5 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[floor]   | ev 51 t=875.1 part face=raw conn=36620 tag=rk5 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[floor]   | ev 52 t=875.1 part face=raw conn=36620 tag=rk5 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------c184584366e6ebb0 boundary_len=40
+[floor]   | ev 53 t=875.2 answer face=raw conn=36620 tag=rk5 idx=0 status=200
+[floor] cell race reset-in-big-part-6 kind=big face=fraw outcome=(failed perform-failed 55 send-receive "Send failure: Connection reset by peer" size=193) sizes=(193)
+[floor]   | ev 56 t=881.7 req face=raw conn=36626 tag=rk6 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 57 t=881.8 answer face=raw conn=36626 tag=rk6 idx=0 status=200
+[floor]   | ev 58 t=882.5 req face=raw conn=36626 tag=rk6 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------e67f119005b5a836" auth=no head="POST /sink?drop=1&at=head&tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------e67f119005b5a836\r\n\r\n"
+[floor]   | ev 59 t=882.5 drop face=raw conn=36626 tag=rk6 idx=1 at=head buffered_body_bytes=0
+[floor] cell race reset-in-big-part-7 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(386)
+[floor]   | ev 62 t=884.8 req face=raw conn=36630 tag=rk7 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 63 t=884.9 answer face=raw conn=36630 tag=rk7 idx=0 status=200
+[floor]   | ev 64 t=885.6 req face=raw conn=36630 tag=rk7 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------28b4d01b982c550e" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------28b4d01b982c550e\r\n\r\n"
+[floor]   | ev 65 t=885.6 drop face=raw conn=36630 tag=rk7 idx=1 at=head buffered_body_bytes=0
+[floor]   | ev 68 t=886.0 req face=raw conn=36636 tag=rk7 idx=0 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------28b4d01b982c550e" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------28b4d01b982c550e\r\n\r\n"
+[floor]   | ev 69 t=897.6 body face=raw conn=36636 tag=rk7 idx=0 framing=cl declared=4194604 got=4194604 chunks=0 fnv=efb2335a first="--------------------------28b4d01b982c55"
+[floor]   | ev 70 t=903.7 part face=raw conn=36636 tag=rk7 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[floor]   | ev 71 t=903.7 part face=raw conn=36636 tag=rk7 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[floor]   | ev 72 t=903.7 part face=raw conn=36636 tag=rk7 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------28b4d01b982c550e boundary_len=40
+[floor]   | ev 73 t=903.8 answer face=raw conn=36636 tag=rk7 idx=0 status=200
+[floor] cell race reset-in-big-part-8 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(386)
+[floor]   | ev 76 t=911.3 req face=raw conn=36644 tag=rk8 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 77 t=911.3 answer face=raw conn=36644 tag=rk8 idx=0 status=200
+[floor]   | ev 78 t=911.7 req face=raw conn=36644 tag=rk8 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------e6c13ba3d39a59be" auth=no head="POST /sink?drop=1&at=head&tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------e6c13ba3d39a59be\r\n\r\n"
+[floor]   | ev 79 t=911.7 drop face=raw conn=36644 tag=rk8 idx=1 at=head buffered_body_bytes=0
+[floor]   | ev 82 t=912.0 req face=raw conn=36650 tag=rk8 idx=0 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------e6c13ba3d39a59be" auth=no head="POST /sink?drop=1&at=head&tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------e6c13ba3d39a59be\r\n\r\n"
+[floor]   | ev 83 t=923.6 body face=raw conn=36650 tag=rk8 idx=0 framing=cl declared=4194604 got=4194604 chunks=0 fnv=563ce078 first="--------------------------e6c13ba3d39a59"
+[floor]   | ev 84 t=929.7 part face=raw conn=36650 tag=rk8 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[floor]   | ev 85 t=929.7 part face=raw conn=36650 tag=rk8 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[floor]   | ev 86 t=929.7 part face=raw conn=36650 tag=rk8 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------e6c13ba3d39a59be boundary_len=40
+[floor]   | ev 87 t=929.7 answer face=raw conn=36650 tag=rk8 idx=0 status=200
+[floor] cell race reset-in-big-part-9 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(386)
+[floor]   | ev 90 t=938.2 req face=raw conn=36652 tag=rk9 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 91 t=938.3 answer face=raw conn=36652 tag=rk9 idx=0 status=200
+[floor]   | ev 92 t=938.7 req face=raw conn=36652 tag=rk9 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------3f015d3f01a7fa37" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------3f015d3f01a7fa37\r\n\r\n"
+[floor]   | ev 93 t=938.7 drop face=raw conn=36652 tag=rk9 idx=1 at=head buffered_body_bytes=0
+[floor]   | ev 96 t=939.0 req face=raw conn=36654 tag=rk9 idx=0 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------3f015d3f01a7fa37" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------3f015d3f01a7fa37\r\n\r\n"
+[floor]   | ev 97 t=947.0 body face=raw conn=36654 tag=rk9 idx=0 framing=cl declared=4194604 got=4194604 chunks=0 fnv=0bd379f4 first="--------------------------3f015d3f01a7fa"
+[floor]   | ev 98 t=952.9 part face=raw conn=36654 tag=rk9 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[floor]   | ev 99 t=953.0 part face=raw conn=36654 tag=rk9 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[floor]   | ev 100 t=953.0 part face=raw conn=36654 tag=rk9 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------3f015d3f01a7fa37 boundary_len=40
+[floor]   | ev 101 t=953.0 answer face=raw conn=36654 tag=rk9 idx=0 status=200
+[floor] cell race reset-in-big-part-10 kind=big face=fraw outcome=(failed perform-failed 55 send-receive "Send failure: Connection reset by peer" size=194) sizes=(194)
+[floor]   | ev 104 t=970.1 req face=raw conn=36670 tag=rk10 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\n\r\n"
+[floor]   | ev 105 t=970.1 answer face=raw conn=36670 tag=rk10 idx=0 status=200
+[floor]   | ev 106 t=971.0 req face=raw conn=36670 tag=rk10 idx=1 POST /sink cl=4194604 te=- expect=- ct="multipart/form-data; boundary=------------------------ff286fda58a39114" auth=no head="POST /sink?drop=1&at=head&tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:32899\r\nAccept: */*\r\nContent-Length: 4194604\r\nContent-Type: multipart/form-data; boundary=------------------------ff286fda58a39114\r\n\r\n"
+[floor]   | ev 107 t=971.0 drop face=raw conn=36670 tag=rk10 idx=1 at=head buffered_body_bytes=65342
+[floor] cell fifo timeout-500 outcome=(failed perform-failed 28 timeout "Operation timed out after 2030 milliseconds with 0 bytes received" size=205) sizes=(205) release-to-end-ms=2003.7
+[floor] cell fifo stop outcome=(failed stopped #f none "" size=#f) stop-returned-ms-after-release=2010.6
+[floor] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[floor] program exit=0
+[floor] took about 5 s
+== lane openssl: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node  
+[openssl] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v24.18.0 probe sha256 9d95c6782c5bee26 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=unset
+[openssl] origin {"node":"v24.18.0","pid":2505,"http":"127.0.0.1:39433","raw":"127.0.0.1:38893","h2c":"127.0.0.1:46443","https":"127.0.0.1:39891","https-expired":"127.0.0.1:37209","https-wrong-host":"127.0.0.1:38839","https-untrusted":"127.0.0.1:40687","raw-tls":"127.0.0.1:39337","h2":"127.0.0.1:40759"}
+[openssl] stand-in ctl=37769 raw=33821 h2c=34987
+[openssl] probe lane=openssl libcurl=8.5.0 OpenSSL/3.0.13 mime=#t probe=((formadd . 0) (mime-init . made))
+[openssl] cell race reset-in-big-part-1 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 2 t=790.7 req face=raw conn=56400 tag=rk1 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 3 t=791.3 answer face=raw conn=56400 tag=rk1 idx=0 status=200
+[openssl]   | ev 4 t=794.6 req face=raw conn=56400 tag=rk1 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------qmoOKd1XCaZJsGBf0Bz3zU" auth=no head="POST /sink?drop=1&at=head&tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------qmoOKd1XCaZJsGBf0Bz3zU\r\n\r\n"
+[openssl]   | ev 5 t=794.7 drop face=raw conn=56400 tag=rk1 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 8 t=795.5 req face=raw conn=56406 tag=rk1 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------qmoOKd1XCaZJsGBf0Bz3zU" auth=no head="POST /sink?drop=1&at=head&tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------qmoOKd1XCaZJsGBf0Bz3zU\r\n\r\n"
+[openssl]   | ev 9 t=808.4 body face=raw conn=56406 tag=rk1 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=2d123472 first="--------------------------qmoOKd1XCaZJsG"
+[openssl]   | ev 10 t=814.1 part face=raw conn=56406 tag=rk1 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 11 t=814.1 part face=raw conn=56406 tag=rk1 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 12 t=814.1 part face=raw conn=56406 tag=rk1 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------qmoOKd1XCaZJsGBf0Bz3zU boundary_len=46
+[openssl]   | ev 13 t=814.2 answer face=raw conn=56406 tag=rk1 idx=0 status=200
+[openssl] cell race reset-in-big-part-2 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 16 t=822.0 req face=raw conn=56418 tag=rk2 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 17 t=822.0 answer face=raw conn=56418 tag=rk2 idx=0 status=200
+[openssl]   | ev 18 t=822.8 req face=raw conn=56418 tag=rk2 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------qaeeUPGZqcrUB1W7qqCSPt" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------qaeeUPGZqcrUB1W7qqCSPt\r\n\r\n"
+[openssl]   | ev 19 t=822.9 drop face=raw conn=56418 tag=rk2 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 22 t=823.2 req face=raw conn=56422 tag=rk2 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------qaeeUPGZqcrUB1W7qqCSPt" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------qaeeUPGZqcrUB1W7qqCSPt\r\n\r\n"
+[openssl]   | ev 23 t=834.9 body face=raw conn=56422 tag=rk2 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=03a634c4 first="--------------------------qaeeUPGZqcrUB1"
+[openssl]   | ev 24 t=841.2 part face=raw conn=56422 tag=rk2 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 25 t=841.2 part face=raw conn=56422 tag=rk2 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 26 t=841.2 part face=raw conn=56422 tag=rk2 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------qaeeUPGZqcrUB1W7qqCSPt boundary_len=46
+[openssl]   | ev 27 t=841.3 answer face=raw conn=56422 tag=rk2 idx=0 status=200
+[openssl] cell race reset-in-big-part-3 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 30 t=848.3 req face=raw conn=56426 tag=rk3 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 31 t=848.3 answer face=raw conn=56426 tag=rk3 idx=0 status=200
+[openssl]   | ev 32 t=849.2 req face=raw conn=56426 tag=rk3 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------xBaUJlbbTX9wNVaIMSgrug" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------xBaUJlbbTX9wNVaIMSgrug\r\n\r\n"
+[openssl]   | ev 33 t=849.2 drop face=raw conn=56426 tag=rk3 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 36 t=849.5 req face=raw conn=56432 tag=rk3 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------xBaUJlbbTX9wNVaIMSgrug" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------xBaUJlbbTX9wNVaIMSgrug\r\n\r\n"
+[openssl]   | ev 37 t=861.5 body face=raw conn=56432 tag=rk3 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=87a7e36d first="--------------------------xBaUJlbbTX9wNV"
+[openssl]   | ev 38 t=867.6 part face=raw conn=56432 tag=rk3 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 39 t=867.6 part face=raw conn=56432 tag=rk3 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 40 t=867.6 part face=raw conn=56432 tag=rk3 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------xBaUJlbbTX9wNVaIMSgrug boundary_len=46
+[openssl]   | ev 41 t=867.7 answer face=raw conn=56432 tag=rk3 idx=0 status=200
+[openssl] cell race reset-in-big-part-4 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 44 t=874.7 req face=raw conn=56448 tag=rk4 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 45 t=874.8 answer face=raw conn=56448 tag=rk4 idx=0 status=200
+[openssl]   | ev 46 t=875.2 req face=raw conn=56448 tag=rk4 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------cdvEvWGyqaQFBS7jM7Qmog" auth=no head="POST /sink?drop=1&at=head&tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------cdvEvWGyqaQFBS7jM7Qmog\r\n\r\n"
+[openssl]   | ev 47 t=875.2 drop face=raw conn=56448 tag=rk4 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 50 t=875.5 req face=raw conn=56450 tag=rk4 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------cdvEvWGyqaQFBS7jM7Qmog" auth=no head="POST /sink?drop=1&at=head&tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------cdvEvWGyqaQFBS7jM7Qmog\r\n\r\n"
+[openssl]   | ev 51 t=887.0 body face=raw conn=56450 tag=rk4 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=9d5e1ee0 first="--------------------------cdvEvWGyqaQFBS"
+[openssl]   | ev 52 t=893.0 part face=raw conn=56450 tag=rk4 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 53 t=893.0 part face=raw conn=56450 tag=rk4 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 54 t=893.1 part face=raw conn=56450 tag=rk4 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------cdvEvWGyqaQFBS7jM7Qmog boundary_len=46
+[openssl]   | ev 55 t=893.1 answer face=raw conn=56450 tag=rk4 idx=0 status=200
+[openssl] cell race reset-in-big-part-5 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 58 t=900.6 req face=raw conn=56452 tag=rk5 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 59 t=900.7 answer face=raw conn=56452 tag=rk5 idx=0 status=200
+[openssl]   | ev 60 t=901.1 req face=raw conn=56452 tag=rk5 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------9wFJDaRpYr6W3C5msI7Uz7" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------9wFJDaRpYr6W3C5msI7Uz7\r\n\r\n"
+[openssl]   | ev 61 t=901.2 drop face=raw conn=56452 tag=rk5 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 64 t=901.5 req face=raw conn=56454 tag=rk5 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------9wFJDaRpYr6W3C5msI7Uz7" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------9wFJDaRpYr6W3C5msI7Uz7\r\n\r\n"
+[openssl]   | ev 65 t=913.0 body face=raw conn=56454 tag=rk5 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=3d45f524 first="--------------------------9wFJDaRpYr6W3C"
+[openssl]   | ev 66 t=919.1 part face=raw conn=56454 tag=rk5 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 67 t=919.1 part face=raw conn=56454 tag=rk5 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 68 t=919.1 part face=raw conn=56454 tag=rk5 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------9wFJDaRpYr6W3C5msI7Uz7 boundary_len=46
+[openssl]   | ev 69 t=919.2 answer face=raw conn=56454 tag=rk5 idx=0 status=200
+[openssl] cell race reset-in-big-part-6 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 72 t=926.6 req face=raw conn=56466 tag=rk6 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 73 t=926.7 answer face=raw conn=56466 tag=rk6 idx=0 status=200
+[openssl]   | ev 74 t=927.1 req face=raw conn=56466 tag=rk6 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------tDxXTLJQz4hQgcHd7m7kdP" auth=no head="POST /sink?drop=1&at=head&tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------tDxXTLJQz4hQgcHd7m7kdP\r\n\r\n"
+[openssl]   | ev 75 t=927.1 drop face=raw conn=56466 tag=rk6 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 78 t=927.3 req face=raw conn=56468 tag=rk6 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------tDxXTLJQz4hQgcHd7m7kdP" auth=no head="POST /sink?drop=1&at=head&tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------tDxXTLJQz4hQgcHd7m7kdP\r\n\r\n"
+[openssl]   | ev 79 t=938.3 body face=raw conn=56468 tag=rk6 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=749cacee first="--------------------------tDxXTLJQz4hQgc"
+[openssl]   | ev 80 t=943.8 part face=raw conn=56468 tag=rk6 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 81 t=943.8 part face=raw conn=56468 tag=rk6 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 82 t=943.8 part face=raw conn=56468 tag=rk6 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------tDxXTLJQz4hQgcHd7m7kdP boundary_len=46
+[openssl]   | ev 83 t=943.8 answer face=raw conn=56468 tag=rk6 idx=0 status=200
+[openssl] cell race reset-in-big-part-7 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 86 t=952.8 req face=raw conn=56480 tag=rk7 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 87 t=952.8 answer face=raw conn=56480 tag=rk7 idx=0 status=200
+[openssl]   | ev 88 t=953.3 req face=raw conn=56480 tag=rk7 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------qVLuPagwWx0Q4FQOuD92aK" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------qVLuPagwWx0Q4FQOuD92aK\r\n\r\n"
+[openssl]   | ev 89 t=953.3 drop face=raw conn=56480 tag=rk7 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 92 t=953.6 req face=raw conn=56492 tag=rk7 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------qVLuPagwWx0Q4FQOuD92aK" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------qVLuPagwWx0Q4FQOuD92aK\r\n\r\n"
+[openssl]   | ev 93 t=963.8 body face=raw conn=56492 tag=rk7 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=cbc8fd79 first="--------------------------qVLuPagwWx0Q4F"
+[openssl]   | ev 94 t=969.1 part face=raw conn=56492 tag=rk7 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 95 t=969.1 part face=raw conn=56492 tag=rk7 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 96 t=969.1 part face=raw conn=56492 tag=rk7 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------qVLuPagwWx0Q4FQOuD92aK boundary_len=46
+[openssl]   | ev 97 t=969.1 answer face=raw conn=56492 tag=rk7 idx=0 status=200
+[openssl] cell race reset-in-big-part-8 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 100 t=984.9 req face=raw conn=56494 tag=rk8 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 101 t=984.9 answer face=raw conn=56494 tag=rk8 idx=0 status=200
+[openssl]   | ev 102 t=985.3 req face=raw conn=56494 tag=rk8 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------nU9QYUFKbB0oI22QXqegeh" auth=no head="POST /sink?drop=1&at=head&tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------nU9QYUFKbB0oI22QXqegeh\r\n\r\n"
+[openssl]   | ev 103 t=985.3 drop face=raw conn=56494 tag=rk8 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 106 t=985.6 req face=raw conn=56504 tag=rk8 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------nU9QYUFKbB0oI22QXqegeh" auth=no head="POST /sink?drop=1&at=head&tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------nU9QYUFKbB0oI22QXqegeh\r\n\r\n"
+[openssl]   | ev 107 t=995.0 body face=raw conn=56504 tag=rk8 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=920eee17 first="--------------------------nU9QYUFKbB0oI2"
+[openssl]   | ev 108 t=1000.2 part face=raw conn=56504 tag=rk8 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 109 t=1000.2 part face=raw conn=56504 tag=rk8 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 110 t=1000.2 part face=raw conn=56504 tag=rk8 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------nU9QYUFKbB0oI22QXqegeh boundary_len=46
+[openssl]   | ev 111 t=1000.3 answer face=raw conn=56504 tag=rk8 idx=0 status=200
+[openssl] cell race reset-in-big-part-9 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[openssl]   | ev 114 t=1011.0 req face=raw conn=56514 tag=rk9 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 115 t=1011.0 answer face=raw conn=56514 tag=rk9 idx=0 status=200
+[openssl]   | ev 116 t=1011.5 req face=raw conn=56514 tag=rk9 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------4vPsgroAdMZRw4ywWBqFCr" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------4vPsgroAdMZRw4ywWBqFCr\r\n\r\n"
+[openssl]   | ev 117 t=1011.5 drop face=raw conn=56514 tag=rk9 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 120 t=1011.8 req face=raw conn=56524 tag=rk9 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------4vPsgroAdMZRw4ywWBqFCr" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------4vPsgroAdMZRw4ywWBqFCr\r\n\r\n"
+[openssl]   | ev 121 t=1021.1 body face=raw conn=56524 tag=rk9 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=44b9a1fd first="--------------------------4vPsgroAdMZRw4"
+[openssl]   | ev 122 t=1026.4 part face=raw conn=56524 tag=rk9 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 123 t=1026.4 part face=raw conn=56524 tag=rk9 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 124 t=1026.4 part face=raw conn=56524 tag=rk9 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------4vPsgroAdMZRw4ywWBqFCr boundary_len=46
+[openssl]   | ev 125 t=1026.4 answer face=raw conn=56524 tag=rk9 idx=0 status=200
+[openssl] cell race reset-in-big-part-10 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(400)
+[openssl]   | ev 128 t=1037.3 req face=raw conn=56534 tag=rk10 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\n\r\n"
+[openssl]   | ev 129 t=1037.4 answer face=raw conn=56534 tag=rk10 idx=0 status=200
+[openssl]   | ev 130 t=1037.8 req face=raw conn=56534 tag=rk10 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------rbwernXGaDsZJFPiVxi8xJ" auth=no head="POST /sink?drop=1&at=head&tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------rbwernXGaDsZJFPiVxi8xJ\r\n\r\n"
+[openssl]   | ev 131 t=1037.8 drop face=raw conn=56534 tag=rk10 idx=1 at=head buffered_body_bytes=0
+[openssl]   | ev 134 t=1038.0 req face=raw conn=56548 tag=rk10 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------rbwernXGaDsZJFPiVxi8xJ" auth=no head="POST /sink?drop=1&at=head&tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:33821\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------rbwernXGaDsZJFPiVxi8xJ\r\n\r\n"
+[openssl]   | ev 135 t=1047.4 body face=raw conn=56548 tag=rk10 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=cba8df8f first="--------------------------rbwernXGaDsZJF"
+[openssl]   | ev 136 t=1052.6 part face=raw conn=56548 tag=rk10 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[openssl]   | ev 137 t=1052.6 part face=raw conn=56548 tag=rk10 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[openssl]   | ev 138 t=1052.6 part face=raw conn=56548 tag=rk10 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------rbwernXGaDsZJFPiVxi8xJ boundary_len=46
+[openssl]   | ev 139 t=1052.7 answer face=raw conn=56548 tag=rk10 idx=0 status=200
+[openssl] cell fifo timeout-500 outcome=(failed perform-failed 28 timeout "Operation timed out after 2023 milliseconds with 0 bytes received" size=211) sizes=(211) release-to-end-ms=2013.6
+[openssl] cell fifo stop outcome=(failed stopped #f none "" size=#f) stop-returned-ms-after-release=2011.2
+[openssl] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[openssl] program exit=0
+[openssl] took about 5 s
+== lane gnutls: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 CC=gcc NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node  
+[gnutls] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 node v24.18.0 probe sha256 9d95c6782c5bee26 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=unset
+[gnutls] origin {"node":"v24.18.0","pid":2614,"http":"127.0.0.1:35039","raw":"127.0.0.1:43497","h2c":"127.0.0.1:42739","https":"127.0.0.1:41823","https-expired":"127.0.0.1:36173","https-wrong-host":"127.0.0.1:35749","https-untrusted":"127.0.0.1:46609","raw-tls":"127.0.0.1:38553","h2":"127.0.0.1:42593"}
+[gnutls] stand-in ctl=40393 raw=40399 h2c=46177
+[gnutls] probe lane=gnutls libcurl=8.5.0 GnuTLS/3.8.3 mime=#t probe=((formadd . 0) (mime-init . made))
+[gnutls] cell race reset-in-big-part-1 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 2 t=849.6 req face=raw conn=32782 tag=rk1 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 3 t=850.2 answer face=raw conn=32782 tag=rk1 idx=0 status=200
+[gnutls]   | ev 4 t=853.2 req face=raw conn=32782 tag=rk1 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------xxZWMVIug2qvU7cFIl8HYH" auth=no head="POST /sink?drop=1&at=head&tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------xxZWMVIug2qvU7cFIl8HYH\r\n\r\n"
+[gnutls]   | ev 5 t=853.3 drop face=raw conn=32782 tag=rk1 idx=1 at=head buffered_body_bytes=0
+[gnutls]   | ev 8 t=854.2 req face=raw conn=32786 tag=rk1 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------xxZWMVIug2qvU7cFIl8HYH" auth=no head="POST /sink?drop=1&at=head&tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------xxZWMVIug2qvU7cFIl8HYH\r\n\r\n"
+[gnutls]   | ev 9 t=869.1 body face=raw conn=32786 tag=rk1 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=d69605b5 first="--------------------------xxZWMVIug2qvU7"
+[gnutls]   | ev 10 t=876.3 part face=raw conn=32786 tag=rk1 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 11 t=876.3 part face=raw conn=32786 tag=rk1 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 12 t=876.3 part face=raw conn=32786 tag=rk1 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------xxZWMVIug2qvU7cFIl8HYH boundary_len=46
+[gnutls]   | ev 13 t=876.5 answer face=raw conn=32786 tag=rk1 idx=0 status=200
+[gnutls] cell race reset-in-big-part-2 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 16 t=890.8 req face=raw conn=32802 tag=rk2 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 17 t=890.8 answer face=raw conn=32802 tag=rk2 idx=0 status=200
+[gnutls]   | ev 18 t=891.6 req face=raw conn=32802 tag=rk2 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------N7Zwpn04ZGezeQgcFMUmYv" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------N7Zwpn04ZGezeQgcFMUmYv\r\n\r\n"
+[gnutls]   | ev 19 t=891.7 drop face=raw conn=32802 tag=rk2 idx=1 at=head buffered_body_bytes=0
+[gnutls]   | ev 22 t=892.0 req face=raw conn=32816 tag=rk2 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------N7Zwpn04ZGezeQgcFMUmYv" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------N7Zwpn04ZGezeQgcFMUmYv\r\n\r\n"
+[gnutls]   | ev 23 t=904.9 body face=raw conn=32816 tag=rk2 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=43b59e74 first="--------------------------N7Zwpn04ZGezeQ"
+[gnutls]   | ev 24 t=911.9 part face=raw conn=32816 tag=rk2 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 25 t=911.9 part face=raw conn=32816 tag=rk2 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 26 t=911.9 part face=raw conn=32816 tag=rk2 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------N7Zwpn04ZGezeQgcFMUmYv boundary_len=46
+[gnutls]   | ev 27 t=912.1 answer face=raw conn=32816 tag=rk2 idx=0 status=200
+[gnutls] cell race reset-in-big-part-3 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 30 t=916.9 req face=raw conn=32818 tag=rk3 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 31 t=917.0 answer face=raw conn=32818 tag=rk3 idx=0 status=200
+[gnutls]   | ev 32 t=917.8 req face=raw conn=32818 tag=rk3 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------O8wDA7zIytcDJoPiSdkEN6" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------O8wDA7zIytcDJoPiSdkEN6\r\n\r\n"
+[gnutls]   | ev 33 t=917.8 drop face=raw conn=32818 tag=rk3 idx=1 at=head buffered_body_bytes=0
+[gnutls]   | ev 36 t=918.2 req face=raw conn=32832 tag=rk3 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------O8wDA7zIytcDJoPiSdkEN6" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------O8wDA7zIytcDJoPiSdkEN6\r\n\r\n"
+[gnutls]   | ev 37 t=931.2 body face=raw conn=32832 tag=rk3 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=c078738e first="--------------------------O8wDA7zIytcDJo"
+[gnutls]   | ev 38 t=938.0 part face=raw conn=32832 tag=rk3 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 39 t=938.0 part face=raw conn=32832 tag=rk3 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 40 t=938.0 part face=raw conn=32832 tag=rk3 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------O8wDA7zIytcDJoPiSdkEN6 boundary_len=46
+[gnutls]   | ev 41 t=938.1 answer face=raw conn=32832 tag=rk3 idx=0 status=200
+[gnutls] cell race reset-in-big-part-4 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 44 t=943.3 req face=raw conn=32838 tag=rk4 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 45 t=943.3 answer face=raw conn=32838 tag=rk4 idx=0 status=200
+[gnutls]   | ev 46 t=944.3 req face=raw conn=32838 tag=rk4 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------OSG0QIj0BFlOQfzmEbKtsn" auth=no head="POST /sink?drop=1&at=head&tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------OSG0QIj0BFlOQfzmEbKtsn\r\n\r\n"
+[gnutls]   | ev 47 t=944.3 drop face=raw conn=32838 tag=rk4 idx=1 at=head buffered_body_bytes=65337
+[gnutls]   | ev 50 t=944.6 req face=raw conn=32840 tag=rk4 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------OSG0QIj0BFlOQfzmEbKtsn" auth=no head="POST /sink?drop=1&at=head&tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------OSG0QIj0BFlOQfzmEbKtsn\r\n\r\n"
+[gnutls]   | ev 51 t=957.0 body face=raw conn=32840 tag=rk4 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=07c69193 first="--------------------------OSG0QIj0BFlOQf"
+[gnutls]   | ev 52 t=963.8 part face=raw conn=32840 tag=rk4 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 53 t=963.9 part face=raw conn=32840 tag=rk4 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 54 t=963.9 part face=raw conn=32840 tag=rk4 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------OSG0QIj0BFlOQfzmEbKtsn boundary_len=46
+[gnutls]   | ev 55 t=964.0 answer face=raw conn=32840 tag=rk4 idx=0 status=200
+[gnutls] cell race reset-in-big-part-5 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 58 t=969.8 req face=raw conn=32844 tag=rk5 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 59 t=969.9 answer face=raw conn=32844 tag=rk5 idx=0 status=200
+[gnutls]   | ev 60 t=970.3 req face=raw conn=32844 tag=rk5 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------bIkCuDfOfbeJCwIhRidpT8" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------bIkCuDfOfbeJCwIhRidpT8\r\n\r\n"
+[gnutls]   | ev 61 t=970.3 drop face=raw conn=32844 tag=rk5 idx=1 at=head buffered_body_bytes=0
+[gnutls]   | ev 64 t=970.6 req face=raw conn=32846 tag=rk5 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------bIkCuDfOfbeJCwIhRidpT8" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------bIkCuDfOfbeJCwIhRidpT8\r\n\r\n"
+[gnutls]   | ev 65 t=982.5 body face=raw conn=32846 tag=rk5 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=8b27c30a first="--------------------------bIkCuDfOfbeJCw"
+[gnutls]   | ev 66 t=988.6 part face=raw conn=32846 tag=rk5 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 67 t=988.6 part face=raw conn=32846 tag=rk5 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 68 t=988.6 part face=raw conn=32846 tag=rk5 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------bIkCuDfOfbeJCwIhRidpT8 boundary_len=46
+[gnutls]   | ev 69 t=988.7 answer face=raw conn=32846 tag=rk5 idx=0 status=200
+[gnutls] cell race reset-in-big-part-6 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 72 t=996.5 req face=raw conn=32852 tag=rk6 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 73 t=996.5 answer face=raw conn=32852 tag=rk6 idx=0 status=200
+[gnutls]   | ev 74 t=996.9 req face=raw conn=32852 tag=rk6 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------ASLpis4WGtFXWIBPKfxIiV" auth=no head="POST /sink?drop=1&at=head&tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------ASLpis4WGtFXWIBPKfxIiV\r\n\r\n"
+[gnutls]   | ev 75 t=996.9 drop face=raw conn=32852 tag=rk6 idx=1 at=head buffered_body_bytes=0
+[gnutls]   | ev 78 t=997.1 req face=raw conn=32862 tag=rk6 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------ASLpis4WGtFXWIBPKfxIiV" auth=no head="POST /sink?drop=1&at=head&tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------ASLpis4WGtFXWIBPKfxIiV\r\n\r\n"
+[gnutls]   | ev 79 t=1008.3 body face=raw conn=32862 tag=rk6 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=f0d74693 first="--------------------------ASLpis4WGtFXWI"
+[gnutls]   | ev 80 t=1014.6 part face=raw conn=32862 tag=rk6 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 81 t=1014.6 part face=raw conn=32862 tag=rk6 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 82 t=1014.6 part face=raw conn=32862 tag=rk6 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------ASLpis4WGtFXWIBPKfxIiV boundary_len=46
+[gnutls]   | ev 83 t=1014.7 answer face=raw conn=32862 tag=rk6 idx=0 status=200
+[gnutls] cell race reset-in-big-part-7 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 86 t=1022.7 req face=raw conn=32870 tag=rk7 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 87 t=1022.8 answer face=raw conn=32870 tag=rk7 idx=0 status=200
+[gnutls]   | ev 88 t=1023.7 req face=raw conn=32870 tag=rk7 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------REE0vKURim7OvNKohQBDSl" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------REE0vKURim7OvNKohQBDSl\r\n\r\n"
+[gnutls]   | ev 89 t=1023.7 drop face=raw conn=32870 tag=rk7 idx=1 at=head buffered_body_bytes=65337
+[gnutls]   | ev 92 t=1024.0 req face=raw conn=32876 tag=rk7 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------REE0vKURim7OvNKohQBDSl" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------REE0vKURim7OvNKohQBDSl\r\n\r\n"
+[gnutls]   | ev 93 t=1035.8 body face=raw conn=32876 tag=rk7 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=3dcc5a72 first="--------------------------REE0vKURim7OvN"
+[gnutls]   | ev 94 t=1042.5 part face=raw conn=32876 tag=rk7 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 95 t=1042.5 part face=raw conn=32876 tag=rk7 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 96 t=1042.5 part face=raw conn=32876 tag=rk7 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------REE0vKURim7OvNKohQBDSl boundary_len=46
+[gnutls]   | ev 97 t=1042.6 answer face=raw conn=32876 tag=rk7 idx=0 status=200
+[gnutls] cell race reset-in-big-part-8 kind=big face=fraw outcome=(failed perform-failed 55 send-receive "Send failure: Connection reset by peer" size=199) sizes=(199)
+[gnutls]   | ev 100 t=1056.6 req face=raw conn=32892 tag=rk8 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 101 t=1056.7 answer face=raw conn=32892 tag=rk8 idx=0 status=200
+[gnutls]   | ev 102 t=1057.5 req face=raw conn=32892 tag=rk8 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------UcV5uzIWL2mH0wjHo4IHLa" auth=no head="POST /sink?drop=1&at=head&tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------UcV5uzIWL2mH0wjHo4IHLa\r\n\r\n"
+[gnutls]   | ev 103 t=1057.5 drop face=raw conn=32892 tag=rk8 idx=1 at=head buffered_body_bytes=0
+[gnutls] cell race reset-in-big-part-9 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(398)
+[gnutls]   | ev 106 t=1060.6 req face=raw conn=32894 tag=rk9 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 107 t=1060.7 answer face=raw conn=32894 tag=rk9 idx=0 status=200
+[gnutls]   | ev 108 t=1061.0 req face=raw conn=32894 tag=rk9 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------m0Xjxm8fWmnXWlE96j888s" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------m0Xjxm8fWmnXWlE96j888s\r\n\r\n"
+[gnutls]   | ev 109 t=1061.0 drop face=raw conn=32894 tag=rk9 idx=1 at=head buffered_body_bytes=0
+[gnutls]   | ev 112 t=1061.3 req face=raw conn=32900 tag=rk9 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------m0Xjxm8fWmnXWlE96j888s" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------m0Xjxm8fWmnXWlE96j888s\r\n\r\n"
+[gnutls]   | ev 113 t=1073.8 body face=raw conn=32900 tag=rk9 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=b9e85ece first="--------------------------m0Xjxm8fWmnXWl"
+[gnutls]   | ev 114 t=1080.5 part face=raw conn=32900 tag=rk9 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 115 t=1080.5 part face=raw conn=32900 tag=rk9 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 116 t=1080.5 part face=raw conn=32900 tag=rk9 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------m0Xjxm8fWmnXWlE96j888s boundary_len=46
+[gnutls]   | ev 117 t=1080.6 answer face=raw conn=32900 tag=rk9 idx=0 status=200
+[gnutls] cell race reset-in-big-part-10 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(400)
+[gnutls]   | ev 120 t=1088.2 req face=raw conn=32916 tag=rk10 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\n\r\n"
+[gnutls]   | ev 121 t=1088.2 answer face=raw conn=32916 tag=rk10 idx=0 status=200
+[gnutls]   | ev 122 t=1088.6 req face=raw conn=32916 tag=rk10 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------ZnKOhvigi6VhYdfB7wucyK" auth=no head="POST /sink?drop=1&at=head&tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------ZnKOhvigi6VhYdfB7wucyK\r\n\r\n"
+[gnutls]   | ev 123 t=1088.6 drop face=raw conn=32916 tag=rk10 idx=1 at=head buffered_body_bytes=0
+[gnutls]   | ev 126 t=1088.9 req face=raw conn=32930 tag=rk10 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------ZnKOhvigi6VhYdfB7wucyK" auth=no head="POST /sink?drop=1&at=head&tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:40399\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------ZnKOhvigi6VhYdfB7wucyK\r\n\r\n"
+[gnutls]   | ev 127 t=1100.8 body face=raw conn=32930 tag=rk10 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=bdd7239c first="--------------------------ZnKOhvigi6VhYd"
+[gnutls]   | ev 128 t=1107.6 part face=raw conn=32930 tag=rk10 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[gnutls]   | ev 129 t=1107.6 part face=raw conn=32930 tag=rk10 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[gnutls]   | ev 130 t=1107.6 part face=raw conn=32930 tag=rk10 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------ZnKOhvigi6VhYdfB7wucyK boundary_len=46
+[gnutls]   | ev 131 t=1107.7 answer face=raw conn=32930 tag=rk10 idx=0 status=200
+[gnutls] cell fifo timeout-500 outcome=(failed perform-failed 28 timeout "Operation timed out after 2023 milliseconds with 0 bytes received" size=211) sizes=(211) release-to-end-ms=2004.4
+[gnutls] cell fifo stop outcome=(failed stopped #f none "" size=#f) stop-returned-ms-after-release=2010.4
+[gnutls] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[gnutls] program exit=0
+[gnutls] took about 5 s
+== lane current: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node  
+[current] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 node v24.18.0 probe sha256 9d95c6782c5bee26 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=unset
+[current] origin {"node":"v24.18.0","pid":2724,"http":"127.0.0.1:44415","raw":"127.0.0.1:39207","h2c":"127.0.0.1:40581","https":"127.0.0.1:35363","https-expired":"127.0.0.1:46513","https-wrong-host":"127.0.0.1:34195","https-untrusted":"127.0.0.1:43739","raw-tls":"127.0.0.1:38739","h2":"127.0.0.1:40183"}
+[current] stand-in ctl=44691 raw=44773 h2c=42093
+[current] probe lane=current libcurl=8.23.0 OpenSSL/3.0.13 mime=#t probe=((formadd . 0) (mime-init . made))
+[current] cell race reset-in-big-part-1 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(6029829)
+[current]   | ev 2 t=841.7 req face=raw conn=39036 tag=rk1 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 3 t=842.2 answer face=raw conn=39036 tag=rk1 idx=0 status=200
+[current]   | ev 4 t=844.7 req face=raw conn=39036 tag=rk1 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------i1n8wLIykS1Pi3iu5AxXs0" auth=no head="POST /sink?drop=1&at=head&tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------i1n8wLIykS1Pi3iu5AxXs0\r\n\r\n"
+[current]   | ev 5 t=844.7 drop face=raw conn=39036 tag=rk1 idx=1 at=head buffered_body_bytes=65337
+[current]   | ev 8 t=845.7 req face=raw conn=39038 tag=rk1 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------i1n8wLIykS1Pi3iu5AxXs0" auth=no head="POST /sink?drop=1&at=head&tag=rk1 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------i1n8wLIykS1Pi3iu5AxXs0\r\n\r\n"
+[current]   | ev 9 t=859.4 body face=raw conn=39038 tag=rk1 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=4119063d first="--------------------------i1n8wLIykS1Pi3"
+[current]   | ev 10 t=865.3 part face=raw conn=39038 tag=rk1 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 11 t=865.3 part face=raw conn=39038 tag=rk1 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 12 t=865.3 part face=raw conn=39038 tag=rk1 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------i1n8wLIykS1Pi3iu5AxXs0 boundary_len=46
+[current]   | ev 13 t=865.5 answer face=raw conn=39038 tag=rk1 idx=0 status=200
+[current] cell race reset-in-big-part-2 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(5046789)
+[current]   | ev 16 t=871.0 req face=raw conn=39054 tag=rk2 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 17 t=871.3 answer face=raw conn=39054 tag=rk2 idx=0 status=200
+[current]   | ev 18 t=874.5 req face=raw conn=39054 tag=rk2 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------Y076r7mwZZ5u2QPkXSbMnU" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------Y076r7mwZZ5u2QPkXSbMnU\r\n\r\n"
+[current]   | ev 19 t=874.6 drop face=raw conn=39054 tag=rk2 idx=1 at=head buffered_body_bytes=65337
+[current]   | ev 22 t=875.7 req face=raw conn=39062 tag=rk2 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------Y076r7mwZZ5u2QPkXSbMnU" auth=no head="POST /sink?drop=1&at=head&tag=rk2 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------Y076r7mwZZ5u2QPkXSbMnU\r\n\r\n"
+[current]   | ev 23 t=892.9 body face=raw conn=39062 tag=rk2 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=b4c6d516 first="--------------------------Y076r7mwZZ5u2Q"
+[current]   | ev 24 t=900.9 part face=raw conn=39062 tag=rk2 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 25 t=900.9 part face=raw conn=39062 tag=rk2 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 26 t=900.9 part face=raw conn=39062 tag=rk2 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------Y076r7mwZZ5u2QPkXSbMnU boundary_len=46
+[current]   | ev 27 t=901.3 answer face=raw conn=39062 tag=rk2 idx=0 status=200
+[current] cell race reset-in-big-part-3 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(4588037)
+[current]   | ev 30 t=910.5 req face=raw conn=39078 tag=rk3 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 31 t=910.6 answer face=raw conn=39078 tag=rk3 idx=0 status=200
+[current]   | ev 32 t=911.4 req face=raw conn=39078 tag=rk3 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------8DctlBEg7Mz1AHY3a2vrkJ" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------8DctlBEg7Mz1AHY3a2vrkJ\r\n\r\n"
+[current]   | ev 33 t=911.4 drop face=raw conn=39078 tag=rk3 idx=1 at=head buffered_body_bytes=65337
+[current]   | ev 36 t=911.9 req face=raw conn=39080 tag=rk3 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------8DctlBEg7Mz1AHY3a2vrkJ" auth=no head="POST /sink?drop=1&at=head&tag=rk3 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------8DctlBEg7Mz1AHY3a2vrkJ\r\n\r\n"
+[current]   | ev 37 t=924.1 body face=raw conn=39080 tag=rk3 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=2d497a07 first="--------------------------8DctlBEg7Mz1AH"
+[current]   | ev 38 t=930.3 part face=raw conn=39080 tag=rk3 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 39 t=930.3 part face=raw conn=39080 tag=rk3 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 40 t=930.3 part face=raw conn=39080 tag=rk3 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------8DctlBEg7Mz1AHY3a2vrkJ boundary_len=46
+[current]   | ev 41 t=930.5 answer face=raw conn=39080 tag=rk3 idx=0 status=200
+[current] cell race reset-in-big-part-4 kind=big face=fraw outcome=(failed perform-failed 55 send-receive "Send failure: Connection reset by peer" size=393216) sizes=(393216)
+[current]   | ev 44 t=936.9 req face=raw conn=39088 tag=rk4 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 45 t=936.9 answer face=raw conn=39088 tag=rk4 idx=0 status=200
+[current]   | ev 46 t=937.8 req face=raw conn=39088 tag=rk4 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------bdpELUiiiWj3lSg6bUIMHB" auth=no head="POST /sink?drop=1&at=head&tag=rk4 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------bdpELUiiiWj3lSg6bUIMHB\r\n\r\n"
+[current]   | ev 47 t=937.8 drop face=raw conn=39088 tag=rk4 idx=1 at=head buffered_body_bytes=32569
+[current] cell race reset-in-big-part-5 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(4522501)
+[current]   | ev 50 t=940.0 req face=raw conn=39092 tag=rk5 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 51 t=940.1 answer face=raw conn=39092 tag=rk5 idx=0 status=200
+[current]   | ev 52 t=940.6 req face=raw conn=39092 tag=rk5 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------kUORsOJRFqzpRyNOBsQtD8" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------kUORsOJRFqzpRyNOBsQtD8\r\n\r\n"
+[current]   | ev 53 t=940.6 drop face=raw conn=39092 tag=rk5 idx=1 at=head buffered_body_bytes=32569
+[current]   | ev 56 t=940.8 req face=raw conn=39104 tag=rk5 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------kUORsOJRFqzpRyNOBsQtD8" auth=no head="POST /sink?drop=1&at=head&tag=rk5 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------kUORsOJRFqzpRyNOBsQtD8\r\n\r\n"
+[current]   | ev 57 t=952.8 body face=raw conn=39104 tag=rk5 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=984c7cae first="--------------------------kUORsOJRFqzpRy"
+[current]   | ev 58 t=959.0 part face=raw conn=39104 tag=rk5 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 59 t=959.0 part face=raw conn=39104 tag=rk5 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 60 t=959.0 part face=raw conn=39104 tag=rk5 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------kUORsOJRFqzpRyNOBsQtD8 boundary_len=46
+[current]   | ev 61 t=959.2 answer face=raw conn=39104 tag=rk5 idx=0 status=200
+[current] cell race reset-in-big-part-6 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(4850181)
+[current]   | ev 64 t=966.2 req face=raw conn=39118 tag=rk6 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 65 t=966.2 answer face=raw conn=39118 tag=rk6 idx=0 status=200
+[current]   | ev 66 t=967.0 req face=raw conn=39118 tag=rk6 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------U9VSi1hE6mOHv3SKcGVJyE" auth=no head="POST /sink?drop=1&at=head&tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------U9VSi1hE6mOHv3SKcGVJyE\r\n\r\n"
+[current]   | ev 67 t=967.0 drop face=raw conn=39118 tag=rk6 idx=1 at=head buffered_body_bytes=65337
+[current]   | ev 70 t=967.3 req face=raw conn=39122 tag=rk6 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------U9VSi1hE6mOHv3SKcGVJyE" auth=no head="POST /sink?drop=1&at=head&tag=rk6 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------U9VSi1hE6mOHv3SKcGVJyE\r\n\r\n"
+[current]   | ev 71 t=977.4 body face=raw conn=39122 tag=rk6 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=790f531b first="--------------------------U9VSi1hE6mOHv3"
+[current]   | ev 72 t=982.8 part face=raw conn=39122 tag=rk6 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 73 t=982.8 part face=raw conn=39122 tag=rk6 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 74 t=982.8 part face=raw conn=39122 tag=rk6 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------U9VSi1hE6mOHv3SKcGVJyE boundary_len=46
+[current]   | ev 75 t=982.9 answer face=raw conn=39122 tag=rk6 idx=0 status=200
+[current] cell race reset-in-big-part-7 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(4588037)
+[current]   | ev 78 t=992.6 req face=raw conn=39130 tag=rk7 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 79 t=992.6 answer face=raw conn=39130 tag=rk7 idx=0 status=200
+[current]   | ev 80 t=993.5 req face=raw conn=39130 tag=rk7 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------sSm8uE5tFx675uR8E0x7FI" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------sSm8uE5tFx675uR8E0x7FI\r\n\r\n"
+[current]   | ev 81 t=993.5 drop face=raw conn=39130 tag=rk7 idx=1 at=head buffered_body_bytes=32569
+[current]   | ev 84 t=993.8 req face=raw conn=39140 tag=rk7 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------sSm8uE5tFx675uR8E0x7FI" auth=no head="POST /sink?drop=1&at=head&tag=rk7 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------sSm8uE5tFx675uR8E0x7FI\r\n\r\n"
+[current]   | ev 85 t=1005.5 body face=raw conn=39140 tag=rk7 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=ac71f32a first="--------------------------sSm8uE5tFx675u"
+[current]   | ev 86 t=1011.7 part face=raw conn=39140 tag=rk7 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 87 t=1011.7 part face=raw conn=39140 tag=rk7 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 88 t=1011.7 part face=raw conn=39140 tag=rk7 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------sSm8uE5tFx675uR8E0x7FI boundary_len=46
+[current]   | ev 89 t=1011.8 answer face=raw conn=39140 tag=rk7 idx=0 status=200
+[current] cell race reset-in-big-part-8 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(4588037)
+[current]   | ev 92 t=1026.1 req face=raw conn=39144 tag=rk8 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 93 t=1026.2 answer face=raw conn=39144 tag=rk8 idx=0 status=200
+[current]   | ev 94 t=1027.7 req face=raw conn=39144 tag=rk8 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------b6b5HI1DGzZiGdilj8KjeQ" auth=no head="POST /sink?drop=1&at=head&tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------b6b5HI1DGzZiGdilj8KjeQ\r\n\r\n"
+[current]   | ev 95 t=1027.7 drop face=raw conn=39144 tag=rk8 idx=1 at=head buffered_body_bytes=65337
+[current]   | ev 98 t=1028.0 req face=raw conn=39152 tag=rk8 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------b6b5HI1DGzZiGdilj8KjeQ" auth=no head="POST /sink?drop=1&at=head&tag=rk8 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------b6b5HI1DGzZiGdilj8KjeQ\r\n\r\n"
+[current]   | ev 99 t=1043.2 body face=raw conn=39152 tag=rk8 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=b90c9e5a first="--------------------------b6b5HI1DGzZiGd"
+[current]   | ev 100 t=1049.3 part face=raw conn=39152 tag=rk8 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 101 t=1049.3 part face=raw conn=39152 tag=rk8 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 102 t=1049.3 part face=raw conn=39152 tag=rk8 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------b6b5HI1DGzZiGdilj8KjeQ boundary_len=46
+[current]   | ev 103 t=1049.4 answer face=raw conn=39152 tag=rk8 idx=0 status=200
+[current] cell race reset-in-big-part-9 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(4784645)
+[current]   | ev 106 t=1053.5 req face=raw conn=39158 tag=rk9 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 107 t=1053.5 answer face=raw conn=39158 tag=rk9 idx=0 status=200
+[current]   | ev 108 t=1054.1 req face=raw conn=39158 tag=rk9 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------ijeZnPKwZvEwBwUXUA7QtQ" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------ijeZnPKwZvEwBwUXUA7QtQ\r\n\r\n"
+[current]   | ev 109 t=1054.2 drop face=raw conn=39158 tag=rk9 idx=1 at=head buffered_body_bytes=65337
+[current]   | ev 112 t=1054.5 req face=raw conn=39162 tag=rk9 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------ijeZnPKwZvEwBwUXUA7QtQ" auth=no head="POST /sink?drop=1&at=head&tag=rk9 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------ijeZnPKwZvEwBwUXUA7QtQ\r\n\r\n"
+[current]   | ev 113 t=1065.1 body face=raw conn=39162 tag=rk9 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=b773b873 first="--------------------------ijeZnPKwZvEwBw"
+[current]   | ev 114 t=1071.0 part face=raw conn=39162 tag=rk9 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 115 t=1071.0 part face=raw conn=39162 tag=rk9 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 116 t=1071.0 part face=raw conn=39162 tag=rk9 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------ijeZnPKwZvEwBwUXUA7QtQ boundary_len=46
+[current]   | ev 117 t=1071.1 answer face=raw conn=39162 tag=rk9 idx=0 status=200
+[current] cell race reset-in-big-part-10 kind=big face=fraw outcome=(status 200 version http/1.1) sizes=(4456966)
+[current]   | ev 120 t=1080.6 req face=raw conn=39174 tag=rk10 idx=0 GET /hello cl=- te=- expect=- ct="-" auth=no head="GET /hello?tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\n\r\n"
+[current]   | ev 121 t=1080.7 answer face=raw conn=39174 tag=rk10 idx=0 status=200
+[current]   | ev 122 t=1082.0 req face=raw conn=39174 tag=rk10 idx=1 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------2xpF1b8v3wqNYK1TagwWJB" auth=no head="POST /sink?drop=1&at=head&tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------2xpF1b8v3wqNYK1TagwWJB\r\n\r\n"
+[current]   | ev 123 t=1082.0 drop face=raw conn=39174 tag=rk10 idx=1 at=head buffered_body_bytes=32568
+[current]   | ev 126 t=1082.3 req face=raw conn=39188 tag=rk10 idx=0 POST /sink cl=4194622 te=- expect=- ct="multipart/form-data; boundary=------------------------2xpF1b8v3wqNYK1TagwWJB" auth=no head="POST /sink?drop=1&at=head&tag=rk10 HTTP/1.1\r\nHost: 127.0.0.1:44773\r\nAccept: */*\r\nContent-Length: 4194622\r\nContent-Type: multipart/form-data; boundary=------------------------2xpF1b8v3wqNYK1TagwWJB\r\n\r\n"
+[current]   | ev 127 t=1093.1 body face=raw conn=39188 tag=rk10 idx=0 framing=cl declared=4194622 got=4194622 chunks=0 fnv=1dcd4a43 first="--------------------------2xpF1b8v3wqNYK"
+[current]   | ev 128 t=1098.9 part face=raw conn=39188 tag=rk10 i=0 headers="Content-Disposition: form-data; name=\"field\"" len=5 fnv=425ed3ca seed=no first="value" last="value"
+[current]   | ev 129 t=1098.9 part face=raw conn=39188 tag=rk10 i=1 headers="Content-Disposition: form-data; name=\"f\"; filename=\"race-big.bin\"\r\nContent-Type: application/octet-stream" len=4194304 fnv=1d49d4a0 seed=no first="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17" last="RSTUVWXYZ[\\]"
+[current]   | ev 130 t=1098.9 part face=raw conn=39188 tag=rk10 summary parts=2 closed=1 preamble=0 after_close=2 boundary=------------------------2xpF1b8v3wqNYK1TagwWJB boundary_len=46
+[current]   | ev 131 t=1099.0 answer face=raw conn=39188 tag=rk10 idx=0 status=200
+[current] cell fifo timeout-500 outcome=(failed perform-failed 28 timeout "Operation timed out after 2023 milliseconds with 0 bytes received" size=3424) sizes=(3424) release-to-end-ms=2006.4
+[current] cell fifo stop outcome=(failed stopped #f none "" size=#f) stop-returned-ms-after-release=2010.4
+[current] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[current] program exit=0
+[current] took about 5 s

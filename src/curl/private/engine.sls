@@ -2040,7 +2040,9 @@
   ;; multiplexing stopped, so it is the first transfer no other joins. A
   ;; token already done, cancelled while queued, is passed over. A raise
   ;; from start-transfer!, which has freed what it made, completes the
-  ;; token with it: the transfer's own failure, not the engine's. A plan
+  ;; token with it: the transfer's own failure, not the engine's, and so
+  ;; does a multipart plan's file check, check-plan-files!', which runs
+  ;; first, outside every critical section, and makes nothing. A plan
   ;; with a cookie jar is checked first, on this thread: a jar another
   ;; engine's, or not live, a close having crossed the submit, completes the
   ;; token with cookie-jar-engine or cookie-jar-closed, and nothing is made;
@@ -2059,6 +2061,11 @@
             (begin
               (when (plan-unmultiplex (curl-token-plan token)) (stop-multiplexing! engine multi))
               (let ((live (guard (e (#t (complete! engine token e '()) #f))
+                            ;; A multipart plan's files, checked here, on
+                            ;; this thread, outside every critical section,
+                            ;; before anything is made (ADR-0039, amended
+                            ;; 2026-11-06, decision 1).
+                            (check-plan-files! (curl-token-plan token))
                             (start-transfer! (curl-token-plan token)
                                              (not (memq 'transfer (engine-without engine)))
                                              (engine-moves engine)

@@ -104,7 +104,7 @@
     (list 'no-raise (thunk))))
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
 
 ;; counts-with : (Listof (Pairof Symbol Integer)) -> (Listof (Pairof Symbol Integer))
 ;; zero-counts, with each kind in CHANGES at its count.
@@ -170,7 +170,7 @@
         (sorted-names (library-exports '(curl private memory)))))
 
 (test-equal "native-kinds: block, easy, url, slist, curl-string, transfer, multi and share, in that order"
-  '(block easy url slist curl-string transfer multi share)
+  '(block easy url slist curl-string transfer multi share mime)
   native-kinds)
 
 (test-equal "native-counts: every kind, in native-kinds' order, each zero at the start"
@@ -204,7 +204,7 @@
 ;; Every kind, each alone: a counter that lost one kind's index, or raised
 ;; below zero for some kinds only, passes a test of one or two. Written out
 ;; here, not read from native-kinds.
-(define every-kind '(block easy url slist curl-string transfer multi share))
+(define every-kind '(block easy url slist curl-string transfer multi share mime))
 
 (for-each
  (lambda (kind)
@@ -316,7 +316,7 @@
 
 (test-equal "free-foreign-block! refuses a dead address, freed already or never allocated, before free runs: in a child Chez, which goes on to print"
   (list 0
-        "((free-foreign-block! that-block) (free-foreign-block! (4096)) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))\n"
+        "((free-foreign-block! that-block) (free-foreign-block! (4096)) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n"
         "")
   (guard (e (#t (list 'raised (describe e))))
     (call-with-temp-directory

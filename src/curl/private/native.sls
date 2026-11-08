@@ -32,7 +32,9 @@
 ;;;               reports, which loaded-features answers, and whether this is
 ;;;               macOS, loaded-on-macos?
 ;;;   6. bind     every other entry point, eagerly
-;;;   7. probe    the options API and the header API, then check-apis
+;;;   7. probe    the options API and the header API, then check-apis; then
+;;;               mime, which refuses no load: loaded-mime-probe answers what
+;;;               it found, and loaded-mime? whether a multipart body can go
 ;;;
 ;;; An interrupt that escapes, an engine's expiry, a timer or keyboard
 ;;; handler that invokes a continuation, may land at any safe point. So
@@ -46,10 +48,12 @@
 ;;;
 ;;; Every native object it makes is counted, in (curl private counters):
 ;;; each foreign block, through (curl private memory), each easy handle,
-;;; each CURLU handle, each string curl_url_get hands back, and each string
-;;; list curl_slist_append starts. The load's
-;;; own, the header probe's handle and its slot, are freed before it
-;;; returns, so every count is zero after it.
+;;; each CURLU handle, each string curl_url_get hands back, each string
+;;; list curl_slist_append starts, and each mime curl_mime_init makes
+;;; (M8 slice 3), its parts the mime's own. The load's own, the header
+;;; probe's handle and its slot, and the mime probe's slots and strings, are
+;;; freed before it returns, and the form post and the mime that probe makes
+;;; are never counted, so every count is zero after it.
 ;;;
 ;;; Two copies own every move of bytes between a bytevector and foreign
 ;;; memory (ADR-0001, amended 2026-10-16): copy-foreign->bytevector! and
@@ -90,6 +94,18 @@
 ;;; thread's collection while it ran, when the call was plain (the plan's
 ;;; section 4.1, as measured).
 ;;;
+;;; A multipart body's (ADR-0039, amended; the M8 plan, section 3.4), step 6's
+;;; too: curl_mime_init, curl_mime_free, curl_mime_addpart, curl_mime_name,
+;;; curl_mime_data, curl_mime_filename, curl_mime_type and curl_formfree,
+;;; plain; curl_mime_filedata, which stats its path, and on 7.85.0 and 8.5.0
+;;; accesses it, through bind-blocking; and curl_formadd, variadic, bound
+;;; once, last, for the load's probe and tests/test-variadic.sps alone. Every
+;;; string they take is a counted copy, call-with-c-string's, and the data a
+;;; counted copy, call-with-foreign-bytes': libcurl copies both as the call
+;;; runs. A mime is counted as mime and owned by its maker's thread, in the
+;;; critical section that makes it; curl-mime-add-part! adds a whole part to
+;;; one, checking its owner, so no part's address leaves this library.
+;;;
 ;;; The cookie jar's (ADR-0035; the M7 plan, section 3.5): curl_share_init
 ;;; and curl_share_cleanup, plain, a share counted as share; and
 ;;; curl_share_setopt, variadic, bound once, for an int, through
@@ -102,7 +118,7 @@
 ;;; walked by (curl private layouts)' curl-slist.
 ;;;
 ;;; Each handle's thread (ADR-0012, decision 3; M3 plan, section 3.3). Each
-;;; easy, multi, share and CURLU handle and each string list native makes is
+;;; easy, multi, share, mime and CURLU handle and each string list native makes is
 ;;; recorded with its kind and the thread that made it, in the critical
 ;;; section that counts it, and forgotten in the one that frees it. Every
 ;;; exported procedure that takes one checks it first, by check-owner: a
@@ -157,7 +173,9 @@
           curl-multi-strerror curl-multi-setopt-long
           curl-easy-pause
           curl-share-init curl-share-setopt-int curl-share-cleanup
-          curl-easy-getinfo-cookielist curl-slist-strings)
+          curl-easy-getinfo-cookielist curl-slist-strings
+          loaded-mime-probe loaded-mime? curl-mime-init curl-mime-free curl-mime-add-part!
+          curl-formadd-code)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) critical-section dynamic-wind ftype-ref ftype-set! ftype-sizeof
@@ -238,7 +256,7 @@
     (critical-section (with-mutex lock (thunk))))
 
   ;; The live handles native made, by address, each with its kind, easy,
-  ;; multi, share, url or slist, and the get-thread-id of the thread that
+  ;; multi, share, mime, url or slist, and the get-thread-id of the thread that
   ;; made it:
   ;; (KIND . THREAD). Read and written under the mutex.
   (define owners (make-eqv-hashtable))
@@ -848,6 +866,44 @@
   (define raw-curl-share-cleanup
     (load-step (bind-required "curl_share_cleanup" (uptr) int info)))
 
+  ;; A multipart body's (ADR-0039; the M8 plan, section 3.4): the mime API,
+  ;; 7.56.0, and curl_formfree, below the floor, and required. Plain, but
+  ;; curl_mime_filedata, which stats its path, and on 7.85.0 and 8.5.0
+  ;; accesses it: a stat of a hung network mount waits, so it is
+  ;; __collect_safe, through bind-blocking. None takes a Scheme string:
+  ;; each is handed a counted foreign copy (ADR-0013, amended 2026-10-23).
+
+  ;; curl_mime *curl_mime_init(CURL *easy)
+  (define raw-curl-mime-init (load-step (bind-required "curl_mime_init" (uptr) uptr info)))
+
+  ;; void curl_mime_free(curl_mime *mime)
+  (define raw-curl-mime-free (load-step (bind-required "curl_mime_free" (uptr) void info)))
+
+  ;; curl_mimepart *curl_mime_addpart(curl_mime *mime)
+  (define raw-curl-mime-addpart
+    (load-step (bind-required "curl_mime_addpart" (uptr) uptr info)))
+
+  ;; CURLcode curl_mime_name(curl_mimepart *part, const char *name)
+  (define raw-curl-mime-name (load-step (bind-required "curl_mime_name" (uptr uptr) int info)))
+
+  ;; CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
+  (define raw-curl-mime-data
+    (load-step (bind-required "curl_mime_data" (uptr uptr size_t) int info)))
+
+  ;; CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
+  (define raw-curl-mime-filedata
+    (load-step (bind-blocking "curl_mime_filedata" (uptr uptr) int info)))
+
+  ;; CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
+  (define raw-curl-mime-filename
+    (load-step (bind-required "curl_mime_filename" (uptr uptr) int info)))
+
+  ;; CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
+  (define raw-curl-mime-type (load-step (bind-required "curl_mime_type" (uptr uptr) int info)))
+
+  ;; void curl_formfree(struct curl_httppost *form)
+  (define raw-curl-formfree (load-step (bind-required "curl_formfree" (uptr) void info)))
+
   ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
   ;; variadic after option: bound once per value type. curl_off_t is 64
   ;; bits on every platform chez-curl supports. Bound last, so a library
@@ -882,6 +938,16 @@
   ;; behaviour.
   (define raw-curl-share-setopt-int
     (load-step (bind-variadic "curl_share_setopt" (uptr int int) int info)))
+
+  ;; CURLFORMcode curl_formadd(struct curl_httppost **httppost,
+  ;;                           struct curl_httppost **last_post, ...),
+  ;; variadic after last_post: bound once, for the one call the load's mime
+  ;; probe makes, and tests/test-variadic.sps through curl-formadd-code:
+  ;; an option, a string, an option, a string, then CURLFORM_END, each
+  ;; option an int, as libcurl's va_arg reads a CURLformoption, each string
+  ;; a char * (ADR-0039, amended 2026-11-06; the M8 plan, section 3.9).
+  (define raw-curl-formadd
+    (load-step (bind-variadic "curl_formadd" (uptr uptr int uptr int uptr int) int info)))
 
   ;; --- the counted wrappers, exported: step 7 counts its handle through them ------
 
@@ -1292,6 +1358,108 @@
     (raw-curl-easy-pause easy action))
 
 
+  ;; --- a multipart body's wrappers (ADR-0039; the M8 plan, section 3.4) ----------------
+
+  ;; curl-mime-init : Positive-Integer -> Natural
+  ;; A fresh mime of EASY's, this thread's: counted as mime and owned by
+  ;; this thread, in one critical section; 0, counted as nothing, when
+  ;; libcurl made none. A mime belongs to the easy handle it was made with:
+  ;; 7.85.0 refuses one made with another (the M8 plan, section 2).
+  (define (curl-mime-init easy)
+    (check-owner 'curl-mime-init easy 'easy)
+    (critical-section
+     (let ((mime (raw-curl-mime-init easy)))
+       (unless (eqv? mime 0)
+         (count-up! 'mime)
+         (own! mime 'mime))
+       mime)))
+
+  ;; curl-mime-free : Positive-Integer -> Void
+  ;; Frees MIME, this thread's, and its parts, counting it down and
+  ;; forgetting it first: a mime freed already is no live handle, and
+  ;; raises there, before C, as a double free.
+  (define (curl-mime-free mime)
+    (check-owner 'curl-mime-free mime 'mime)
+    (critical-section
+     (count-down! 'mime)
+     (disown! mime)
+     (raw-curl-mime-free mime)))
+
+  ;; curl-mime-add-part! : Positive-Integer String (U 'data 'file) (U Bytevector String)
+  ;;                       (U String #f) (U String #f) -> (U #f (Pairof Symbol (U Integer #f)))
+  ;; One whole part added to MIME, this thread's: its NAME, then its data,
+  ;; the bytevector PAYLOAD for data, or the file at the path PAYLOAD for
+  ;; file, by curl_mime_filedata, then FILENAME and TYPE, each when not #f.
+  ;; The filename comes after the data, since curl_mime_filedata sets one of
+  ;; its own, the path's last component. Each string is a counted UTF-8
+  ;; copy, and the data a counted copy, each freed once its call returns:
+  ;; libcurl copies them. #f once every call answered 0; else the first call
+  ;; that did not, and its CURLcode: (addpart . #f) for a NULL part,
+  ;; (name . C), (data . C), (filedata . C), (filename . C) or (type . C).
+  ;; The part's address never leaves this procedure, so none leaves this
+  ;; library.
+  (define (curl-mime-add-part! mime name kind payload filename type)
+    (check-owner 'curl-mime-add-part! mime 'mime)
+    (let ((part (raw-curl-mime-addpart mime)))
+      (define (step label code rest) (if (eqv? code curle-ok) (rest) (cons label code)))
+      (if (eqv? part 0)
+          (cons 'addpart #f)
+          (step 'name (call-with-c-string name (lambda (a) (raw-curl-mime-name part a)))
+                (lambda ()
+                  (step (if (eq? kind 'data) 'data 'filedata)
+                        (if (eq? kind 'data)
+                            (call-with-foreign-bytes payload
+                              (lambda (a) (raw-curl-mime-data part a (bytevector-length payload))))
+                            (call-with-c-string payload (lambda (a) (raw-curl-mime-filedata part a))))
+                        (lambda ()
+                          (step 'filename
+                                (if filename
+                                    (call-with-c-string filename
+                                      (lambda (a) (raw-curl-mime-filename part a)))
+                                    curle-ok)
+                                (lambda ()
+                                  (step 'type
+                                        (if type
+                                            (call-with-c-string type
+                                              (lambda (a) (raw-curl-mime-type part a)))
+                                            curle-ok)
+                                        (lambda () #f)))))))))))
+
+  ;; formadd-code : Integer String Integer String -> Integer
+  ;; What curl_formadd answers for a form of one field, FIRST and its
+  ;; string A, SECOND and its string B, then CURLFORM_END, its post freed by
+  ;; curl_formfree, NULL when nothing was made. The two slots and the two
+  ;; strings are counted blocks freed before it returns; the post is never
+  ;; counted, and never outlives the call.
+  (define (formadd-code first a second b)
+    (let* ((width (foreign-sizeof 'void*))
+           (slots (foreign-block (* 2 width))))
+      (dynamic-wind
+        (lambda () #f)
+        (lambda ()
+          (copy-bytevector->foreign! (make-bytevector (* 2 width) 0) 0 slots (* 2 width))
+          (let ((code (call-with-c-string a
+                        (lambda (first-string)
+                          (call-with-c-string b
+                            (lambda (second-string)
+                              (raw-curl-formadd slots (+ slots width) first first-string
+                                                second second-string curlform-end)))))))
+            (raw-curl-formfree (foreign-ref 'uptr slots 0))
+            code))
+        (lambda () (free-foreign-block! slots)))))
+
+  ;; curl-formadd-code : Integer String Integer String -> Integer
+  ;; formadd-code's answer, in one critical section: tests/test-variadic.sps
+  ;; holds the binding to a valid form's 0 and an unknown option's
+  ;; CURL_FORMADD_UNKNOWN_OPTION, which only a binding that delivers its
+  ;; variadic arguments gives. Private: (curl) does not export it.
+  (define (curl-formadd-code first a second b)
+    (unless (and (integer? first) (exact? first) (integer? second) (exact? second)
+                 (string? a) (string? b))
+      (assertion-violation 'curl-formadd-code "two options, each an exact integer, each with a string"
+                           first second))
+    (critical-section (formadd-code first a second b)))
+
   ;; --- 7. the two API probes, then check-apis --------------------------------------------
 
   ;; Whether the options API knows URL. A boolean, never the pointer:
@@ -1321,7 +1489,42 @@
     (load-step
      (check-apis option-found? header-code libcurl-path libcurl-source info)))
 
+  ;; The mime probe (ADR-0039, amended 2026-11-06, decision 4 made exact;
+  ;; the M8 plan, section 3.4), after the APIs are checked, in one critical
+  ;; section, through the raw bindings: curl_formadd with CURLFORM_COPYNAME,
+  ;; CURLFORM_COPYCONTENTS and CURLFORM_END, then curl_formfree of the post
+  ;; it made, NULL when none; then curl_mime_init with NULL, then
+  ;; curl_mime_free of the mime it made. Neither the post nor the mime is
+  ;; counted, and neither outlives the section. It refuses no load: its
+  ;; answer is data, ((formadd . CODE) (mime-init . made)), or (mime-init .
+  ;; null), the code named by its key whatever it is. 7.85.0 built without
+  ;; mime answers curl_formadd 7 and makes a mime that sends nothing; 8.23.0
+  ;; built so answers 7 and NULL (the M8 plan, section 2).
+  (define mime-probe
+    (load-step
+     (critical-section
+      (let* ((code (formadd-code curlform-copyname "chez-curl" curlform-copycontents "probe"))
+             (mime (raw-curl-mime-init 0)))
+        (unless (eqv? mime 0) (raw-curl-mime-free mime))
+        (list (cons 'formadd code) (cons 'mime-init (if (eqv? mime 0) 'null 'made)))))))
+
   ;; --- the exports ---------------------------------------------------------------------------
+
+  ;; loaded-mime-probe : -> (List (Pairof 'formadd Integer) (Pairof 'mime-init (U 'made 'null)))
+  ;; What the load's mime probe answered: curl_formadd's code, and whether
+  ;; curl_mime_init made a mime. Kept as data beside the libcurl-info
+  ;; record, as loaded-tls-backend is: a load the probe says no to still
+  ;; loads. Fresh pairs. Private: (curl) does not export it.
+  (define (loaded-mime-probe) (map (lambda (entry) (cons (car entry) (cdr entry))) mime-probe))
+
+  ;; loaded-mime? : -> Boolean
+  ;; Whether a multipart body can go on the loaded libcurl: curl_formadd
+  ;; answered CURL_FORMADD_OK and curl_mime_init made a mime. Any other code,
+  ;; CURL_FORMADD_DISABLED or one no build answers, counts as no (ADR-0039,
+  ;; amended 2026-11-06). Private.
+  (define (loaded-mime?)
+    (and (eqv? (cdr (assq 'formadd mime-probe)) curl-formadd-ok)
+         (eq? (cdr (assq 'mime-init mime-probe)) 'made)))
 
   ;; loaded-libcurl : -> Libcurl-Info
   ;; The libcurl this process loaded and accepted. Reaching this binding

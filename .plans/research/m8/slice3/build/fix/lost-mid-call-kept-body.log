@@ -1,0 +1,4 @@
+(hop-307 (refused make-curl-request body (part 0 path) part-file no-exchange))
+(retry-timeout-ms (refused curl-submit body (part 0 path) part-file with-exchange))
+(retry-no-bound (refused curl-submit body (part 0 path) part-file with-exchange))
+(group-hop (refused make-curl-request body (part 0 path) part-file with-exchange))

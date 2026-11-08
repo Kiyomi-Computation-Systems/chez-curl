@@ -42,6 +42,14 @@
  *   DECOY_HEADERS_OFF          curl_easy_header returns CURLHE_NOT_BUILT_IN,
  *                              as with --disable-headers-api
  *   DECOY_EASY_INIT_NULL       curl_easy_init returns NULL
+ *   DECOY_FORMADD_DISABLED     curl_formadd returns CURL_FORMADD_DISABLED,
+ *                              7, as a libcurl built --disable-mime does,
+ *                              and makes no post
+ *   DECOY_FORMADD_OTHER        curl_formadd returns CURL_FORMADD_INCOMPLETE,
+ *                              5, a code no build answers the load's form,
+ *                              and makes no post
+ *   DECOY_MIME_INIT_NULL       curl_mime_init returns NULL, as 8.23.0 built
+ *                              --disable-mime does
  *   DECOY_NOT_CURL             no curl_* function at all: not a libcurl
  *   DECOY_LACKS_<function>     that one curl_* function left out
  *   DECOY_MARKER               also defines decoy_marker, which no other
@@ -54,6 +62,10 @@
 /* curl_url_get's declaration differs by version (below), so the headers
    declare it under another name, and this file defines it with none. */
 #define curl_url_get decoy_header_curl_url_get
+/* curl_formadd and its codes are deprecated from 7.56.0, and from 7.87.0
+   the headers mark them so, which warns at each use: the mime probe's
+   form uses them on purpose (ADR-0039, amended 2026-11-06). */
+#define CURL_DISABLE_DEPRECATION
 #include <curl/curl.h>
 #include <curl/header.h>
 #undef curl_url_get
@@ -473,6 +485,138 @@ CURLSHcode curl_share_setopt(CURLSH *share, CURLSHoption option, ...)
 {
   called("curl_share_setopt(%s,%d)", share ? "share" : "NULL", (int)option);
   return CURLSHE_INVALID;
+}
+#endif
+
+/* The mime probe's form (ADR-0039, amended 2026-11-06): variadic, the
+   seventh variadic use, called once by the load. It logs every option it
+   was handed, each as OPTION:STRING for CURLFORM_COPYNAME and
+   CURLFORM_COPYCONTENTS, then CURLFORM_END's number, so a binding that
+   passed its variadic arguments where this ABI does not read them shows
+   in the log; any other option ends the walk, logged as ?OPTION, and is
+   answered CURL_FORMADD_UNKNOWN_OPTION, as libcurl answers it. A
+   well-formed form answers 0 and makes a post, unless a switch above
+   says otherwise. */
+static int post_handle;
+#ifndef DECOY_LACKS_curl_formadd
+CURLFORMcode curl_formadd(struct curl_httppost **httppost, struct curl_httppost **last_post, ...)
+{
+  char entry[256];
+  size_t used = 0;
+  va_list args;
+  int option;
+  CURLFORMcode code = CURL_FORMADD_OK;
+  entry[0] = '\0';
+  va_start(args, last_post);
+  for (;;) {
+    option = va_arg(args, int);
+    if (option == CURLFORM_END) {
+      used += (size_t)snprintf(entry + used, sizeof entry - used, ",%d", option);
+      break;
+    }
+    if (option != CURLFORM_COPYNAME && option != CURLFORM_COPYCONTENTS) {
+      used += (size_t)snprintf(entry + used, sizeof entry - used, ",?%d", option);
+      code = CURL_FORMADD_UNKNOWN_OPTION;
+      break;
+    }
+    {
+      const char *value = va_arg(args, const char *);
+      used += (size_t)snprintf(entry + used, sizeof entry - used, ",%d:%s", option,
+                               value ? value : "NULL");
+    }
+    if (used >= sizeof entry) break;
+  }
+  va_end(args);
+  called("curl_formadd(%s,%s%s)", httppost ? "post" : "NULL", last_post ? "last" : "NULL", entry);
+#if defined(DECOY_FORMADD_DISABLED)
+  return CURL_FORMADD_DISABLED;
+#elif defined(DECOY_FORMADD_OTHER)
+  return CURL_FORMADD_INCOMPLETE;
+#else
+  if (code == CURL_FORMADD_OK && httppost && last_post) {
+    *httppost = (struct curl_httppost *)&post_handle;
+    *last_post = (struct curl_httppost *)&post_handle;
+  }
+  return code;
+#endif
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_formfree
+void curl_formfree(struct curl_httppost *form)
+{
+  called("curl_formfree(%s)", form == (struct curl_httppost *)&post_handle ? "post" : form ? "other" : "NULL");
+}
+#endif
+
+/* The mime API: curl_mime_init and curl_mime_free the load's probe calls;
+   the rest bound by the load and never called, as with the variadic pair
+   above, each answering as a library that can do nothing would. */
+static int mime_handle;
+#ifndef DECOY_LACKS_curl_mime_init
+curl_mime *curl_mime_init(CURL *easy)
+{
+  called("curl_mime_init(%s)", easy ? HANDLE_NAME(easy) : "NULL");
+#ifdef DECOY_MIME_INIT_NULL
+  return NULL;
+#else
+  return (curl_mime *)&mime_handle;
+#endif
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_mime_free
+void curl_mime_free(curl_mime *mime)
+{
+  called("curl_mime_free(%s)", mime == (curl_mime *)&mime_handle ? "mime" : mime ? "other" : "NULL");
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_mime_addpart
+curl_mimepart *curl_mime_addpart(curl_mime *mime)
+{
+  called("curl_mime_addpart(%s)", mime == (curl_mime *)&mime_handle ? "mime" : mime ? "other" : "NULL");
+  return NULL;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_mime_name
+CURLcode curl_mime_name(curl_mimepart *part, const char *name)
+{
+  called("curl_mime_name(%s,%s)", part ? "part" : "NULL", name ? "name" : "NULL");
+  return CURLE_BAD_FUNCTION_ARGUMENT;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_mime_data
+CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
+{
+  called("curl_mime_data(%s,%s,%zu)", part ? "part" : "NULL", data ? "data" : "NULL", datasize);
+  return CURLE_BAD_FUNCTION_ARGUMENT;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_mime_filedata
+CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
+{
+  called("curl_mime_filedata(%s,%s)", part ? "part" : "NULL", filename ? "filename" : "NULL");
+  return CURLE_BAD_FUNCTION_ARGUMENT;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_mime_filename
+CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
+{
+  called("curl_mime_filename(%s,%s)", part ? "part" : "NULL", filename ? "filename" : "NULL");
+  return CURLE_BAD_FUNCTION_ARGUMENT;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_mime_type
+CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
+{
+  called("curl_mime_type(%s,%s)", part ? "part" : "NULL", mimetype ? "type" : "NULL");
+  return CURLE_BAD_FUNCTION_ARGUMENT;
 }
 #endif
 

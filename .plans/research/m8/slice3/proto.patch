@@ -1,0 +1,862 @@
+diff -ruN --no-dereference -x m8s3 -x build main/src/curl/private/conditions.sls proto/src/curl/private/conditions.sls
+--- main/src/curl/private/conditions.sls	2026-11-07 08:01:41.000000000 -0500
++++ proto/src/curl/private/conditions.sls	2026-11-07 09:21:09.082684013 -0500
+@@ -515,7 +515,9 @@
+       credentials-beside-authorization digest-with-stream prior-knowledge-through-proxy
+       proxy-url proxy-scheme proxy-url-parts proxy-authorization-header
+       proxy-tls-without-https-proxy proxy-tls-in-tls https-proxy-unsupported
+-      cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar))
++      cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar
++      part-bytes part-empty multipart-empty multipart-content-type part-file
++      multipart-unsupported))
+ 
+   ;; The fields:
+   ;;
+@@ -639,7 +641,8 @@
+   ;; field still carries.
+   (define curl-transfer-error-reasons
+     '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
+-      cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit))
++      cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit
++      part-file mime-failed))
+ 
+   ;; The fields:
+   ;;
+diff -ruN --no-dereference -x m8s3 -x build main/src/curl/private/constants.sls proto/src/curl/private/constants.sls
+--- main/src/curl/private/constants.sls	2026-11-05 10:59:30.000000000 -0500
++++ proto/src/curl/private/constants.sls	2026-11-07 09:19:18.025761277 -0500
+@@ -42,7 +42,9 @@
+           curl-readfunc-pause curl-readfunc-abort curl-seekfunc-ok curl-seekfunc-cantseek
+           curl-prereqfunc-ok curl-prereqfunc-abort seek-set
+           curlshopt-share curlshopt-unshare curl-lock-data-cookie
+-          curlshe-ok curlshe-bad-option curlshe-in-use curlinfo-cookielist)
++          curlshe-ok curlshe-bad-option curlshe-in-use curlinfo-cookielist
++          curlform-copyname curlform-copycontents curlform-end curl-formadd-ok
++          curl-formadd-disabled)
+   (import (curl private require-threaded)
+           (rnrs))
+ 
+@@ -582,4 +584,13 @@
+   (define curlshe-ok 0)
+   (define curlshe-bad-option 1)
+   (define curlshe-in-use 2)
+-  (define curlinfo-cookielist #x40001C))
++  (define curlinfo-cookielist #x40001C)
++  ;; The form API's, for the load's mime probe (M8 slice 3, prototype):
++  ;; CURLFORM_COPYNAME 1, CURLFORM_COPYCONTENTS 4, CURLFORM_END 17, of
++  ;; CURLformoption; CURL_FORMADD_OK 0 and CURL_FORMADD_DISABLED 7, of
++  ;; CURLFORMcode.
++  (define curlform-copyname 1)
++  (define curlform-copycontents 4)
++  (define curlform-end 17)
++  (define curl-formadd-ok 0)
++  (define curl-formadd-disabled 7))
+diff -ruN --no-dereference -x m8s3 -x build main/src/curl/private/counters.sls proto/src/curl/private/counters.sls
+--- main/src/curl/private/counters.sls	2026-11-05 10:59:30.000000000 -0500
++++ proto/src/curl/private/counters.sls	2026-11-07 09:19:18.025531250 -0500
+@@ -35,7 +35,8 @@
+   ;;   transfer     a transfer (M2, slice 2)
+   ;;   multi        a multi handle, an engine's (M3, slice 2)
+   ;;   share        a share, a cookie jar's (M7, slice 4)
+-  (define native-kinds '(block easy url slist curl-string transfer multi share))
++  ;;   mime         a mime handle, a multipart body's (M8, slice 3: prototype)
++  (define native-kinds '(block easy url slist curl-string transfer multi share mime))
+ 
+   ;; The counts, one per kind, in native-kinds order, and the mutex every
+   ;; read and write holds.
+diff -ruN --no-dereference -x m8s3 -x build main/src/curl/private/engine.sls proto/src/curl/private/engine.sls
+--- main/src/curl/private/engine.sls	2026-11-05 10:59:30.000000000 -0500
++++ proto/src/curl/private/engine.sls	2026-11-07 09:22:15.768694945 -0500
+@@ -2059,6 +2059,9 @@
+             (begin
+               (when (plan-unmultiplex (curl-token-plan token)) (stop-multiplexing! engine multi))
+               (let ((live (guard (e (#t (complete! engine token e '()) #f))
++                            ;; The file check, outside every critical
++                            ;; section, before the setup (ADR-0039, amended).
++                            (check-plan-files! (curl-token-plan token))
+                             (start-transfer! (curl-token-plan token)
+                                              (not (memq 'transfer (engine-without engine)))
+                                              (engine-moves engine)
+diff -ruN --no-dereference -x m8s3 -x build main/src/curl/private/native.sls proto/src/curl/private/native.sls
+--- main/src/curl/private/native.sls	2026-11-05 10:59:30.000000000 -0500
++++ proto/src/curl/private/native.sls	2026-11-07 09:23:57.573663740 -0500
+@@ -157,7 +157,8 @@
+           curl-multi-strerror curl-multi-setopt-long
+           curl-easy-pause
+           curl-share-init curl-share-setopt-int curl-share-cleanup
+-          curl-easy-getinfo-cookielist curl-slist-strings)
++          curl-easy-getinfo-cookielist curl-slist-strings
++          loaded-mime-probe loaded-mime? curl-mime-init curl-mime-free curl-mime-add-part!)
+   (import (curl private require-threaded)
+           (except (rnrs) dynamic-wind)
+           (only (chezscheme) critical-section dynamic-wind ftype-ref ftype-set! ftype-sizeof
+@@ -848,6 +849,40 @@
+   (define raw-curl-share-cleanup
+     (load-step (bind-required "curl_share_cleanup" (uptr) int info)))
+ 
++  ;; The mime API's (M8 slice 3, prototype): all 7.56.0, below the floor,
++  ;; and required. curl_mime_filedata stats the path, and on 7.85.0 and
++  ;; 8.5.0 accesses it, so it is bound blocking; the rest are plain. Each
++  ;; string goes in a counted foreign copy, call-with-c-string's, the data
++  ;; in call-with-foreign-bytes': libcurl copies both.
++
++  ;; curl_mime *curl_mime_init(CURL *easy)
++  (define raw-curl-mime-init (load-step (bind-required "curl_mime_init" (uptr) uptr info)))
++
++  ;; void curl_mime_free(curl_mime *mime)
++  (define raw-curl-mime-free (load-step (bind-required "curl_mime_free" (uptr) void info)))
++
++  ;; curl_mimepart *curl_mime_addpart(curl_mime *mime)
++  (define raw-curl-mime-addpart (load-step (bind-required "curl_mime_addpart" (uptr) uptr info)))
++
++  ;; CURLcode curl_mime_name(curl_mimepart *part, const char *name)
++  (define raw-curl-mime-name (load-step (bind-required "curl_mime_name" (uptr uptr) int info)))
++
++  ;; CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
++  (define raw-curl-mime-data (load-step (bind-required "curl_mime_data" (uptr uptr size_t) int info)))
++
++  ;; CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
++  (define raw-curl-mime-filedata
++    (load-step (bind-blocking "curl_mime_filedata" (uptr uptr) int info)))
++
++  ;; CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
++  (define raw-curl-mime-filename (load-step (bind-required "curl_mime_filename" (uptr uptr) int info)))
++
++  ;; CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
++  (define raw-curl-mime-type (load-step (bind-required "curl_mime_type" (uptr uptr) int info)))
++
++  ;; void curl_formfree(struct curl_httppost *form)
++  (define raw-curl-formfree (load-step (bind-required "curl_formfree" (uptr) void info)))
++
+   ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
+   ;; variadic after option: bound once per value type. curl_off_t is 64
+   ;; bits on every platform chez-curl supports. Bound last, so a library
+@@ -883,6 +918,14 @@
+   (define raw-curl-share-setopt-int
+     (load-step (bind-variadic "curl_share_setopt" (uptr int int) int info)))
+ 
++  ;; CURLFORMcode curl_formadd(struct curl_httppost **httppost,
++  ;;                           struct curl_httppost **last_post, ...),
++  ;; variadic after last_post: bound once, for the load's mime probe alone,
++  ;; CURLFORM_COPYNAME, a name, CURLFORM_COPYCONTENTS, contents, then
++  ;; CURLFORM_END (the M8 plan, section 3.4; prototype).
++  (define raw-curl-formadd
++    (load-step (bind-variadic "curl_formadd" (uptr uptr int uptr int uptr int) int info)))
++
+   ;; --- the counted wrappers, exported: step 7 counts its handle through them ------
+ 
+   ;; curl-easy-init : -> Natural
+@@ -1292,6 +1335,66 @@
+     (raw-curl-easy-pause easy action))
+ 
+ 
++  ;; --- the mime API's wrappers (M8 slice 3, prototype) -----------------------------------
++
++  ;; curl-mime-init : Positive-Integer -> Natural
++  ;; A fresh mime of EASY's, this thread's, counted as mime and owned by
++  ;; this thread, in one critical section; 0, counted as nothing, when
++  ;; libcurl made none.
++  (define (curl-mime-init easy)
++    (check-owner 'curl-mime-init easy 'easy)
++    (critical-section
++     (let ((mime (raw-curl-mime-init easy)))
++       (unless (eqv? mime 0)
++         (count-up! 'mime)
++         (own! mime 'mime))
++       mime)))
++
++  ;; curl-mime-free : Positive-Integer -> Void
++  ;; Frees MIME, this thread's, and its parts, counting it down and
++  ;; forgetting it first.
++  (define (curl-mime-free mime)
++    (check-owner 'curl-mime-free mime 'mime)
++    (critical-section
++     (count-down! 'mime)
++     (disown! mime)
++     (raw-curl-mime-free mime)))
++
++  ;; curl-mime-add-part! : Positive-Integer String (U 'data 'file) (U Bytevector String)
++  ;;                       (U String #f) (U String #f) -> (U #f (Pairof Symbol (U Integer #f)))
++  ;; One whole part added to MIME, this thread's: its NAME; its data, a
++  ;; counted foreign copy of the bytevector PAYLOAD, for data, or the file
++  ;; at the path PAYLOAD, for file, by curl_mime_filedata; then FILENAME,
++  ;; then TYPE, each when not #f, after the data, since curl_mime_filedata
++  ;; sets a filename of its own. #f once every call answered 0; else the
++  ;; step that refused and its CURLcode: (addpart . #f) for a NULL part,
++  ;; (name . C), (data . C), (filedata . C), (filename . C) or (type . C).
++  ;; No part's address leaves this library.
++  (define (curl-mime-add-part! mime name kind payload filename type)
++    (check-owner 'curl-mime-add-part! mime 'mime)
++    (let ((part (raw-curl-mime-addpart mime)))
++      (define (step label code rest) (if (eqv? code curle-ok) (rest) (cons label code)))
++      (if (eqv? part 0)
++          (cons 'addpart #f)
++          (step 'name (call-with-c-string name (lambda (a) (raw-curl-mime-name part a)))
++                (lambda ()
++                  (step (if (eq? kind 'data) 'data 'filedata)
++                        (if (eq? kind 'data)
++                            (call-with-foreign-bytes payload
++                              (lambda (a) (raw-curl-mime-data part a (bytevector-length payload))))
++                            (call-with-c-string payload (lambda (a) (raw-curl-mime-filedata part a))))
++                        (lambda ()
++                          (step 'filename
++                                (if filename
++                                    (call-with-c-string filename (lambda (a) (raw-curl-mime-filename part a)))
++                                    curle-ok)
++                                (lambda ()
++                                  (step 'type
++                                        (if type
++                                            (call-with-c-string type (lambda (a) (raw-curl-mime-type part a)))
++                                            curle-ok)
++                                        (lambda () #f)))))))))))
++
+   ;; --- 7. the two API probes, then check-apis --------------------------------------------
+ 
+   ;; Whether the options API knows URL. A boolean, never the pointer:
+@@ -1321,8 +1424,45 @@
+     (load-step
+      (check-apis option-found? header-code libcurl-path libcurl-source info)))
+ 
++  ;; The mime probe (the M8 plan, section 3.4; prototype), after the header
++  ;; probe, in one critical section, through the raw bindings, never
++  ;; counted: curl_formadd with CURLFORM_COPYNAME, CURLFORM_COPYCONTENTS and
++  ;; CURLFORM_END, then curl_formfree of what it made, NULL when nothing;
++  ;; then curl_mime_init with NULL, then curl_mime_free of what it made. The
++  ;; slots and strings are counted blocks freed in the section, so the counts
++  ;; are zero once it ends. Its answer is data: ((formadd . CODE) (mime-init
++  ;; . made)) or (mime-init . null); a refusal of no request.
++  (define mime-probe
++    (load-step
++     (critical-section
++      (let* ((width (foreign-sizeof 'void*))
++             (slots (foreign-block (* 2 width))))
++        (copy-bytevector->foreign! (make-bytevector (* 2 width) 0) 0 slots (* 2 width))
++        (let ((code (call-with-c-string "chez-curl"
++                      (lambda (name)
++                        (call-with-c-string "probe"
++                          (lambda (contents)
++                            (raw-curl-formadd slots (+ slots width) curlform-copyname name
++                                              curlform-copycontents contents curlform-end)))))))
++          (raw-curl-formfree (foreign-ref 'uptr slots 0))
++          (free-foreign-block! slots)
++          (let ((mime (raw-curl-mime-init 0)))
++            (unless (eqv? mime 0) (raw-curl-mime-free mime))
++            (list (cons 'formadd code) (cons 'mime-init (if (eqv? mime 0) 'null 'made)))))))))
++
+   ;; --- the exports ---------------------------------------------------------------------------
+ 
++  ;; loaded-mime-probe : -> (List (Pairof 'formadd Integer) (Pairof 'mime-init (U 'made 'null)))
++  ;; What the load's mime probe answered. Private.
++  (define (loaded-mime-probe) mime-probe)
++
++  ;; loaded-mime? : -> Boolean
++  ;; Whether the loaded libcurl has mime: curl_formadd answered 0 and
++  ;; curl_mime_init a mime. Private.
++  (define (loaded-mime?)
++    (and (eqv? (cdr (assq 'formadd mime-probe)) curl-formadd-ok)
++         (eq? (cdr (assq 'mime-init mime-probe)) 'made)))
++
+   ;; loaded-libcurl : -> Libcurl-Info
+   ;; The libcurl this process loaded and accepted. Reaching this binding
+   ;; runs the load above, once; a refusal raises from there instead, at
+diff -ruN --no-dereference -x m8s3 -x build main/src/curl/private/transfer.sls proto/src/curl/private/transfer.sls
+--- main/src/curl/private/transfer.sls	2026-11-07 08:01:41.000000000 -0500
++++ proto/src/curl/private/transfer.sls	2026-11-07 09:22:06.954274240 -0500
+@@ -300,14 +300,15 @@
+           cookie-jar-handle cookie-jar-handle-set! cookie-jar-state cookie-jar-state-set!
+           cookie-jar-holders cookie-jar-holders-set! curl-request-cookie-jar plan-jar
+           jar-settings share-settings cookie-line-fault cookie-line-bytes jar-attach!
+-          jar-load-lines! jar-read-lines check-cookie-beside-jar)
++          jar-load-lines! jar-read-lines check-cookie-beside-jar
++          multipart? check-plan-files! plan-body)
+   (import (curl private require-threaded)
+           (rnrs)
+           (rnrs mutable-strings)
+           (rnrs mutable-pairs)
+           (only (chezscheme) critical-section foreign-callable foreign-callable-entry-point
+                 lock-object make-mutex with-mutex foreign-sizeof get-thread-id current-time
+-                time-second time-nanosecond make-time sleep)
++                time-second time-nanosecond make-time sleep current-directory file-regular?)
+           (curl private conditions)
+           (curl private constants)
+           (curl private counters)
+@@ -418,6 +419,9 @@
+                          ((proxy-tls-in-tls) "an https:// URL through an https:// proxy, on a libcurl where TLS inside TLS stalls until the transfer's timeout")
+                          ((https-proxy-unsupported) "an https:// proxy URL on a libcurl built without HTTPS-proxy support, which would refuse it and write the whole URL, its password with it, into its error buffer")
+                          ((cookie-beside-jar) "a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing")
++                         ((multipart-empty) "a multipart body with no part: libcurl would send a closing delimiter alone")
++                         ((part-file) "a file part's path is empty, holds U+0000, or names no regular file")
++                         ((multipart-unsupported) "this libcurl has no mime: its curl_formadd or curl_mime_init said no")
+                          (else "a body with get or head, which send none")))
+                       (make-irritants-condition (list value)))))
+ 
+@@ -1151,8 +1155,8 @@
+     (unless (string? url) (wrong "a URL is a string" url))
+     (unless (memq method request-methods)
+       (wrong "a method is get, head, post, put, patch or delete" method))
+-    (unless (or (not body) (bytevector? body) (eq? body 'stream))
+-      (wrong "a body is a bytevector, stream, or #f" body))
++    (unless (or (not body) (bytevector? body) (eq? body 'stream) (multipart? body))
++      (wrong "a body is a bytevector, stream, (multipart PART ...), or #f" body))
+     (unless (timeout? timeout-ms)
+       (wrong "a timeout is a positive exact integer a long holds, or #f" timeout-ms))
+     (unless (timeout? connect-timeout-ms)
+@@ -1196,15 +1200,119 @@
+         (refuse-field who 'body-length body-length 'body-length-without-stream))
+       (when (and stream-buffer follow)
+         (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds))
+-      (let ((header-copies (car (snapshot who headers user-agent))))
+-        (check-expect-round who stream-buffer header-copies)
+-        (check-credentials who credentials header-copies body stream-buffer)
+-        (check-cookie-beside-jar who cookie-jar header-copies))
+-      (ca-file-copy who ca-file)
+-      (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
+-                        body-limit ca-file verify proxy stream-buffer body-length http-version
+-                        credentials (path-copy who 'proxy-ca-file proxy-ca-file) proxy-verify
+-                        cookie-jar fault follow options)))
++      (let ((body (if (multipart? body) (multipart-copy who body #t) body)))
++        (let ((header-copies (car (snapshot who headers user-agent))))
++          (check-expect-round who stream-buffer header-copies)
++          (check-credentials who credentials header-copies body stream-buffer)
++          (check-cookie-beside-jar who cookie-jar header-copies))
++        (ca-file-copy who ca-file)
++        (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
++                          body-limit ca-file verify proxy stream-buffer body-length http-version
++                          credentials (path-copy who 'proxy-ca-file proxy-ca-file) proxy-verify
++                          cookie-jar fault follow options))))
++
++  ;; --- a multipart body (M8 slice 3; prototype, the M8 plan, sections 3.1 and 3.4) ----
++
++  ;; multipart? : Any -> Boolean
++  ;; BODY is a multipart body, by its head: (multipart PART ...).
++  (define (multipart? body) (and (pair? body) (eq? (car body) 'multipart)))
++
++  ;; multipart-copy : Symbol List Boolean -> List
++  ;; BODY, a multipart body, as a fresh list of fresh pairs: each part
++  ;; (NAME SOURCE OPTION ...) with a fresh NAME, a SOURCE string or
++  ;; bytevector kept as given, uncopied, or (file PATH) with a fresh PATH,
++  ;; resolved against current-directory when RESOLVE and relative, and each
++  ;; OPTION's string fresh. A wrong shape is an assertion violation from WHO,
++  ;; naming the body, never its value. (multipart) is multipart-empty; a
++  ;; path empty, holding U+0000, or naming no regular file by stat, part-file,
++  ;; field body, value (part I path). Prototype: the byte rules (part-bytes,
++  ;; part-empty) and multipart-content-type are not checked, so a probe can
++  ;; send what they refuse.
++  (define (multipart-copy who body resolve)
++    (define (wrong) (assertion-violation who "a multipart body is (multipart (NAME SOURCE OPTION ...) ...)" 'body))
++    (unless (list? body) (wrong))
++    (when (null? (cdr body)) (refuse-field who 'body 'multipart 'multipart-empty))
++    (cons 'multipart
++          (let loop ((parts (cdr body)) (i 0) (out '()))
++            (if (null? parts)
++                (reverse out)
++                (let ((part (car parts)))
++                  (unless (and (list? part) (>= (length part) 2) (string? (car part))) (wrong))
++                  (let* ((name (string-copy (car part)))
++                         (source (cadr part))
++                         (copy (cond ((or (string? source) (bytevector? source)) source)
++                                     ((and (list? source) (= (length source) 2) (eq? (car source) 'file)
++                                           (string? (cadr source)))
++                                      (list 'file (checked-part-path who i (string-copy (cadr source)) resolve)))
++                                     (else (wrong))))
++                         (options (part-options-copy wrong (cddr part))))
++                    (loop (cdr parts) (+ i 1) (cons (cons* name copy options) out))))))))
++
++  ;; part-options-copy : (-> Nothing) List -> List
++  ;; OPTIONS, filename STRING and type STRING, each at most once, in any
++  ;; order, as a fresh list of fresh strings; anything else calls WRONG.
++  (define (part-options-copy wrong options)
++    (let loop ((rest options) (seen '()) (out '()))
++      (cond ((null? rest) (reverse out))
++            ((and (pair? rest) (memq (car rest) '(filename type)) (not (memq (car rest) seen))
++                  (pair? (cdr rest)) (string? (cadr rest)))
++             (loop (cddr rest) (cons (car rest) seen)
++                   (cons (string-copy (cadr rest)) (cons (car rest) out))))
++            (else (wrong)))))
++
++  ;; checked-part-path : Symbol Natural String Boolean -> String
++  ;; PATH, the part I's, a fresh string: refused as part-file when empty or
++  ;; holding U+0000; resolved against current-directory when RESOLVE and it
++  ;; does not begin with /; then refused as part-file unless stat finds a
++  ;; regular file there, symlinks followed. Nothing is opened.
++  (define (checked-part-path who i path resolve)
++    (define (refuse) (refuse-field who 'body (list 'part i 'path) 'part-file))
++    (when (or (= (string-length path) 0) (memv #\nul (string->list path))) (refuse))
++    (let ((path (if (and resolve (not (char=? (string-ref path 0) #\/)))
++                    (string-append (current-directory) "/" path)
++                    path)))
++      (unless (guard (e (#t #f)) (file-regular? path)) (refuse))
++      path))
++
++  ;; part-option : List Symbol -> (U String #f)
++  (define (part-option options key)
++    (let ((hit (memq key options))) (and hit (cadr hit))))
++
++  ;; multipart-for-plan : List -> List
++  ;; A checked copy's parts as the plan holds them, each #(NAME KIND
++  ;; PAYLOAD FILENAME TYPE): KIND data, PAYLOAD a fresh bytevector, a
++  ;; string's UTF-8 or a bytevector's copy, made here, at submit alone; or
++  ;; KIND file, PAYLOAD the path.
++  (define (multipart-for-plan copy)
++    (cons 'multipart
++          (map (lambda (part)
++                 (let ((source (cadr part)) (options (cddr part)))
++                   (vector (car part)
++                           (if (pair? source) 'file 'data)
++                           (cond ((pair? source) (cadr source))
++                                 ((string? source) (string->utf8 source))
++                                 (else (bytevector-copy source)))
++                           (part-option options 'filename)
++                           (part-option options 'type))))
++               (cdr copy))))
++
++  ;; check-plan-files! : Plan -> Void
++  ;; The engine's file check (ADR-0039, amended), on its thread, outside
++  ;; every critical section, before the transfer's setup: each file part's
++  ;; path by stat, a regular file, then opened and closed; any failure is
++  ;; the transfer's, part-file, with a request size of 0, nothing made.
++  (define (check-plan-files! plan)
++    (let ((body (plan-body plan)))
++      (when (multipart? body)
++        (for-each (lambda (part)
++                    (when (eq? (vector-ref part 1) 'file)
++                      (let ((path (vector-ref part 2)))
++                        (unless (and (guard (e (#t #f)) (file-regular? path))
++                                     (guard (e (#t #f))
++                                       (close-port (open-file-input-port path))
++                                       #t))
++                          (fail 'part-file #f #f #f #f)))))
++                  (cdr body)))))
+ 
+   ;; check-cookie-beside-jar : Symbol (U Jar #f) (Listof (Pairof String String)) -> Void
+   ;; Refuses, as WHO, beside a JAR, the first of HEADERS, the snapshot's
+@@ -1659,7 +1767,7 @@
+   (define request-field-options
+     '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
+       (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION"
+-            "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT")
++            "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "MIMEPOST")
+       (user-agent "USERAGENT")
+       (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
+       (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
+@@ -1833,7 +1941,7 @@
+               "NOSIGNAL" "QUICK_EXIT" "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
+             (apply append (map cdr request-field-options))
+             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
+-              "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
++              "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIME_OPTIONS" "INFILESIZE"
+               "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
+               "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
+               "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
+@@ -3750,10 +3858,12 @@
+   ;; stream-with-rounds and body-length-without-stream, checked as it was
+   ;; made, hold here too.
+   (define (prepare-transfer request)
+-    (let-values (((url fields ca-file credentials proxy proxy-ca-file tunnel unmultiplex)
++    (let-values (((url fields ca-file credentials proxy proxy-ca-file tunnel unmultiplex multipart)
+                   (request-checks 'curl-submit request)))
+       (let* ((given (curl-request-body request))
+-             (body (if (bytevector? given) (bytevector-copy given) given))
++             (body (cond ((bytevector? given) (bytevector-copy given))
++                         (multipart (multipart-for-plan multipart))
++                         (else given)))
+              (limit (curl-request-stream-buffer request))
+              (stream (and limit (make-response-stream limit)))
+              (length (curl-request-body-length request)))
+@@ -3807,7 +3917,13 @@
+   (define (request-checks who request)
+     (unless (curl-request? request)
+       (assertion-violation who "not a request" (shown-value request)))
+-    (let* ((url (string-copy (curl-request-url request)))
++    (let* ((multipart (let ((body (curl-request-body request)))
++                        (and (multipart? body)
++                             (begin
++                               (unless (loaded-mime?)
++                                 (refuse-field who 'body 'multipart 'multipart-unsupported))
++                               (multipart-copy who body #f)))))
++           (url (string-copy (curl-request-url request)))
+            (fields (snapshot who (curl-request-headers request) (curl-request-user-agent request)))
+            (ca-file (ca-file-copy who (curl-request-ca-file request)))
+            (credentials (credentials-copy who (request-credentials request)))
+@@ -3842,7 +3958,8 @@
+             (values url fields ca-file credentials (if reading (car reading) proxy) proxy-ca-file
+                     (unshared-tunnel-settings version-number scheme
+                                               (and reading #t) (and reading (caddr reading)))
+-                    (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))))))))
++                    (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))
++                    multipart))))))
+ 
+   ;; in-section : (-> Any) -> Any
+   ;; THUNK's value, a URL parse of the submit's checks, run in a critical
+@@ -4144,7 +4261,7 @@
+   ;; whole or streamed (M4 plan, section 3.2; the M6 plan, section 3.1).
+   (define (sends-body? method body)
+     (or (and (memq method '(post put patch)) #t)
+-        (and (eq? method 'delete) (or (bytevector? body) (eq? body 'stream)))))
++        (and (eq? method 'delete) (or (bytevector? body) (eq? body 'stream) (multipart? body)))))
+ 
+   ;; header-line : (Pairof String String) -> String
+   ;; "Name: value", or "Name;" for an empty value: libcurl's form for a
+@@ -4168,7 +4285,7 @@
+       (exists (lambda (header) (string-ci=? (car header) name)) headers))
+     (append (map header-line headers)
+             (if (sends-body? method body)
+-                (append (if (named? "Content-Type") '() '("Content-Type:"))
++                (append (if (or (multipart? body) (named? "Content-Type")) '() '("Content-Type:"))
+                         (if (named? "Expect") '() '("Expect:")))
+                 '())))
+ 
+@@ -4189,7 +4306,8 @@
+             (mutable buffer live-transfer-buffer live-transfer-buffer-set!)
+             (mutable header-list live-transfer-header-list live-transfer-header-list-set!)
+             (mutable lists live-transfer-lists live-transfer-lists-set!)
+-            (mutable easy live-transfer-easy live-transfer-easy-set!))
++            (mutable easy live-transfer-easy live-transfer-easy-set!)
++            (mutable mime live-transfer-mime live-transfer-mime-set!))
+     ;; Opaque, as its plan is.
+     (opaque #t))
+ 
+@@ -4258,11 +4376,14 @@
+                     ((patch) (list (cons (cadr method-names) "PATCH")))
+                     ((delete) (list (cons (cadr method-names) "DELETE")))
+                     (else '()))
+-                  (if (sends-body? method body)
+-                      (let ((bytes (or body (make-bytevector 0))))
+-                        (list (cons (car body-names) (bytevector-length bytes))
+-                              (cons (cadr body-names) bytes)))
+-                      '())))))
++                  (cond ((not (sends-body? method body)) '())
++                        ;; MIMEPOST last, the transfer's mime, which
++                        ;; set-transfer-options! puts in for the symbol.
++                        ((multipart? body) (list (cons (list-ref body-names 9) 'mime)))
++                        (else
++                         (let ((bytes (or body (make-bytevector 0))))
++                           (list (cons (car body-names) (bytevector-length bytes))
++                                 (cons (cadr body-names) bytes)))))))))
+ 
+   ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural (Listof (Pairof Hatch-Setting Positive-Integer)) Positive-Integer Boolean Boolean -> Void
+   ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
+@@ -4294,7 +4415,7 @@
+   ;; settings, in the order they were attached, through set-hatch-option!,
+   ;; a string list's from LISTS, the lists start-transfer! built (ADR-0009,
+   ;; decision 2).
+-  (define (set-transfer-options! easy plan key buffer header-list lists url quick-exit fresh)
++  (define (set-transfer-options! easy plan key buffer header-list lists url quick-exit fresh mime)
+     (set-pinned-options! easy buffer quick-exit)
+     (set-option! easy "ERRORBUFFER" buffer #f)
+     (set-option! easy (field-option 'url) url buffer)
+@@ -4316,6 +4437,7 @@
+     (for-each (lambda (setting)
+                 (let ((value (cdr setting)))
+                   (cond ((string? value) (set-string-option! easy (car setting) value buffer))
++                        ((eq? value 'mime) (set-option! easy (car setting) mime buffer))
+                         ((bytevector? value)
+                          (call-with-foreign-bytes value
+                            (lambda (address) (set-option! easy (car setting) address buffer))))
+@@ -4382,7 +4504,7 @@
+   ;; made, by free-transfer!, then raises again: the URL's refusal, or a
+   ;; &curl-transfer-error, setopt-failed, unknown-option or no-handle.
+   (define (start-transfer! plan quick-exit moves seams)
+-    (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f)))
++    (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f #f)))
+       (guard (e (#t (free-transfer! live) (raise e)))
+         (critical-section
+          (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f
+@@ -4447,10 +4569,27 @@
+            (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
+            (live-transfer-easy-set! live easy)
+            (sink-easy-set! (live-transfer-sink live) easy)))
++        ;; The mime, after curl_easy_init, on that handle, made and recorded
++        ;; in one critical section; then each part through native's one
++        ;; procedure: any answer but 0 fails the transfer before it starts,
++        ;; part-file for a file's data, mime-failed for the rest.
++        (when (multipart? (plan-body plan))
++          (critical-section
++           (let ((mime (curl-mime-init (live-transfer-easy live))))
++             (when (eqv? mime 0) (fail 'mime-failed #f #f #f #f))
++             (live-transfer-mime-set! live mime)))
++          (for-each (lambda (part)
++                      (let ((answer (curl-mime-add-part! (live-transfer-mime live) (vector-ref part 0)
++                                                         (vector-ref part 1) (vector-ref part 2)
++                                                         (vector-ref part 3) (vector-ref part 4))))
++                        (when answer
++                          (fail (if (eq? (car answer) 'filedata) 'part-file 'mime-failed) (cdr answer) #f
++                                (live-transfer-buffer live) #f))))
++                    (cdr (plan-body plan))))
+         (set-transfer-options! (live-transfer-easy live) plan (live-transfer-key live)
+                                (live-transfer-buffer live) (live-transfer-header-list live)
+                                (live-transfer-lists live) (live-transfer-url live) quick-exit
+-                               (not (memq 'reusing seams)))
++                               (not (memq 'reusing seams)) (live-transfer-mime live))
+         live)))
+ 
+   ;; abandon-transfer-easy! : Live -> Void
+@@ -4459,7 +4598,7 @@
+   ;; its multi handle, whose curl_easy_cleanup would remove it there, a call
+   ;; that can block. It stays counted as easy, so a suite sees it.
+   (define (abandon-transfer-easy! live)
+-    (critical-section (live-transfer-easy-set! live #f)))
++    (critical-section (live-transfer-easy-set! live #f) (live-transfer-mime-set! live #f)))
+ 
+   ;; free-transfer! : Live -> Void
+   ;; Closes LIVE's request stream, if it has one, so a later put takes
+@@ -4478,6 +4617,11 @@
+        (when easy
+          (curl-easy-cleanup easy)
+          (live-transfer-easy-set! live #f))))
++    (critical-section
++     (let ((mime (live-transfer-mime live)))
++       (when mime
++         (curl-mime-free mime)
++         (live-transfer-mime-set! live #f))))
+     (for-each
+      (lambda (held)
+        (critical-section
+diff -ruN --no-dereference -x m8s3 -x build main/tests/origin.mjs proto/tests/origin.mjs
+--- main/tests/origin.mjs	2026-11-07 08:01:41.000000000 -0500
++++ proto/tests/origin.mjs	2026-11-07 09:25:07.665852344 -0500
+@@ -76,6 +76,7 @@
+ //                                        16 when left out, as the head
+ //                                        routes make them (below), once; 200,
+ //                                        body "armed\n"
++//           ANY /parts?key=K[&hold=1][&lines=N]  the parts route, below
+ //           ANY /cookies[/P]?key=K[&...] the cookie route, below
+ //           GET /cookie-log?key=K        the cookie route's log for K, below
+ //           anything else                404, body "not found\n"
+@@ -354,9 +355,31 @@
+ // does and reads the body whole; then answers :status 200, a sink header
+ // holding the summary line without its newline, content-length N, and N
+ // bytes of the pattern, as /pattern/N writes them.
++// /parts is http's, below.
+ // Anything else, /chunked, /connects and /close-after included, is 404,
+ // "not found\n". No date, and no header beyond these.
+ //
++// The parts route (M8 slice 3; prototype), on http, the https faces, h2c and
++// h2 alike: ANY /parts?key=K[&hold=1][&lines=N], each name once at most, K a
++// key as retry takes it. It counts for K as its head arrives, as /sink does,
++// so /seen?key=K tells that the head came. A request whose Expect holds
++// 100-continue, in any ASCII case, gets a 100 at once; with hold=1, only once
++// /raw/release names K, and none once the request has gone. The body is read
++// whole, then the answer is 200 with its report, which a multipart body's
++// parts fill, by the first boundary= of its Content-Type:
++//   parts FACE method=M cl=CL te=TE expect=E ct=CT bytes=N sha256=HEX boundary=B preamble=P closed=C epilogue=Q count=K
++//   part I headers=ESC len=L sha256=H pattern=P data=ESC
++// CL, TE, E and CT as the sink's line; B the boundary, - for none; P the
++// bytes before the first delimiter; C 1 when the closing delimiter came, 0
++// when the body ended first; Q the bytes after it; then each part, ESC its
++// header lines escaped as the auth log escapes bytes, but | as \x7c, joined
++// by |, L its data's bytes, H their SHA-256's first 16 hex digits, P ok
++// when byte k is k mod 251 for every k, else bad@k for the first that is not, and ESC
++// its data escaped so, or - past 256 bytes; a part the body ended inside is
++// "unterminated", its data to the body's end. With lines=N, 2 to 100000, the
++// answer carries N header lines in all, its framing ones among them: http's
++// Content-Length and Connection, HTTP/2's content-length, then x-pI: v.
++//
+ // The auth route (M7 slice 2; the M7 plan, section 5.2), on http, the https
+ // faces, h2c and h2 alike: ANY /auth, its query NAME=VALUE pairs as /sink's are,
+ // each name once at most:
+@@ -681,6 +704,9 @@
+   if (path === '/proxy-log') {
+     return queried('proxy-log', queryOf(query, { from: (v) => decimal(v, 0, 1000000000) }, ['from']));
+   }
++  if (path === '/parts') {
++    return queried('parts', queryOf(query, { key: keyValue, hold: oneValue, lines: (v) => decimal(v, 2, 100000) }, ['key']));
++  }
+   if (path === '/cookies' || path.startsWith('/cookies/')) return queried('cookies', cookieQuery(query));
+   if (path === '/cookie-log') return queried('cookie-log', queryOf(query, { key: keyValue }, ['key']));
+   return { kind: 'not-found' };
+@@ -907,6 +933,106 @@
+   return `${line.join(' ')}\n`;
+ }
+ 
++// --- the parts route (M8 slice 3; prototype) ------------------------------
++
++// partsEscaped: BYTES as the parts report shows them.
++function partsEscaped(bytes) {
++  let text = '';
++  for (const b of bytes) {
++    if (b === 0x5c) text += '\\\\';
++    else if (b >= 0x20 && b < 0x7f && b !== 0x7c) text += String.fromCharCode(b);
++    else text += `\\x${b.toString(16).padStart(2, '0')}`;
++  }
++  return text;
++}
++
++// partsReport: the parts route's answer for a request on FACE, with
++// METHOD, the header PAIRS and the whole BODY.
++function partsReport(face, method, pairs, body) {
++  const field = (name) => {
++    const value = headerValue(pairs, name);
++    return value === null ? '-' : value.replace(/[\t\n\v\f\r ]/g, '_');
++  };
++  const ct = headerValue(pairs, 'content-type') || '';
++  const m = /boundary=([^;]*)/i.exec(ct);
++  const boundary = m ? m[1] : null;
++  const lines = [];
++  let preamble = '-';
++  let closed = 0;
++  let epilogue = '-';
++  if (boundary !== null && boundary !== '') {
++    const delim = Buffer.from(`--${boundary}`, 'latin1');
++    const next = Buffer.from(`\r\n--${boundary}`, 'latin1');
++    let at = body.indexOf(delim);
++    if (at >= 0) {
++      preamble = at;
++      let i = 0;
++      for (;;) {
++        const after = at + delim.length;
++        const tail = body.subarray(after, after + 2).toString('latin1');
++        if (tail === '--') {
++          closed = 1;
++          epilogue = body.length - (after + 2);
++          break;
++        }
++        if (tail !== '\r\n') {
++          lines.push(`part ${i} malformed-after-delimiter`);
++          break;
++        }
++        const start = after + 2;
++        const headEnd = body.indexOf(Buffer.from('\r\n\r\n', 'latin1'), start);
++        const end = body.indexOf(next, start);
++        let headers;
++        let dataStart;
++        if (headEnd >= 0 && (end < 0 || headEnd < end)) {
++          headers = body.subarray(start, headEnd);
++          dataStart = headEnd + 4;
++        } else {
++          headers = Buffer.alloc(0);
++          dataStart = start;
++        }
++        const heads = [];
++        let from = 0;
++        for (;;) {
++          const crlf = headers.indexOf(Buffer.from('\r\n', 'latin1'), from);
++          if (crlf < 0) { if (from < headers.length) heads.push(headers.subarray(from)); break; }
++          heads.push(headers.subarray(from, crlf));
++          from = crlf + 2;
++        }
++        const data = body.subarray(dataStart, end < 0 ? body.length : end);
++        const hash = createHash('sha256').update(data).digest('hex').slice(0, 16);
++        let bad = -1;
++        for (let k = 0; k < data.length; k++) if (data[k] !== k % 251) { bad = k; break; }
++        lines.push(`part ${i} headers=${heads.map(partsEscaped).join('|')} len=${data.length} sha256=${hash} pattern=${bad < 0 ? 'ok' : `bad@${bad}`} data=${data.length <= 256 ? partsEscaped(data) : '-'}${end < 0 ? ' unterminated' : ''}`);
++        if (end < 0) break;
++        at = end + 2;
++        i += 1;
++      }
++    }
++  }
++  const head = [`parts ${face}`, `method=${method}`, `cl=${field('content-length')}`, `te=${field('transfer-encoding')}`,
++                `expect=${field('expect')}`, `ct=${field('content-type')}`, `bytes=${body.length}`,
++                `sha256=${createHash('sha256').update(body).digest('hex')}`, `boundary=${boundary === null ? '-' : partsEscaped(Buffer.from(boundary, 'latin1'))}`,
++                `preamble=${preamble}`, `closed=${closed}`, `epilogue=${epilogue}`,
++                `count=${lines.filter((l) => l.startsWith('part ')).length}`].join(' ');
++  return [head, ...lines].map((l) => `${l}\n`).join('');
++}
++
++// partsPads: the x-pI header pairs that bring an answer of FRAMING framing
++// lines to LINES in all, none when LINES is absent.
++function partsPads(lines, framing) {
++  const pads = [];
++  if (lines !== undefined) for (let i = 0; i < lines - framing; i++) pads.push(`x-p${i}`, 'v');
++  return pads;
++}
++
++// partsContinues: whether a request's Expect, as PAIRS hold it, holds
++// 100-continue, A to Z folded.
++function partsContinues(pairs) {
++  const value = headerValue(pairs, 'expect');
++  return value !== null && value.toLowerCase().includes('100-continue');
++}
++
+ // --- the auth route: Digest's arithmetic, the verdicts, the log ----------
+ // The arithmetic, its self-test and its parser are M7 slice 2's stand-in's
+ // (.plans/research/m7/slice2/standin.mjs), unchanged but for the plants.
+@@ -1464,6 +1590,7 @@
+     marks.delete(socket);
+     const r = route(req.url);
+     if (r.kind === 'sink') countFor(r.key);
++    if (r.kind === 'parts' && !req.partsCounted) countFor(r.key);
+     const authN = r.kind === 'auth' ? authNumber(r.key) : null;
+     const cookieN = r.kind === 'cookies' ? cookieNumber(r.key) : null;
+     req.on('error', () => res.destroy());
+@@ -1485,6 +1612,10 @@
+     req.on('end', () => {
+       if (mark === 'kill') return socket.destroy();
+       if (r.kind === 'sink') return text(res, 200, summary(face, req.method, req.rawHeaders, record, r.key, r.list));
++      if (r.kind === 'parts') {
++        return text(res, 200, partsReport(face, req.method, req.rawHeaders, Buffer.concat(chunks)),
++                    partsPads(r.lines, 2));
++      }
+       if (r.kind === 'auth') {
+         return authRespond(res, authAnswer(r, authN, face, connectionNumbers.get(socket), req.method, req.url,
+                                            req.rawHeaders, Buffer.concat(chunks)));
+@@ -1496,7 +1627,33 @@
+   };
+ }
+ 
++// partsContinue: FACE's checkContinue listener, for LISTENER, its request
++// listener: as Node's own, a 100 then the request, but for a parts request
++// with hold=1, counted as its head arrives and its 100 held until its key is
++// released.
++function partsContinue(listener) {
++  return (req, res) => {
++    const r = route(req.url);
++    if (r.kind !== 'parts' || r.hold === undefined) {
++      res.writeContinue();
++      return listener(req, res);
++    }
++    countFor(r.key);
++    req.partsCounted = true;
++    releasedFor(r.key, req.socket)
++      .then((how) => {
++        if (how === 'released' && !req.socket.destroyed) {
++          res.writeContinue();
++          listener(req, res);
++        }
++      })
++      .catch((err) => fatal('a held parts request failed', err));
++    return undefined;
++  };
++}
++
+ const httpServer = numbered(http.createServer(wellFormed('http')), 'connection');
++httpServer.on('checkContinue', partsContinue(wellFormed('http')));
+ httpServer.on('connection', track);
+ httpServer.on('connection', headTracker('http'));
+ 
+@@ -1687,6 +1844,7 @@
+   server.on('secureConnection', track);
+   server.on('tlsClientError', (err, socket) => socket.destroy());
+   server.on('connect', proxyConnect(name));
++  server.on('checkContinue', partsContinue(wellFormed(name)));
+   return server;
+ }
+ 
+@@ -2102,6 +2260,26 @@
+       });
+       return undefined;
+     }
++    if (r.kind === 'parts') {
++      countFor(r.key);
++      const chunks = [];
++      stream.on('data', (chunk) => chunks.push(chunk));
++      stream.on('end', () => {
++        const report = Buffer.from(partsReport(face, headers[':method'], rawHeaders, Buffer.concat(chunks)), 'latin1');
++        h2Send(stream, 200, ['content-length', String(report.length), ...partsPads(r.lines, 1)], report);
++      });
++      if (partsContinues(rawHeaders)) {
++        if (r.hold === undefined) stream.additionalHeaders({ ':status': 100 });
++        else {
++          releasedFor(r.key, stream)
++            .then((how) => {
++              if (how === 'released' && !stream.destroyed) stream.additionalHeaders({ ':status': 100 });
++            })
++            .catch((err) => fatal('a held parts stream failed', err));
++        }
++      }
++      return undefined;
++    }
+     if (r.kind === 'sink' || r.kind === 'refuse') {
+       const seenNow = countFor(r.key);
+       const refuseAt = r.kind === 'refuse' && seenNow === 1 ? r.at : null;

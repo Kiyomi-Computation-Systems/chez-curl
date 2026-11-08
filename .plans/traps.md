@@ -1569,3 +1569,41 @@ it should not be a comment. (chez-cmark-gfm)
   server that holds its 417 per connection answers the resend 417 again, so the origin's
   `/raw/head417` holds it by key ([trap-417](research/m8/slice2/build/trap-417/)). (chez-curl, M8
   slice 2)
+* **A stand-in that answers at `Content-Length` hides the bytes sent past it.** 7.85.0 and both
+  8.5.0 builds read a file part grown after `curl_mime_filedata` to its new end and send every
+  byte. The mime probe's raw stand-in read the declared 1,291 or 1,309 bytes, answered 200, and
+  logged the 2,000 after as garbage, and its tables, built from the body it framed, showed a whole
+  200 (`mime-files/results/docker-1.log:347`, `:4132`, `:7876`). Through the engine, Node read the
+  same bytes as a second request and answered 400, and over HTTP/2 reset the stream, 92, in both
+  runs ([slice3](research/m8/slice3/), `after grown`; my reading of both). A check of what was
+  sent reads what follows the body too. (chez-curl, M8 slice 3)
+* **A server started after `exec 3> FIFO` holds the FIFO's write end too.** A script that feeds
+  two servers' stdin from FIFOs it holds on fds 3 and 4 starts the second after opening fd 3, so
+  the second inherits it, and closing fd 3 never ends the first's stdin: slice 3's probe runner
+  saw its origin killed by its watchdog, 143, after every early run. Close the others in each
+  child, `3>&-` ([slice3](research/m8/slice3/), `trap-fd.sh`, two runs; my two runs under dash).
+  (chez-curl, M8 slice 3)
+* **A check of Valgrind's suppressed total counts `default.supp`'s blocks too.** The load's mime
+  probe, from M8 slice 3, calls `curl_mime_init`, and on the Guix lane that adds one block
+  `default.supp`'s `dtv-addr-tail` suppresses, 80 bytes: `test-version` under the gate suppressed
+  171 bytes in 1 block on `main` and 251 bytes in 2 blocks on the branch, the Guix entry's own
+  count 1 block in both (`trap-dtv-main.valgrind`, `trap-dtv-branch.valgrind`, my runs). `check-memory-gate`'s case d read the total, " bytes in 2
+  blocks", and failed on 3 though the entry was unchanged
+  ([slice3 build](research/m8/slice3/build/), `more-with-probe.valgrind`). A check of one
+  suppression reads that entry's own `used_suppression` line. (chez-curl, M8 slice 3)
+* **On macOS, `/var` is a symbolic link to `/private/var`, so a scratch directory has two
+  names.** `current-directory`, set to the directory `TMPDIR` named, answers the real one:
+  `test-multipart`'s accessor test built its expected path from the scratch directory's given
+  name, `/var/folders/...`, and the request, resolving against `current-directory`, held
+  `/private/var/folders/...`. It passed on every Linux lane and failed in both of the Mac's runs
+  ([slice3 mac](research/m8/slice3/mac/)). Pointing `TMPDIR` at a symbolic link reproduces it on
+  Linux (`linux-symlink-tmpdir.log`). A test of a resolved path takes its expectation from
+  `current-directory`'s own answer. (chez-curl, M8 slice 3)
+* **Node's HTTP/2 server answers DATA past a stream's `content-length` by Node's version, and
+  libcurl's code shows it.** A file part grown after the engine's check is sent past its length
+  by 7.85.0 and 8.5.0. Over HTTP/2, 8.5.0 ended 92 under Node 20.10.0 and 24.18.0, and 56 under
+  Node 22.23.4, the runner's own, which CI's `main`, `gnutls` and `memory-1` run: PR #52's first
+  run failed there alone, in the three jobs, and 6 of 6 local runs under 22.23.4 gave 56, 2 of 2
+  under 20.10.0 gave 92 ([slice3 ci](research/m8/slice3/ci/)). 7.85.0 ended 92 under 20.10.0 and
+  22.23.4. A cell that measures the test origin's answer holds every answer the Nodes that run it
+  give: CI runs the runner's Node, and its floor job the floor's. (chez-curl, M8 slice 3)

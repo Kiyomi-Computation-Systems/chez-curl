@@ -1,0 +1,47 @@
+mutants start 2026-11-07T20:04:42Z, 9 chosen
+mutant engine-open-removed: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL the engine's check, before the transfer's setup: a path removed, made a directory, made a FIFO, or made unreadable, mode 000, after the submit's stat fails the transfer part-file, no code, nothing sent, a request size of 0, the origin never counting it, the unreadable file one this suite cannot open
+mutant stat-guard-returned: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL a caller's timer swept a tick at a time across make-curl-request, curl-request-check and curl-submit of a body with a file part, its handler raising a sentinel: every run answers the sentinel or no raise, never a refusal, across each operation's band; and every count is zero after
+mutant step-ignores-code: CAUGHT in 9 s
+  tests/test-native.sps exit=1
+    FAIL curl-mime-add-part!, on this thread's mime, answers libcurl's own codes: (filedata . 26), CURLE_READ_ERROR, for a file part whose path names nothing; #f for a data part, an empty one, and a file part of /dev/null, with a filename and a type; every count as it was before, once the mime and the handle
+  tests/test-multipart.sps exit=1
+    FAIL a path lost between the engine's check and curl_mime_filedata meets libcurl's own refusal, 26: the transfer fails part-file, that code, a request size of 0, the origin never counting it
+mutant default-filename-whole-path: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL a file part's default filename, its path's last component, is held by the filename's rules: a " or U+0001 there is refused as the filename's part-bytes, and a filename of the part's own lets the same path through; the same chars in a directory's name pass, the last component f.txt
+mutant c1-controls-refused: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes over the whole complement: a name holding each char U+0000 to U+00FF, U+0100, U+FFFD or U+10FFFF, at its start, in its middle and at its end, is refused, named by its part and field, exactly for U+0000 to U+001F and U+007F, and ", and made for every other: 777 values, none answering but t
+    FAIL part-bytes over the whole complement: a filename holding each char U+0000 to U+00FF, U+0100, U+FFFD or U+10FFFF, at its start, in its middle and at its end, is refused, named by its part and field, exactly for U+0000 to U+001F and U+007F, and ", and made for every other: 777 values, none answering b
+    FAIL part-bytes over the whole complement: a type holding each char U+0000 to U+00FF, U+0100, U+FFFD or U+10FFFF, at its start, in its middle and at its end, is refused, named by its part and field, exactly for U+0000 to U+001F and U+007F, and made for every other: 777 values, none answering but the rule
+mutant astral-refused: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL part-bytes over the whole complement: a name holding each char U+0000 to U+00FF, U+0100, U+FFFD or U+10FFFF, at its start, in its middle and at its end, is refused, named by its part and field, exactly for U+0000 to U+001F and U+007F, and ", and made for every other: 777 values, none answering but t
+    FAIL part-bytes over the whole complement: a filename holding each char U+0000 to U+00FF, U+0100, U+FFFD or U+10FFFF, at its start, in its middle and at its end, is refused, named by its part and field, exactly for U+0000 to U+001F and U+007F, and ", and made for every other: 777 values, none answering b
+    FAIL part-bytes over the whole complement: a type holding each char U+0000 to U+00FF, U+0100, U+FFFD or U+10FFFF, at its start, in its middle and at its end, is refused, named by its part and field, exactly for U+0000 to U+001F and U+007F, and made for every other: 777 values, none answering but the rule
+mutant origin-epilogue-miscounted: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL each part kind and its options, byte for byte at the origin, over HTTP/1.1, the whole report: a string's UTF-8; a bytevector's bytes; a file's, its filename its path's last component; a filename and a type given; and libcurl's default types, text/plain for .TXT in any case, application/octet-stream 
+    FAIL the default types, by the filename's extension, for a data part with a filename: text/plain, text/html, image/gif, image/jpeg, image/png, image/svg+xml, application/pdf and application/xml; none for .json, .csv and none at all; a file part's application/octet-stream there; each the whole report
+    FAIL every method that sends a body, over HTTP/1.1, h2c and h2: post, put, patch and delete each send multipart/form-data with the body's own boundary, every part form-data, the body whole, no Expect, closed by its delimiter: the whole report
+    FAIL a data part of 1 MiB and one byte, over HTTP/1.1: the whole report, and no Expect, so no second's wait
+    FAIL the header cap beside a multipart body: 1,000 header lines answer the whole report; 1,001 refuse the transfer, header-limit, too large
+    FAIL each metadata string and the list, changed once the request is made, then submitted: the origin gets the name, filename and type the request was made with, and the path's file: the whole report
+    ... and 12 more
+mutant origin-preamble-miscounted: CAUGHT in 8 s
+  tests/test-multipart.sps exit=1
+    FAIL each part kind and its options, byte for byte at the origin, over HTTP/1.1, the whole report: a string's UTF-8; a bytevector's bytes; a file's, its filename its path's last component; a filename and a type given; and libcurl's default types, text/plain for .TXT in any case, application/octet-stream 
+    FAIL the default types, by the filename's extension, for a data part with a filename: text/plain, text/html, image/gif, image/jpeg, image/png, image/svg+xml, application/pdf and application/xml; none for .json, .csv and none at all; a file part's application/octet-stream there; each the whole report
+    FAIL every method that sends a body, over HTTP/1.1, h2c and h2: post, put, patch and delete each send multipart/form-data with the body's own boundary, every part form-data, the body whole, no Expect, closed by its delimiter: the whole report
+    FAIL a data part of 1 MiB and one byte, over HTTP/1.1: the whole report, and no Expect, so no second's wait
+    FAIL the header cap beside a multipart body: 1,000 header lines answer the whole report; 1,001 refuse the transfer, header-limit, too large
+    FAIL each metadata string and the list, changed once the request is made, then submitted: the origin gets the name, filename and type the request was made with, and the path's file: the whole report
+    ... and 12 more
+mutant table-row-dropped: CAUGHT in 3 s
+  tests/test-native.sps exit=1
+    FAIL every export of (curl private native) is one the wrong-thread table calls, or one written out as taking no handle a thread owns, and none is both
+mutants done: 9 of 9 caught

@@ -246,6 +246,16 @@
    ;;                HTTP/1.1 and as DATA frames over HTTP/2; #f. Beside a
    ;;                body that is no producer, (curl)'s refusal,
    ;;                body-length-without-stream
+   ;;   multipart    a multipart/form-data body's parts, (PART ...), each
+   ;;                as (curl)'s request body (multipart PART ...) takes
+   ;;                it, checked as it does: a relative path is resolved
+   ;;                once, as the call starts, and each part's data copied
+   ;;                then, so its retries and hops send the files and bytes
+   ;;                it began with; a session's Content-Type header is
+   ;;                dropped, and libcurl writes the type and its boundary
+   ;;                (ADR-0039; the M8 plan, section 3.1). A multipart body
+   ;;                is a whole body, no producer: a group takes one, a
+   ;;                retry resends it, and a 307 or 308 keeps it
    ;; A producer is called on the caller's thread, only once libcurl has
    ;; asked for the body and has room, and never after it answered the eof
    ;; object; it answers a bytevector of a byte or more, or the eof object
@@ -277,7 +287,8 @@
    ;; cancel it at its head. A streamed call whose retry runs out of time
    ;; after a hop it cancelled at its head fails with &http-timeout, as with
    ;; no time left (decided by the maintainer, 2026-11-01).
-   ;; body and form together are refused, and either with get or head. A
+   ;; body and form together are refused, multipart beside either, and any
+   ;; of the three with get or head. A
    ;; call's header replaces every session header of its name, A to Z
    ;; folded, after the session's others; a call's User-Agent header sets
    ;; no user-agent field, and a call's user-agent field drops the session's
@@ -513,9 +524,10 @@
    ;; http-request-error-reason : &http-request-error -> Symbol
    ;; http-request-error-reasons : (Listof Symbol)
    ;;   unknown-key, repeated-key and missing-value, field key, the key;
-   ;;   body-and-form, field form; body-not-allowed, field body or form, the
-   ;;   method; not-a-body, field body; not-name-value-pairs, field form or
-   ;;   params; not-a-redirect-count, field redirects; not-a-boolean, field
+   ;;   body-and-form, field form; multipart-beside-body, field multipart, a
+   ;;   multipart body beside a body or a form; body-not-allowed, field
+   ;;   body, form or multipart, the method; not-a-body, field body;
+   ;;   not-name-value-pairs, field form or params; not-a-redirect-count, field redirects; not-a-boolean, field
    ;;   allow-downgrade or jitter; not-a-retry-policy, field retry;
    ;;   not-an-attempt-count, field attempts; not-a-backoff, field
    ;;   backoff-ms or max-backoff-ms; not-a-status-list, field statuses;
@@ -608,9 +620,14 @@
   ;; alone: a Ctrl-C made pending in the section runs as it ends, outside
   ;; the guard, and a timer or an engine's expiry at a later event check;
   ;; an expiry never leaves a URL's parse behind; and the caller's handler
-  ;; for a refusal runs with interrupts on. Nothing inside waits or calls
-  ;; the caller's code: a producer is kept, not called, and the keys' values
-  ;; are read by length, car, cdr and the copies. The URL's parse takes
+  ;; for a refusal runs with interrupts on. Nothing inside calls the
+  ;; caller's code: a producer is kept, not called, and the keys' values
+  ;; are read by length, car, cdr and the copies. What runs inside is
+  ;; pure but for a stat of each file part's path a multipart body names,
+  ;; by make-curl-request's checks, once for the checked request and once
+  ;; for the call's own, and once more with CHECK?: a stat waits only on a
+  ;; hung network mount, which no check here can make (ADR-0039, after
+  ;; slice 3's review). The URL's parse takes
   ;; three mutexes, the counters', native's owners' and memory's, each
   ;; through locked, briefly, as every holder holds them. The test seam's
   ;; gate, drive-checks-gate-set!'s, is called at the checks' start and end,

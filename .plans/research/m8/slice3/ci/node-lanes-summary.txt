@@ -1,0 +1,42 @@
+== test-node20-1-gnutls.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+test: ran 1, passed 1, failed 0, hung 0
+== test-node20-1-openssl.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+test: ran 1, passed 1, failed 0, hung 0
+== test-node22-1-gnutls.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-removed-h1 failed perform-failed 26) (after-fif
+FAIL by version, after-grown-h2 answers as this libcurl's row says
+  actual:   (after-grown-h2 (row (failed perform-failed 92) measured (failed perform-failed 56)))
+test: ran 1, passed 0, failed 1, hung 0
+== test-node22-1-openssl.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-removed-h1 failed perform-failed 26) (after-fif
+FAIL by version, after-grown-h2 answers as this libcurl's row says
+  actual:   (after-grown-h2 (row (failed perform-failed 92) measured (failed perform-failed 56)))
+test: ran 1, passed 0, failed 1, hung 0
+== test-node22-2-gnutls.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-removed-h1 failed perform-failed 26) (after-fif
+FAIL by version, after-grown-h2 answers as this libcurl's row says
+  actual:   (after-grown-h2 (row (failed perform-failed 92) measured (failed perform-failed 56)))
+test: ran 1, passed 0, failed 1, hung 0
+== test-node22-2-openssl.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-removed-h1 failed perform-failed 26) (after-fif
+FAIL by version, after-grown-h2 answers as this libcurl's row says
+  actual:   (after-grown-h2 (row (failed perform-failed 92) measured (failed perform-failed 56)))
+test: ran 1, passed 0, failed 1, hung 0
+== test-node22-3-gnutls.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-removed-h1 failed perform-failed 26) (after-fif
+FAIL by version, after-grown-h2 answers as this libcurl's row says
+  actual:   (after-grown-h2 (row (failed perform-failed 92) measured (failed perform-failed 56)))
+test: ran 1, passed 0, failed 1, hung 0
+== test-node22-3-openssl.log
+test-multipart: libcurl "8.5.0" measured ("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-remove
+("8.5.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-removed-h1 failed perform-failed 26) (after-fif
+FAIL by version, after-grown-h2 answers as this libcurl's row says
+  actual:   (after-grown-h2 (row (failed perform-failed 92) measured (failed perform-failed 56)))
+test: ran 1, passed 0, failed 1, hung 0

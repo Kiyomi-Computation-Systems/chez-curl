@@ -1,0 +1,47 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-auth.sps
+test-memory: pass tests/test-auth.sps
+=== tests/test-call-checks.sps
+test-memory: pass tests/test-call-checks.sps
+=== tests/test-check-nothreads.sps
+test-memory: pass tests/test-check-nothreads.sps
+=== tests/test-collect-safe.sps
+test-memory: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+test-memory: pass tests/test-conditions.sps
+=== tests/test-drift.sps
+test-memory: pass tests/test-drift.sps
+=== tests/test-engine.sps
+test-memory: pass tests/test-engine.sps
+=== tests/test-group.sps
+test-memory: pass tests/test-group.sps
+=== tests/test-http-client.sps
+test-memory: pass tests/test-http-client.sps
+=== tests/test-load-state.sps
+test-memory: pass tests/test-load-state.sps
+=== tests/test-manifest.sps
+test-memory: pass tests/test-manifest.sps
+=== tests/test-multipart.sps
+test-memory: pass tests/test-multipart.sps
+=== tests/test-origin-tls.sps
+test-memory: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+test-memory: pass tests/test-origin.sps
+=== tests/test-printed.sps
+test-memory: pass tests/test-printed.sps
+=== tests/test-redirect.sps
+test-memory: pass tests/test-redirect.sps
+=== tests/test-request.sps
+test-memory: pass tests/test-request.sps
+=== tests/test-retry.sps
+test-memory: pass tests/test-retry.sps
+=== tests/test-transfer.sps
+test-memory: pass tests/test-transfer.sps
+=== tests/test-url-location.sps
+test-memory: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+test-memory: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+test-memory: pass tests/test-url.sps
+test-memory: ran 22, passed 22, failed 0, hung 0
+exit 0 seconds 1077

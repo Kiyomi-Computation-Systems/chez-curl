@@ -158,8 +158,11 @@
 ;; draw from a session's jitter generator (M5 slice 3): they run no code
 ;; and reach no library, and Chez's random, which draws the same sequence
 ;; in every process, stays out (the M5 plan, section 3.5).
+;; current-directory reads the working directory, against which a
+;; multipart body's relative path is resolved as the request is made (M8
+;; slice 3; ADR-0039, amended 2026-11-07): read alone, it runs no code.
 (define allowed-chez-names
-  '(critical-section current-time define-ftype disable-interrupts display-condition
+  '(critical-section current-directory current-time define-ftype disable-interrupts display-condition
     dynamic-wind enable-interrupts file-regular? foreign-alloc foreign-callable
     foreign-callable-entry-point foreign-entry foreign-entry? foreign-free foreign-procedure
     foreign-ref foreign-sizeof fork-thread format format-condition? ftype-ref ftype-set!
@@ -200,7 +203,11 @@
 ;; pseudo-random-generator-next! belong to (http-client private call), the
 ;; high level's library that holds the session: each session's generator is
 ;; made there and drawn from there alone, under the session's mutex (the M5
-;; plan, sections 3.5 and 3.8). No library imports
+;; plan, sections 3.5 and 3.8). current-directory belongs to (curl private
+;; transfer), where a multipart body's path is resolved, once, as the
+;; request is made: a library that read it elsewhere could resolve a path
+;; again, against a directory a later chdir moved (ADR-0039, amended
+;; 2026-11-07). No library imports
 ;; mutex-acquire, mutex-release, make-condition, condition-wait or
 ;; condition-broadcast at all: every hold of a mutex is locked's, short and
 ;; with interrupts off, and a wait polls, sleeping between holds, since a
@@ -220,6 +227,7 @@
     (foreign-callable (curl private transfer))
     (foreign-callable-entry-point (curl private transfer))
     (lock-object (curl private transfer))
+    (current-directory (curl private transfer))
     (fork-thread (curl private engine))
     (disable-interrupts (curl private engine))
     (enable-interrupts (curl private engine))

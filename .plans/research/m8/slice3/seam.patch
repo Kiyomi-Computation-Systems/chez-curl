@@ -1,0 +1,54 @@
+diff -ruN --no-dereference -x m8s3 -x build proto/src/curl/private/transfer.sls probe/src/curl/private/transfer.sls
+--- proto/src/curl/private/transfer.sls	2026-11-07 09:22:06.954274240 -0500
++++ probe/src/curl/private/transfer.sls	2026-11-07 09:27:10.350053467 -0500
+@@ -301,7 +301,8 @@
+           cookie-jar-holders cookie-jar-holders-set! curl-request-cookie-jar plan-jar
+           jar-settings share-settings cookie-line-fault cookie-line-bytes jar-attach!
+           jar-load-lines! jar-read-lines check-cookie-beside-jar
+-          multipart? check-plan-files! plan-body)
++          multipart? check-plan-files! plan-body
++          transfer-file-check-gate-set! take-transfer-sizes! take-file-check-times!)
+   (import (curl private require-threaded)
+           (rnrs)
+           (rnrs mutable-strings)
+@@ -1301,7 +1302,30 @@
+   ;; every critical section, before the transfer's setup: each file part's
+   ;; path by stat, a regular file, then opened and closed; any failure is
+   ;; the transfer's, part-file, with a request size of 0, nothing made.
++  ;; The probe's seam (seam.py): the gate, and the logs.
++  (define file-check-gate (vector #f))
++  (define (transfer-file-check-gate-set! proc) (vector-set! file-check-gate 0 proc))
++  (define seam-lock (make-mutex))
++  (define transfer-sizes '())
++  (define file-check-times '())
++  (define (take-transfer-sizes!)
++    (locked seam-lock (lambda () (let ((all (reverse transfer-sizes))) (set! transfer-sizes '()) all))))
++  (define (take-file-check-times!)
++    (locked seam-lock (lambda () (let ((all (reverse file-check-times))) (set! file-check-times '()) all))))
++  (define (seam-ns)
++    (let ((t (current-time 'time-monotonic))) (+ (* (time-second t) 1000000000) (time-nanosecond t))))
+   (define (check-plan-files! plan)
++    (let ((gate (vector-ref file-check-gate 0)))
++      (when (and gate (multipart? (plan-body plan))) (gate)))
++    (let ((start (seam-ns)))
++      (dynamic-wind
++        (lambda () #f)
++        (lambda () (seamless-check-plan-files! plan))
++        (lambda ()
++          (when (multipart? (plan-body plan))
++            (let ((took (- (seam-ns) start)))
++              (locked seam-lock (lambda () (set! file-check-times (cons took file-check-times))))))))))
++  (define (seamless-check-plan-files! plan)
+     (let ((body (plan-body plan)))
+       (when (multipart? body)
+         (for-each (lambda (part)
+@@ -4731,6 +4755,9 @@
+   ;; held. The answer is data: the engine completes the token with it, and
+   ;; an awaiting thread raises a condition.
+   (define (finish-transfer live code)
++    (let ((size (info-long (live-transfer-easy live) curlinfo-request-size)))
++      (locked seam-lock (lambda () (set! transfer-sizes (cons (cons (plan-url (live-transfer-plan live)) size)
++                                                              transfer-sizes)))))
+     (let* ((sink (live-transfer-sink live))
+            (buffer (live-transfer-buffer live))
+            (easy (live-transfer-easy live))

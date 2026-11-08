@@ -1,0 +1,4 @@
+inherited: A still runs 1 s after fd 3 closed
+inherited: A and B ended once fd 4 closed too
+closed: A ended when fd 3 closed
+closed: A and B ended once fd 4 closed too

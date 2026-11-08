@@ -1,0 +1,434 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-variadic: ok copy: src/, tests/ and .plans/decisions/ copied to /var/folders/hh/q367ppx15fvcb_hb0zb_gp2h0000gn/T/check-variadic.ZNmjdl/tree
+check-variadic: ok machine: Chez's machine type is tarm64osx
+check-variadic: ok control: tests/test-collect-safe.sps passes on the unchanged copy
+check-variadic: ok control: tests/test-variadic.sps passes on the unchanged copy
+check-variadic: ok control: tests/test-transfer.sps passes on the unchanged copy
+check-variadic: ok template mutant: (foreign-procedure (__varargs_after 2) entry (arg ...) result) is now (foreign-procedure entry (arg ...) result), and no other line changed
+check-variadic: ok template static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl_easy_setopt three times, curl_easy_getinfo, curl_multi_setopt, curl_share_setopt and curl_formadd once each as mismatches
+check-variadic: ok template arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant (exit 1), naming 31 failing tests
+  FAIL PRIVATE set to #x123456789ABCDEF through curl-easy-setopt-pointer reads back exactly through curl-easy-getinfo
+  FAIL PRIVATE set to #xFEDCBA9876543210 through curl-easy-setopt-pointer reads back exactly through curl-easy-getinfo
+  FAIL RTSP_CLIENT_CSEQ set to 1234567 through curl-easy-setopt-long reads back exactly through curl-easy-getinfo
+  FAIL RTSP_CLIENT_CSEQ set to 2000000011 through curl-easy-setopt-long reads back exactly through curl-easy-getinfo
+  FAIL MAXFILESIZE set to -1 through curl-easy-setopt-long answers CURLE_BAD_FUNCTION_ARGUMENT
+  FAIL MAXFILESIZE set to -1099511627776 through curl-easy-setopt-long answers CURLE_BAD_FUNCTION_ARGUMENT
+  FAIL MAXFILESIZE_LARGE set to -1 through curl-easy-setopt-off-t answers CURLE_BAD_FUNCTION_ARGUMENT
+  FAIL MAXFILESIZE_LARGE set to -4611686018427387904 through curl-easy-setopt-off-t answers CURLE_BAD_FUNCTION_ARGUMENT
+  FAIL two drips with MAX_TOTAL_CONNECTIONS set to 1 through curl-multi-setopt-long run one after the other: the second is done 500 ms or more after the first, and every call and both transfers answer OK
+  FAIL two drips with MAX_TOTAL_CONNECTIONS set to 2 through curl-multi-setopt-long run together: the second is done within 500 ms of the first, and every call and both transfers answer OK
+  FAIL the share's SHARE of share-0 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-1 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-2 through curl-share-setopt-int answers (0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE of share-3 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-4 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-5 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-8 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-9 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-99 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share--1 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-0 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-2 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-3 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-4 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-5 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-8 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-9 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-99 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare--1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL a form of one field, CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS, each with a string, then CURLFORM_END, through curl-formadd-code answers CURL_FORMADD_OK, 0
+check-variadic: ok template transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 119 failing tests
+  FAIL curl-request-check of a request every check takes returns, leaves nothing native, the CURLU it parses freed, starts no transfer and queues nothing on any engine: the engine's queue stays empty, and the request, submitted after, runs
+  FAIL shared: GET http /status/200, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/204, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/205, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/304, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/404, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/500, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/599, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /redirect/302?to=/status/200, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /redirect/301?to=http://elsewhere.invalid/, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /chunked, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /nowhere, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/content-length, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked-extensions-trailers, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked-tiny, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/close-delimited, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/http10, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/drip?bytes=3&gap=20, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/pause-mid-body?ms=50, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/reset-after-pause?ms=50, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/reset-after-pause?ms=50 raises perform-failed 56, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/big-header?bytes=1000, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/many-headers?count=10, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/many-headers?count=1000, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/bad-status-line, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/bad-status-line raises perform-failed 1, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/bad-chunk-size, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/bad-chunk-size raises perform-failed 56, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/short-body, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/short-body raises perform-failed 18, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/reset-mid-body, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/reset-mid-body raises perform-failed 56, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/chunked-and-content-length, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/header-no-colon, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/header-no-colon raises perform-failed 8, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/nul-in-header, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/nul-in-header raises perform-failed 8, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/close-before-response, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/close-before-response raises perform-failed 52, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/http09, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/http09 raises perform-failed 1, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/bare-lf, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/unknown-script, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/header-bytes, whole, and the counts back to the engine's alone
+  FAIL the cap: GET raw /raw/big-header?bytes=102372, 102,400 bytes with its status line and empty line, is taken whole; bytes=102373 and bytes=102380 are refused, header-limit, of &curl-too-large; GET raw /raw/many-headers at 1,001 and 50,000 lines, header-limit too; each with the counts back to the engine's alone
+  FAIL varying: GET raw /raw/big-header?bytes=102400, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL class, by the row for "8.7.1": GET raw /raw/big-header?bytes=102400 raises perform-failed 100, as the class the suite's table gives it, too-large, and no other
+  FAIL varying: GET raw /raw/big-header?bytes=1048576, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL class, by the row for "8.7.1": GET raw /raw/big-header?bytes=1048576 raises perform-failed 100, as the class the suite's table gives it, too-large, and no other
+  FAIL varying: GET raw /raw/bad-status-code, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL class, by the row for "8.7.1": GET raw /raw/bad-status-code raises perform-failed 1, as the class the suite's table gives it, protocol, and no other
+  FAIL varying: GET raw /raw/conflicting-content-length, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL varying: the error buffer of GET raw /raw/nul-in-header, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL echo: GET /raw/echo sends Host and libcurl's Accept, and no User-Agent unless asked
+  FAIL echo: GET /echo on the http face, as Node parsed it
+  FAIL USERAGENT: chars U+0080 to U+00FF arrive in /raw/echo as exactly those bytes, one each, between Host and Accept
+  FAIL TIMEOUT_MS 300 against /raw/stall-after-head: 28, of the class the suite's table gives it, and no other, no sooner than 300 ms and sooner than 600
+  FAIL TIMEOUT_MS 300 against /raw/stall-before-head: 28, of the class the suite's table gives it, and no other, no sooner than 300 ms and sooner than 600
+  FAIL NOBODY: head of /echo gets no body, and a Content-Length that counts a HEAD request's echo
+  FAIL NOBODY: head of /status/200 gets its headers and no body
+  FAIL MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, of the class the suite's table gives it, and no other, before any chunk: the chunk log is empty
+  FAIL a request header whose value holds every char U+0001 to U+00FF but CR and LF arrives in /raw/echo byte for byte, after Accept
+  FAIL request headers keep their order and their repeats, and an empty value is sent as libcurl's Name; form writes it
+  FAIL a Host header is libcurl's exception to order: sent first, in place of libcurl's own, spelt Host, ahead of Accept and the headers before it
+  FAIL the effective URL: libcurl's parse of the request, dot segments gone; a redirect not followed keeps the request's; é in a path reads back as é
+  FAIL with FOLLOWLOCATION set by the private follow field, curl-request-following, a followed redirect answers the last request's status, headers and body, and its effective URL
+  FAIL while a transfer is live, it holds its easy handle, its CURLU, its header list, its error buffer and itself, one each, beside the engine's multi handle and slot, and the live-transfer table and the engine's table each hold it; once it ends, the engine's handle and slot alone, and both tables empty
+  FAIL libcurl's texts for reset-after-pause: strerror is curl_easy_strerror's for the code, and the error buffer "Recv failure: Connection reset by peer"
+  FAIL libcurl's texts for reset-mid-body: strerror is curl_easy_strerror's for the code, and the error buffer "Recv failure: Connection reset by peer"
+  FAIL libcurl's texts for bad-status-line: strerror is curl_easy_strerror's for the code, and the error buffer "Received HTTP/0.9 when not allowed"
+  FAIL libcurl's texts for http09: strerror is curl_easy_strerror's for the code, and the error buffer "Received HTTP/0.9 when not allowed"
+  FAIL libcurl's texts for header-no-colon: strerror is curl_easy_strerror's for the code, and the error buffer "Header without colon"
+  FAIL libcurl's texts for nul-in-header, whose text is a varying case's: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for close-before-response: strerror is curl_easy_strerror's for the code, and the error buffer "Empty reply from server"
+  FAIL libcurl's texts for a body limit below a Content-Length: strerror is curl_easy_strerror's for the code, and the error buffer "Maximum file size exceeded"
+  FAIL libcurl's texts for bad-chunk-size: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for short-body: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for stall-after-head, TIMEOUT_MS 300: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for a body limit the callable enforces: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for a fault planted at chunk 1: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL body limit 10 against http /status/200: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 11 against http /status/200: (response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "status 200\n"), the callable having accepted "status 200\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 9 against http /status/200: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 0 against http /status/200: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against http /chunked: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against http /chunked: (refused body-limit 23), the callable having accepted "alpha\n", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 16 against http /chunked: (refused body-limit 23), the callable having accepted "alpha\nbeta\n", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 17 against http /chunked: (response 200 http/1.1 (("Transfer-Encoding" "chunked") ("Connection" "keep-alive")) "alpha\nbeta\ngamma\n"), the callable having accepted "alpha\nbeta\ngamma\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 0 against http /chunked: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/content-length: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/content-length: (response 200 http/1.1 (("Content-Length" "6")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 3 against raw /raw/chunked: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/chunked: (refused body-limit 23), the callable having accepted "hello", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/chunked: (response 200 http/1.1 (("Transfer-Encoding" "chunked")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 3 against raw /raw/close-delimited: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/close-delimited: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/close-delimited: (response 200 http/1.1 (("Connection" "close")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 2 against raw /raw/chunked-tiny: (refused body-limit 23), the callable having accepted "he", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/http10: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 3 against raw /raw/drip?bytes=5&gap=10: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 1 of /status/200's one: the callable raises (planted-fault 1), so the transfer is callback-raised, 23, recording it, the chunk logged raised, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 2 of /chunked's three: the first accepted, the second raised, recording (planted-fault 2), and no third, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 1 of /status/200, with a body limit of 10 it passes: the fault comes before the limit check, so callback-raised, not body-limit, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 2 of /status/200's one: never reached, so the response whole, its chunk accepted, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 3 of /chunked, with a body limit of 6: never reached, since the limit refuses chunk 2 and ends the transfer as body-limit, recording nothing; the log, 6 bytes accepted, then a refusal, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back to the engine's alone
+  FAIL the error carries libcurl's texts: strerror for 23, and the error buffer's, both strings; no recorded object for the body limit
+  FAIL an option libcurl refuses raises setopt-failed, naming it, with its code and a request size of 0, of no class, through each integer binding: LOW_SPEED_LIMIT -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone
+  FAIL REDIR_PROTOCOLS_STR, observed: FOLLOWLOCATION by the private follow field, to ftp://127.0.0.1:1/, a protocol this libcurl lists, is refused as 1, CURLE_UNSUPPORTED_PROTOCOL, never tried, of the class the suite's table gives it, and no other; the counts back to the engine's alone
+  FAIL a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back to the engine's alone
+  FAIL two threads, each submitting its own transfer to the one engine at once: the engine's table held both together, both bodies whole, each chunk on the engine's thread, and the counts back to the engine's alone
+  FAIL the lock: a 50-byte drip, 10 ms apart, beside a thread that collects every 2 ms: the whole body, every chunk accepted on the engine's thread, ten collections or more while it was live, and the counts back to the engine's alone
+  FAIL the proxy field, in a child: http_proxy at the http face and no proxy key, the default: the request reaches the proxy, its target in absolute form
+  FAIL the proxy field, in a child: http_proxy at the http face and the proxy key at environment: through the proxy
+  FAIL the proxy field, in a child: http_proxy at the http face and the proxy key at #f: the request goes direct, PROXY "" reading no variable
+  FAIL the proxy field, in a child: all_proxy at the http face and no proxy key, the default: through the proxy
+  FAIL the proxy field, in a child: all_proxy at the http face and the proxy key at #f: direct
+  FAIL the proxy field, in a child: no proxy variable and no proxy key: direct, so the variable is what sent the others through
+check-variadic: ok long mutant: (bind-variadic "curl_easy_setopt" (uptr int long) int info) is now (bind-required "curl_easy_setopt" (uptr int long) int info), and no other line changed
+check-variadic: ok long static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-long alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok long arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 4 failing tests, 4 of them through curl-easy-setopt-long
+  FAIL RTSP_CLIENT_CSEQ set to 1234567 through curl-easy-setopt-long reads back exactly through curl-easy-getinfo
+  FAIL RTSP_CLIENT_CSEQ set to 2000000011 through curl-easy-setopt-long reads back exactly through curl-easy-getinfo
+  FAIL MAXFILESIZE set to -1 through curl-easy-setopt-long answers CURLE_BAD_FUNCTION_ARGUMENT
+  FAIL MAXFILESIZE set to -1099511627776 through curl-easy-setopt-long answers CURLE_BAD_FUNCTION_ARGUMENT
+check-variadic: ok long transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 124), timed out: no exit within 180s, which counts as failing
+  FAIL TIMEOUT_MS 300 against /raw/stall-after-head: 28, of the class the suite's table gives it, and no other, no sooner than 300 ms and sooner than 600
+  FAIL TIMEOUT_MS 300 against /raw/stall-before-head: 28, of the class the suite's table gives it, and no other, no sooner than 300 ms and sooner than 600
+  FAIL NOBODY: head of /echo gets no body, and a Content-Length that counts a HEAD request's echo
+  FAIL NOBODY: head of /status/200 gets its headers and no body
+  FAIL MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, of the class the suite's table gives it, and no other, before any chunk: the chunk log is empty
+  FAIL a request header whose value holds every char U+0001 to U+00FF but CR and LF arrives in /raw/echo byte for byte, after Accept
+  FAIL request headers keep their order and their repeats, and an empty value is sent as libcurl's Name; form writes it
+  FAIL a Host header is libcurl's exception to order: sent first, in place of libcurl's own, spelt Host, ahead of Accept and the headers before it
+  FAIL the effective URL: libcurl's parse of the request, dot segments gone; a redirect not followed keeps the request's; é in a path reads back as é
+  FAIL with FOLLOWLOCATION set by the private follow field, curl-request-following, a followed redirect answers the last request's status, headers and body, and its effective URL
+  FAIL a URL whose scheme is not http or https is refused at submit as scheme-not-http, and one curl_url refuses with its code; nothing native is left
+  FAIL while a transfer is live, it holds its easy handle, its CURLU, its header list, its error buffer and itself, one each, beside the engine's multi handle and slot, and the live-transfer table and the engine's table each hold it; once it ends, the engine's handle and slot alone, and both tables empty
+check-variadic: ok pointer mutant: (bind-variadic "curl_easy_setopt" (uptr int uptr) int info) is now (bind-required "curl_easy_setopt" (uptr int uptr) int info), and no other line changed
+check-variadic: ok pointer static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-pointer alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok pointer arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 24 failing tests, 2 of them through curl-easy-setopt-pointer
+  FAIL PRIVATE set to #x123456789ABCDEF through curl-easy-setopt-pointer reads back exactly through curl-easy-getinfo
+  FAIL PRIVATE set to #xFEDCBA9876543210 through curl-easy-setopt-pointer reads back exactly through curl-easy-getinfo
+  FAIL two drips with MAX_TOTAL_CONNECTIONS set to 1 through curl-multi-setopt-long run one after the other: the second is done 500 ms or more after the first, and every call and both transfers answer OK
+  FAIL two drips with MAX_TOTAL_CONNECTIONS set to 2 through curl-multi-setopt-long run together: the second is done within 500 ms of the first, and every call and both transfers answer OK
+  FAIL the share's SHARE of share-0 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-1 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-2 through curl-share-setopt-int answers (0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE of share-3 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-4 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-5 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-8 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-9 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-99 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share--1 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-0 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-2 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-3 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-4 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-5 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-8 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-9 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-99 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare--1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+check-variadic: ok pointer transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 119 failing tests
+  FAIL curl-request-check of a request every check takes returns, leaves nothing native, the CURLU it parses freed, starts no transfer and queues nothing on any engine: the engine's queue stays empty, and the request, submitted after, runs
+  FAIL shared: GET http /status/200, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/204, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/205, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/304, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/404, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/500, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/599, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /redirect/302?to=/status/200, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /redirect/301?to=http://elsewhere.invalid/, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /chunked, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /nowhere, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/content-length, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked-extensions-trailers, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked-tiny, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/close-delimited, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/http10, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/drip?bytes=3&gap=20, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/pause-mid-body?ms=50, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/reset-after-pause?ms=50, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/reset-after-pause?ms=50 raises perform-failed 56, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/big-header?bytes=1000, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/many-headers?count=10, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/many-headers?count=1000, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/bad-status-line, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/bad-status-line raises perform-failed 1, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/bad-chunk-size, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/bad-chunk-size raises perform-failed 56, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/short-body, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/short-body raises perform-failed 18, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/reset-mid-body, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/reset-mid-body raises perform-failed 56, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/chunked-and-content-length, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/header-no-colon, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/header-no-colon raises perform-failed 8, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/nul-in-header, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/nul-in-header raises perform-failed 8, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/close-before-response, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/close-before-response raises perform-failed 52, as the class the suite's table gives it, send-receive, and no other
+  FAIL shared: GET raw /raw/http09, whole, and the counts back to the engine's alone
+  FAIL class, shared: GET raw /raw/http09 raises perform-failed 1, as the class the suite's table gives it, protocol, and no other
+  FAIL shared: GET raw /raw/bare-lf, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/unknown-script, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/header-bytes, whole, and the counts back to the engine's alone
+  FAIL the cap: GET raw /raw/big-header?bytes=102372, 102,400 bytes with its status line and empty line, is taken whole; bytes=102373 and bytes=102380 are refused, header-limit, of &curl-too-large; GET raw /raw/many-headers at 1,001 and 50,000 lines, header-limit too; each with the counts back to the engine's alone
+  FAIL varying: GET raw /raw/big-header?bytes=102400, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL class, by the row for "8.7.1": GET raw /raw/big-header?bytes=102400 raises perform-failed 100, as the class the suite's table gives it, too-large, and no other
+  FAIL varying: GET raw /raw/big-header?bytes=1048576, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL class, by the row for "8.7.1": GET raw /raw/big-header?bytes=1048576 raises perform-failed 100, as the class the suite's table gives it, too-large, and no other
+  FAIL varying: GET raw /raw/bad-status-code, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL class, by the row for "8.7.1": GET raw /raw/bad-status-code raises perform-failed 1, as the class the suite's table gives it, protocol, and no other
+  FAIL varying: GET raw /raw/conflicting-content-length, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL varying: the error buffer of GET raw /raw/nul-in-header, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL echo: GET /raw/echo sends Host and libcurl's Accept, and no User-Agent unless asked
+  FAIL echo: GET /echo on the http face, as Node parsed it
+  FAIL USERAGENT: chars U+0080 to U+00FF arrive in /raw/echo as exactly those bytes, one each, between Host and Accept
+  FAIL TIMEOUT_MS 300 against /raw/stall-after-head: 28, of the class the suite's table gives it, and no other, no sooner than 300 ms and sooner than 600
+  FAIL TIMEOUT_MS 300 against /raw/stall-before-head: 28, of the class the suite's table gives it, and no other, no sooner than 300 ms and sooner than 600
+  FAIL NOBODY: head of /echo gets no body, and a Content-Length that counts a HEAD request's echo
+  FAIL NOBODY: head of /status/200 gets its headers and no body
+  FAIL MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, of the class the suite's table gives it, and no other, before any chunk: the chunk log is empty
+  FAIL a request header whose value holds every char U+0001 to U+00FF but CR and LF arrives in /raw/echo byte for byte, after Accept
+  FAIL request headers keep their order and their repeats, and an empty value is sent as libcurl's Name; form writes it
+  FAIL a Host header is libcurl's exception to order: sent first, in place of libcurl's own, spelt Host, ahead of Accept and the headers before it
+  FAIL the effective URL: libcurl's parse of the request, dot segments gone; a redirect not followed keeps the request's; é in a path reads back as é
+  FAIL with FOLLOWLOCATION set by the private follow field, curl-request-following, a followed redirect answers the last request's status, headers and body, and its effective URL
+  FAIL while a transfer is live, it holds its easy handle, its CURLU, its header list, its error buffer and itself, one each, beside the engine's multi handle and slot, and the live-transfer table and the engine's table each hold it; once it ends, the engine's handle and slot alone, and both tables empty
+  FAIL libcurl's texts for reset-after-pause: strerror is curl_easy_strerror's for the code, and the error buffer "Recv failure: Connection reset by peer"
+  FAIL libcurl's texts for reset-mid-body: strerror is curl_easy_strerror's for the code, and the error buffer "Recv failure: Connection reset by peer"
+  FAIL libcurl's texts for bad-status-line: strerror is curl_easy_strerror's for the code, and the error buffer "Received HTTP/0.9 when not allowed"
+  FAIL libcurl's texts for http09: strerror is curl_easy_strerror's for the code, and the error buffer "Received HTTP/0.9 when not allowed"
+  FAIL libcurl's texts for header-no-colon: strerror is curl_easy_strerror's for the code, and the error buffer "Header without colon"
+  FAIL libcurl's texts for nul-in-header, whose text is a varying case's: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for close-before-response: strerror is curl_easy_strerror's for the code, and the error buffer "Empty reply from server"
+  FAIL libcurl's texts for a body limit below a Content-Length: strerror is curl_easy_strerror's for the code, and the error buffer "Maximum file size exceeded"
+  FAIL libcurl's texts for bad-chunk-size: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for short-body: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for stall-after-head, TIMEOUT_MS 300: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for a body limit the callable enforces: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL libcurl's texts for a fault planted at chunk 1: strerror is curl_easy_strerror's for the code, and the error buffer a non-empty text, no U+0000 in it, shorter than CURL_ERROR_SIZE
+  FAIL body limit 10 against http /status/200: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 11 against http /status/200: (response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "status 200\n"), the callable having accepted "status 200\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 9 against http /status/200: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 0 against http /status/200: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against http /chunked: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against http /chunked: (refused body-limit 23), the callable having accepted "alpha\n", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 16 against http /chunked: (refused body-limit 23), the callable having accepted "alpha\nbeta\n", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 17 against http /chunked: (response 200 http/1.1 (("Transfer-Encoding" "chunked") ("Connection" "keep-alive")) "alpha\nbeta\ngamma\n"), the callable having accepted "alpha\nbeta\ngamma\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 0 against http /chunked: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/content-length: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/content-length: (response 200 http/1.1 (("Content-Length" "6")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 3 against raw /raw/chunked: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/chunked: (refused body-limit 23), the callable having accepted "hello", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/chunked: (response 200 http/1.1 (("Transfer-Encoding" "chunked")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 3 against raw /raw/close-delimited: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/close-delimited: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/close-delimited: (response 200 http/1.1 (("Connection" "close")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 2 against raw /raw/chunked-tiny: (refused body-limit 23), the callable having accepted "he", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 5 against raw /raw/http10: (refused body-limit 23), the callable having accepted "", then refused the next chunk, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 3 against raw /raw/drip?bytes=5&gap=10: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 1 of /status/200's one: the callable raises (planted-fault 1), so the transfer is callback-raised, 23, recording it, the chunk logged raised, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 2 of /chunked's three: the first accepted, the second raised, recording (planted-fault 2), and no third, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 1 of /status/200, with a body limit of 10 it passes: the fault comes before the limit check, so callback-raised, not body-limit, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 2 of /status/200's one: never reached, so the response whole, its chunk accepted, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 3 of /chunked, with a body limit of 6: never reached, since the limit refuses chunk 2 and ends the transfer as body-limit, recording nothing; the log, 6 bytes accepted, then a refusal, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back to the engine's alone
+  FAIL the error carries libcurl's texts: strerror for 23, and the error buffer's, both strings; no recorded object for the body limit
+  FAIL an option libcurl refuses raises setopt-failed, naming it, with its code and a request size of 0, of no class, through each integer binding: LOW_SPEED_LIMIT -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone
+  FAIL REDIR_PROTOCOLS_STR, observed: FOLLOWLOCATION by the private follow field, to ftp://127.0.0.1:1/, a protocol this libcurl lists, is refused as 1, CURLE_UNSUPPORTED_PROTOCOL, never tried, of the class the suite's table gives it, and no other; the counts back to the engine's alone
+  FAIL a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back to the engine's alone
+  FAIL two threads, each submitting its own transfer to the one engine at once: the engine's table held both together, both bodies whole, each chunk on the engine's thread, and the counts back to the engine's alone
+  FAIL the lock: a 50-byte drip, 10 ms apart, beside a thread that collects every 2 ms: the whole body, every chunk accepted on the engine's thread, ten collections or more while it was live, and the counts back to the engine's alone
+  FAIL the proxy field, in a child: http_proxy at the http face and no proxy key, the default: the request reaches the proxy, its target in absolute form
+  FAIL the proxy field, in a child: http_proxy at the http face and the proxy key at environment: through the proxy
+  FAIL the proxy field, in a child: http_proxy at the http face and the proxy key at #f: the request goes direct, PROXY "" reading no variable
+  FAIL the proxy field, in a child: all_proxy at the http face and no proxy key, the default: through the proxy
+  FAIL the proxy field, in a child: all_proxy at the http face and the proxy key at #f: direct
+  FAIL the proxy field, in a child: no proxy variable and no proxy key: direct, so the variable is what sent the others through
+check-variadic: ok off-t mutant: (bind-variadic "curl_easy_setopt" (uptr int integer-64) int info) is now (bind-required "curl_easy_setopt" (uptr int integer-64) int info), and no other line changed
+check-variadic: ok off-t static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-off-t alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok off-t arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 2 failing tests, 2 of them through curl-easy-setopt-off-t
+  FAIL MAXFILESIZE_LARGE set to -1 through curl-easy-setopt-off-t answers CURLE_BAD_FUNCTION_ARGUMENT
+  FAIL MAXFILESIZE_LARGE set to -4611686018427387904 through curl-easy-setopt-off-t answers CURLE_BAD_FUNCTION_ARGUMENT
+check-variadic: ok off-t transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 7 failing tests
+  FAIL curl-request-check of a request every check takes returns, leaves nothing native, the CURLU it parses freed, starts no transfer and queues nothing on any engine: the engine's queue stays empty, and the request, submitted after, runs
+  FAIL MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, of the class the suite's table gives it, and no other, before any chunk: the chunk log is empty
+  FAIL libcurl's texts for a body limit below a Content-Length: strerror is curl_easy_strerror's for the code, and the error buffer "Maximum file size exceeded"
+  FAIL body limit 9 against http /status/200: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 0 against http /status/200: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 3 against raw /raw/drip?bytes=5&gap=10: (refused perform-failed 63), the callable having accepted "", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL an option libcurl refuses raises setopt-failed, naming it, with its code and a request size of 0, of no class, through each integer binding: LOW_SPEED_LIMIT -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone
+check-variadic: ok getinfo mutant: (bind-variadic "curl_easy_getinfo" (uptr int uptr) int info) is now (bind-required "curl_easy_getinfo" (uptr int uptr) int info), and no other line changed
+check-variadic: ok getinfo static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-getinfo alone: a mismatch and a wrong-binder for curl_easy_getinfo
+check-variadic: ok getinfo arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant (exit 1), naming 6 failing tests
+  FAIL PRIVATE set to #x123456789ABCDEF through curl-easy-setopt-pointer reads back exactly through curl-easy-getinfo
+  FAIL PRIVATE set to #xFEDCBA9876543210 through curl-easy-setopt-pointer reads back exactly through curl-easy-getinfo
+  FAIL RTSP_CLIENT_CSEQ set to 1234567 through curl-easy-setopt-long reads back exactly through curl-easy-getinfo
+  FAIL RTSP_CLIENT_CSEQ set to 2000000011 through curl-easy-setopt-long reads back exactly through curl-easy-getinfo
+  FAIL two drips with MAX_TOTAL_CONNECTIONS set to 1 through curl-multi-setopt-long run one after the other: the second is done 500 ms or more after the first, and every call and both transfers answer OK
+  FAIL two drips with MAX_TOTAL_CONNECTIONS set to 2 through curl-multi-setopt-long run together: the second is done within 500 ms of the first, and every call and both transfers answer OK
+check-variadic: ok getinfo transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 55 failing tests
+  FAIL shared: GET http /status/200, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/204, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/205, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/304, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/404, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/500, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /status/599, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /redirect/302?to=/status/200, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /redirect/301?to=http://elsewhere.invalid/, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /chunked, whole, and the counts back to the engine's alone
+  FAIL shared: GET http /nowhere, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/content-length, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked-extensions-trailers, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked-tiny, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/close-delimited, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/http10, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/drip?bytes=3&gap=20, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/pause-mid-body?ms=50, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/big-header?bytes=1000, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/many-headers?count=10, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/many-headers?count=1000, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/chunked-and-content-length, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/bare-lf, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/unknown-script, whole, and the counts back to the engine's alone
+  FAIL shared: GET raw /raw/header-bytes, whole, and the counts back to the engine's alone
+  FAIL the cap: GET raw /raw/big-header?bytes=102372, 102,400 bytes with its status line and empty line, is taken whole; bytes=102373 and bytes=102380 are refused, header-limit, of &curl-too-large; GET raw /raw/many-headers at 1,001 and 50,000 lines, header-limit too; each with the counts back to the engine's alone
+  FAIL varying: GET raw /raw/conflicting-content-length, as this libcurl's row says, and the counts back to the engine's alone
+  FAIL echo: GET /raw/echo sends Host and libcurl's Accept, and no User-Agent unless asked
+  FAIL echo: GET /echo on the http face, as Node parsed it
+  FAIL USERAGENT: chars U+0080 to U+00FF arrive in /raw/echo as exactly those bytes, one each, between Host and Accept
+  FAIL NOBODY: head of /echo gets no body, and a Content-Length that counts a HEAD request's echo
+  FAIL NOBODY: head of /status/200 gets its headers and no body
+  FAIL a request header whose value holds every char U+0001 to U+00FF but CR and LF arrives in /raw/echo byte for byte, after Accept
+  FAIL request headers keep their order and their repeats, and an empty value is sent as libcurl's Name; form writes it
+  FAIL a Host header is libcurl's exception to order: sent first, in place of libcurl's own, spelt Host, ahead of Accept and the headers before it
+  FAIL the effective URL: libcurl's parse of the request, dot segments gone; a redirect not followed keeps the request's; é in a path reads back as é
+  FAIL with FOLLOWLOCATION set by the private follow field, curl-request-following, a followed redirect answers the last request's status, headers and body, and its effective URL
+  FAIL while a transfer is live, it holds its easy handle, its CURLU, its header list, its error buffer and itself, one each, beside the engine's multi handle and slot, and the live-transfer table and the engine's table each hold it; once it ends, the engine's handle and slot alone, and both tables empty
+  FAIL body limit 11 against http /status/200: (response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "status 200\n"), the callable having accepted "status 200\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 17 against http /chunked: (response 200 http/1.1 (("Transfer-Encoding" "chunked") ("Connection" "keep-alive")) "alpha\nbeta\ngamma\n"), the callable having accepted "alpha\nbeta\ngamma\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/content-length: (response 200 http/1.1 (("Content-Length" "6")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/chunked: (response 200 http/1.1 (("Transfer-Encoding" "chunked")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL body limit 6 against raw /raw/close-delimited: (response 200 http/1.1 (("Connection" "close")) "hello\n"), the callable having accepted "hello\n", and refused none, each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a fault at chunk 2 of /status/200's one: never reached, so the response whole, its chunk accepted, each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other
+  FAIL a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back to the engine's alone
+  FAIL a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back to the engine's alone
+  FAIL two threads, each submitting its own transfer to the one engine at once: the engine's table held both together, both bodies whole, each chunk on the engine's thread, and the counts back to the engine's alone
+  FAIL the lock: a 50-byte drip, 10 ms apart, beside a thread that collects every 2 ms: the whole body, every chunk accepted on the engine's thread, ten collections or more while it was live, and the counts back to the engine's alone
+  FAIL the proxy field, in a child: http_proxy at the http face and no proxy key, the default: the request reaches the proxy, its target in absolute form
+  FAIL the proxy field, in a child: http_proxy at the http face and the proxy key at environment: through the proxy
+  FAIL the proxy field, in a child: http_proxy at the http face and the proxy key at #f: the request goes direct, PROXY "" reading no variable
+  FAIL the proxy field, in a child: all_proxy at the http face and no proxy key, the default: through the proxy
+  FAIL the proxy field, in a child: all_proxy at the http face and the proxy key at #f: direct
+  FAIL the proxy field, in a child: no proxy variable and no proxy key: direct, so the variable is what sent the others through
+check-variadic: ok multi mutant: (bind-variadic "curl_multi_setopt" (uptr int long) int info) is now (bind-required "curl_multi_setopt" (uptr int long) int info), and no other line changed
+check-variadic: ok multi static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-multi-setopt-long alone: a mismatch and a wrong-binder for curl_multi_setopt
+check-variadic: ok multi arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 1 failing tests, 1 of them through curl-multi-setopt-long
+  FAIL two drips with MAX_TOTAL_CONNECTIONS set to 1 through curl-multi-setopt-long run one after the other: the second is done 500 ms or more after the first, and every call and both transfers answer OK
+check-variadic: ok multi transfer reported: on tarm64osx, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: no transfer shows a multi option on Apple's 8.7.1, which lacks CURLMOPT_QUICK_EXIT and answers any value of it alike
+check-variadic: ok share mutant: (bind-variadic "curl_share_setopt" (uptr int int) int info) is now (bind-required "curl_share_setopt" (uptr int int) int info), and no other line changed
+check-variadic: ok share static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-share-setopt-int alone: a mismatch and a wrong-binder for curl_share_setopt
+check-variadic: ok share arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 14 failing tests, 14 of them through curl-share-setopt-int
+  FAIL the share's SHARE of share-2 through curl-share-setopt-int answers (0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE of share-3 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-4 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-5 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-0 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-2 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-3 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-4 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-5 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-8 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-9 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-99 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare--1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+check-variadic: ok share transfer reported: on tarm64osx, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: no transfer of tests/test-transfer.sps holds a cookie jar, so only tests/test-variadic.sps's share rows show this use
+check-variadic: ok formadd mutant: (bind-variadic "curl_formadd" (uptr uptr int uptr int uptr int) int info) is now (bind-required "curl_formadd" (uptr uptr int uptr int uptr int) int info), and no other line changed
+check-variadic: ok formadd static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-formadd-code alone: a mismatch and a wrong-binder for curl_formadd
+check-variadic: ok formadd arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant (exit 1), naming 1 failing tests
+  FAIL a form of one field, CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS, each with a string, then CURLFORM_END, through curl-formadd-code answers CURL_FORMADD_OK, 0
+check-variadic: ok formadd transfer reported: on tarm64osx, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: the load's mime probe is tests/test-transfer.sps's one call of curl_formadd, and a broken answer refuses multipart alone, which tests/test-transfer.sps never sends; tests/test-variadic.sps's rows through curl-formadd-code show this use
+check-variadic: all 37 steps ok, on tarm64osx

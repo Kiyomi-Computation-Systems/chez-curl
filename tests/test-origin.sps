@@ -595,6 +595,13 @@
                                    (map (lambda (b) (hex2 b upper?)) bytes)))
                        2000))
            '(#t #f)))
+    (test-equal "raw /raw/location?code=307&key=loc-1&to=%2Fx: the whole bytes, then eof; the head counted for its key, as /sink counts it, so http's /seen reads 1, and 0 for a key never given"
+      (list (list (head "307" "/x") 'eof) (seen-text 1) (seen-text 0))
+      (guard (e (#t (list 'raised (describe e))))
+        (let* ((answer (exchange o 'raw (get "/raw/location?code=307&key=loc-1&to=%2Fx") 2000))
+               (one (seen-of o "loc-1"))
+               (never (seen-of o "loc-never")))
+          (list answer one never))))
     (test-equal "raw /raw/location?code=302&ms=200&to=%2Fx: the whole bytes, then eof, the first at least 200 ms after connecting"
       (list (head "302" "/x") 'eof 'late-enough)
       (guard (e (#t (list 'raised (describe e))))
@@ -776,6 +783,8 @@
          (list "location with a pair that has no =" (get "/raw/location?code=302&to"))
          (list "location with a % and no hex after it" (get "/raw/location?code=302&to=%zz"))
          (list "location with a % and one hex digit" (get "/raw/location?code=302&to=a%4"))
+         (list "location key twice" (get "/raw/location?code=302&key=lk&key=lk"))
+         (list "location key past retry's characters" (get "/raw/location?code=302&key=a%2Fb"))
          (list "retry without a query" (get "/raw/retry"))
          (list "retry with an empty query" (get "/raw/retry?"))
          (list "retry without key" (get "/raw/retry?fail=1&how=close"))
@@ -1275,7 +1284,140 @@
                (get "/status/200" close)
                '("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n" eof))))
   (sink-scenarios o)
+  (parts-scenarios o)
   (duplex-scenarios o))
+
+;; --- the parts route (M8 slice 3) -------------------------------------------------
+;; The bodies are built here, byte by byte, and their SHA-256 values were
+;; computed on the host (sha256sum, and Python's hashlib, agreeing), never
+;; by the origin.
+(define sha-parts-a "6454d8e0ec08abcb72817eedcf3a0387bc99943457ed00a3c524da70615a4792")
+(define sha-parts-b "8ef0beb3fac58a2130d1bc15fc7b3970d6f34b8b0e3a30b0312902ae1c602205")
+;; the first 16 hex digits of each part's: "hi|\\" then 0x01; the pattern's
+;; 300 bytes; "abc"
+(define sha16-hi "2430cdfdae1a3ce9")
+(define sha16-p300 "43f9b5d59eb10881")
+(define sha16-abc "ba7816bf8f01cfea")
+
+;; parts-body-a : String
+;; Two parts, boundary BND, then the closing delimiter and CR LF: a, its data
+;; hi|, a backslash and 0x01; f, a filename and a type, the pattern's 300
+;; bytes.
+(define parts-body-a
+  (string-append "--BND\r\nContent-Disposition: form-data; name=\"a\"\r\n\r\nhi|\\" (string (integer->char 1))
+                 "\r\n--BND\r\nContent-Disposition: form-data; name=\"f\"; filename=\"p.bin\"\r\n"
+                 "Content-Type: application/octet-stream\r\n\r\n" (pattern-text 300) "\r\n--BND--\r\n"))
+
+;; parts-body-b : String
+;; Four bytes of preamble, then a part the body ends inside.
+(define parts-body-b "xx\r\n--BND\r\nContent-Disposition: form-data; name=\"a\"\r\n\r\nabc")
+
+;; parts-report-a : String String -> String
+;; /parts' report for parts-body-a, on FACE, its Expect EXPECT.
+(define (parts-report-a face expect)
+  (string-append "parts " face " method=POST cl=478 te=- expect=" expect
+                 " ct=multipart/form-data;_boundary=BND bytes=478 sha256=" sha-parts-a
+                 " boundary=BND preamble=0 closed=1 epilogue=2 count=2\n"
+                 "part 0 headers=Content-Disposition: form-data; name=\"a\" len=5 sha256=" sha16-hi
+                 " pattern=bad@0 data=hi\\x7c\\\\\\x01\n"
+                 "part 1 headers=Content-Disposition: form-data; name=\"f\"; filename=\"p.bin\"|"
+                 "Content-Type: application/octet-stream len=300 sha256=" sha16-p300 " pattern=ok data=-\n"))
+
+;; parts-report-b : String -> String
+(define (parts-report-b face)
+  (string-append "parts " face " method=PUT cl=58 te=- expect=- ct=multipart/form-data;_boundary=BND bytes=58 sha256="
+                 sha-parts-b " boundary=BND preamble=4 closed=0 epilogue=- count=1\n"
+                 "part 0 headers=Content-Disposition: form-data; name=\"a\" len=3 sha256=" sha16-abc
+                 " pattern=bad@0 data=abc unterminated\n"))
+
+;; parts-answer : String String ... -> String
+;; The http face's whole 200 for REPORT, with Connection: close, after the
+;; header lines PADS.
+(define (parts-answer report . pads)
+  (apply string-append "HTTP/1.1 200 OK\r\n"
+         (append pads
+                 (list "Content-Length: " (number->string (string-length report))
+                       "\r\nConnection: close\r\n\r\n" report))))
+
+;; parts-503 : String -> String
+;; The http face's whole 503 for REPORT, with Connection: close.
+(define (parts-503 report)
+  (string-append "HTTP/1.1 503 Service Unavailable\r\nContent-Length: " (number->string (string-length report))
+                 "\r\nConnection: close\r\n\r\n" report))
+
+(define (parts-scenarios o)
+  (define ct "Content-Type: multipart/form-data; boundary=BND\r\n")
+  (define (sized body) (string-append "Content-Length: " (number->string (string-length body)) "\r\n"))
+  (test-equal "http /parts, two parts by Content-Length: the report, whole, each part's headers, length, hash, pattern and escaped data, then eof; /seen reads 1"
+    (list (list (parts-answer (parts-report-a "http" "-")) 'eof) (seen-text 1))
+    (let* ((r (exchange o 'http (string-append (post "/parts?key=pt-a" ct (sized parts-body-a) close) parts-body-a)
+                        2000))
+           (seen (seen-of o "pt-a")))
+      (list r seen)))
+  (test-equal "http /parts, a PUT whose body ends inside its one part, after a preamble of 4 bytes: preamble=4, closed=0, the part unterminated"
+    (list (parts-answer (parts-report-b "http")) 'eof)
+    (exchange o 'http (string-append "PUT /parts?key=pt-b HTTP/1.1\r\nHost: 127.0.0.1\r\n" ct (sized parts-body-b)
+                                     close "\r\n" parts-body-b)
+              2000))
+  (test-equal "http /parts, a body with no boundary: boundary=-, no part read"
+    (list (parts-answer (string-append "parts http method=POST cl=3 te=- expect=- ct=text/plain bytes=3 sha256="
+                                       "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+                                       " boundary=- preamble=- closed=0 epilogue=- count=0\n"))
+          'eof)
+    (exchange o 'http (string-append (post "/parts?key=pt-none" "Content-Type: text/plain\r\n" "Content-Length: 3\r\n"
+                                           close)
+                                     "abc")
+              2000))
+  (test-equal "http /parts?lines=6: the answer carries 6 header lines in all, x-p0 to x-p3 before Content-Length and Connection"
+    (list (parts-answer (parts-report-a "http" "-") "x-p0: v\r\n" "x-p1: v\r\n" "x-p2: v\r\n" "x-p3: v\r\n") 'eof)
+    (exchange o 'http (string-append (post "/parts?key=pt-lines&lines=6" ct (sized parts-body-a) close) parts-body-a)
+              2000))
+  (test-equal "http /parts with Expect: 100-continue: a 100 at once, then the report"
+    (list (string-append "HTTP/1.1 100 Continue\r\n\r\n" (parts-answer (parts-report-a "http" "100-continue")))
+          'eof)
+    (exchange o 'http (string-append (post "/parts?key=pt-continue" ct (sized parts-body-a)
+                                           "Expect: 100-continue\r\n" close)
+                                     parts-body-a)
+              2000))
+  (test-equal "http /parts?hold=1 with Expect: counted as its head arrives, its 100 and its report only once /raw/release names its key, 800 ms on; held without Expect, answered at once"
+    (list (seen-text 1) released-text 'held-until-released
+          (list (string-append "HTTP/1.1 100 Continue\r\n\r\n" (parts-answer (parts-report-a "http" "100-continue")))
+                'eof)
+          (list (parts-answer (parts-report-a "http" "-")) 'eof))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((finish (spawned-probe o 'http (string-append (post "/parts?key=pt-hold&hold=1" ct (sized parts-body-a)
+                                                                 "Expect: 100-continue\r\n" close)
+                                                           parts-body-a)
+                                    5000))
+             (seen (begin (pause-ms 400) (seen-of o "pt-hold")))
+             (released (begin (pause-ms 400) (exchange o 'raw (get "/raw/release?key=pt-hold") 2000)))
+             (p (finish))
+             (first (arrival (probe-arrivals p) 0))
+             (unheld (exchange o 'http (string-append (post "/parts?key=pt-unheld&hold=1" ct (sized parts-body-a) close)
+                                                      parts-body-a)
+                               2000)))
+        (list seen released
+              (if (and first (>= first 700)) 'held-until-released (list 'first-byte-at first))
+              (list (latin-1 (probe-bytes p)) (probe-end p))
+              unheld))))
+  (test-equal "http /parts?fail=2: the first two requests of its key answered 503, each with its report, the third 200"
+    (list (list (parts-503 (parts-report-a "http" "-")) 'eof) (list (parts-503 (parts-report-a "http" "-")) 'eof)
+          (list (parts-answer (parts-report-a "http" "-")) 'eof))
+    (in-order (lambda (n)
+                (exchange o 'http (string-append (post "/parts?key=pt-fail&fail=2" ct (sized parts-body-a) close)
+                                                 parts-body-a)
+                          2000))
+              '(1 2 3)))
+  (test-equal "http /parts: a query it refuses is 404, and counts nothing: no key, lines=1, lines=100001, hold twice, fail=0, fail=11, another name"
+    (list not-found-close not-found-close not-found-close not-found-close not-found-close not-found-close
+          not-found-close (seen-text 0))
+    (let* ((rows (in-order (lambda (target)
+                             (exchange o 'http (string-append (post target "Content-Length: 0\r\n" close)) 2000))
+                      '("/parts" "/parts?key=pt-refused&lines=1" "/parts?key=pt-refused&lines=100001"
+                        "/parts?key=pt-refused&hold=1&hold=1" "/parts?key=pt-refused&fail=0"
+                        "/parts?key=pt-refused&fail=11" "/parts?key=pt-refused&x=1")))
+           (seen (seen-of o "pt-refused")))
+      (append rows (list seen)))))
 
 ;; --- the sinks (the M6 plan, slice 2) -------------------------------------------
 ;; Each test has keys of its own: the counts live as long as the origin, and

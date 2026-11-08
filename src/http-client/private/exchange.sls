@@ -203,7 +203,7 @@
           exchange-policy exchange-attempts exchange-retried exchange-called?
           exchange-mark-called exchange-deadline exchange-condition exchange-live-condition
           exchange-submission exchange-step exchange-steps-past? exchange-raised
-          retry-after-ms http-date-seconds backoff-wait
+          retry-after-ms http-date-seconds backoff-wait next-request
           make-http-response http-response? http-response-status http-response-http-version
           http-response-url http-response-headers http-response-body http-response-timings
           http-response-history http-response-header http-response-text http-response-with)
@@ -745,6 +745,15 @@
   ;; its cookie jar, the session's, to every hop, another origin's too:
   ;; libcurl matches each cookie to a host, so a jar needs no drop; a jar
   ;; closed since is refused as the hop is submitted, cookie-jar-closed.
+  ;; It is LAST through curl-request-with, its url, method and headers
+  ;; given, the body and body-length #f when dropped, the credentials #f
+  ;; when ACROSS, every other field kept as LAST holds it: a multipart body
+  ;; kept is LAST's own, its files not stat'd here, so the core makes no
+  ;; file system call, and a file lost mid-call is refused at the hop's
+  ;; submit, as at a retry's (ADR-0023, after slice 3's review). LAST's
+  ;; hatch options, fault and follow are kept too, where make-curl-request
+  ;; made them (), #f and #f: the high level sets none of them, so they are
+  ;; those already.
   (define (next-request last url status across another-host)
     (let* ((method (curl-request-method last))
            (dropped (body-dropped? status method))
@@ -754,24 +763,12 @@
                                          (and across (credential-header? name))
                                          (and another-host (ascii-ci=? name "Host"))))))
                             (curl-request-headers last))))
-      (make-curl-request url
-                         'method (if dropped 'get method)
-                         'headers headers
-                         'body (if dropped #f (curl-request-body last))
-                         'body-length (if dropped #f (curl-request-body-length last))
-                         'stream-buffer (curl-request-stream-buffer last)
-                         'user-agent (curl-request-user-agent last)
-                         'timeout-ms (curl-request-timeout-ms last)
-                         'connect-timeout-ms (curl-request-connect-timeout-ms last)
-                         'body-limit (curl-request-body-limit last)
-                         'ca-file (curl-request-ca-file last)
-                         'verify (curl-request-verify last)
-                         'proxy (curl-request-proxy last)
-                         'http-version (curl-request-http-version last)
-                         'credentials (if across #f (curl-request-credentials last))
-                         'proxy-ca-file (curl-request-proxy-ca-file last)
-                         'proxy-verify (curl-request-proxy-verify last)
-                         'cookie-jar (curl-request-cookie-jar last))))
+      (apply curl-request-with last
+             'url url
+             'method (if dropped 'get method)
+             'headers headers
+             (append (if dropped '(body #f body-length #f) '())
+                     (if across '(credentials #f) '())))))
 
   ;; follow : State Response Integer String
   ;;          -> (U (List 'fail Condition) (List 'next State Request 0))

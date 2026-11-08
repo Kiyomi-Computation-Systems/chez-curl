@@ -295,7 +295,7 @@
     (cite adr-0001 "One checked wrapper owns every copy between a bytevector and foreign memory."))
   (define name-not-kept
     (cite adr-0013 "`curl_easy_option_by_name` and `curl_easy_header` read their name argument during the call, and keep no pointer to it."))
-  ;; The four variadic entries, each bound once per value type with
+  ;; The five variadic entries, each bound once per value type with
   ;; (__varargs_after 2): their first two parameters are named, the rest
   ;; variadic. Apple arm64 passes those on the stack, so the convention is
   ;; what makes them arrive there.
@@ -318,6 +318,11 @@
   (define adr-0030 ".plans/decisions/0030-streams-are-request-keys-and-token-operations.md")
   (define pause-replays
     (cite adr-0012 "so the callbacks run on the engine's thread, inside that call, as inside a perform."))
+  ;; curl_mime_filedata stats its path, and on 7.85.0 and 8.5.0 accesses it:
+  ;; a file system call, which can wait on a slow or a network mount, so it
+  ;; is __collect_safe, through bind-blocking (the M8 plan, section 3.9).
+  (define filedata-can-block
+    (cite adr-0013 "A libcurl call that can block is a `__collect_safe` foreign procedure."))
   (define stream-callables
     (cite adr-0030 "beside `write-body`, and the seek and prerequest callables ADR-0032 adds, each `__collect_safe` and locked, in `(curl private transfer)` alone (ADR-0013)."))
 
@@ -341,13 +346,14 @@
   ;; the checked copies', bytevector-crossing.
   ;;
   ;; A binder names the one way the row's entry may be bound: a known
-  ;; wrapper, foreign-procedure or foreign-callable. The four variadic rows
+  ;; wrapper, foreign-procedure or foreign-callable. The five variadic rows
   ;; name bind-variadic, whose template carries the convention, so a
   ;; binding made any other way, directly with the convention included, is
   ;; the wrong binder, and make check-variadic's mutation of that template
   ;; reaches every binding of them. The four multi calls that can block
   ;; name bind-blocking, whose template carries __collect_safe, likewise,
-  ;; and so does curl_easy_pause, which runs the callables inside it.
+  ;; and so does curl_easy_pause, which runs the callables inside it, and
+  ;; curl_mime_filedata, which stats its path.
   (define conventions-table
     (list (list "curl_version_info" '() cannot-block)
           (list "curl_global_init" '() cannot-block)
@@ -359,11 +365,13 @@
           (list "curl_easy_getinfo" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_multi_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_share_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
+          (list "curl_formadd" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_multi_poll" '(__collect_safe) can-block '(bound-by bind-blocking))
           (list "curl_multi_perform" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
           (list "curl_multi_remove_handle" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
           (list "curl_multi_cleanup" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
           (list "curl_easy_pause" '(__collect_safe) pause-replays '(bound-by bind-blocking))
+          (list "curl_mime_filedata" '(__collect_safe) filedata-can-block '(bound-by bind-blocking))
           (list "curl_multi_init" '() e1-plain)
           (list "curl_multi_add_handle" '() e1-plain)
           (list "curl_multi_wakeup" '() e1-plain)
@@ -383,6 +391,14 @@
           (list "curl_slist_free_all" '() cannot-block)
           (list "curl_share_init" '() cannot-block)
           (list "curl_share_cleanup" '() cannot-block)
+          (list "curl_mime_init" '() cannot-block)
+          (list "curl_mime_free" '() cannot-block)
+          (list "curl_mime_addpart" '() cannot-block)
+          (list "curl_mime_name" '() cannot-block)
+          (list "curl_mime_data" '() cannot-block)
+          (list "curl_mime_filename" '() cannot-block)
+          (list "curl_mime_type" '() cannot-block)
+          (list "curl_formfree" '() cannot-block)
           (list 'write-body '(__collect_safe) callback-in-perform)
           (list 'read-head '(__collect_safe) stream-callables)
           (list 'read-body '(__collect_safe) stream-callables)

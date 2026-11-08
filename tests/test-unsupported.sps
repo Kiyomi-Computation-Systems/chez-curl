@@ -83,13 +83,13 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
 
 ;; running-counts : (Listof (Pairof Symbol Natural))
 ;; The counts while the suite's engine runs and no transfer is live: its
 ;; multi handle and its slot, and nothing else.
 (define running-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0) (mime . 0)))
 
 ;; The load runs here, on this thread, before any engine's thread is forked.
 (define version
@@ -309,7 +309,8 @@
 ;; cookie-jar field's SHARE and COOKIEFILE, and its twins COOKIE,
 ;; COOKIELIST and COOKIESESSION (ADR-0035, amended 2026-11-04); the header
 ;; callable's twin SUPPRESS_CONNECT_HEADERS (ADR-0040, amended 2026-11-06);
-;; every proxy TLS option.
+;; a multipart body's MIME_OPTIONS, owned and never set, MIMEPOST the body
+;; field's now (ADR-0039, decision 2; M8 slice 3); every proxy TLS option.
 (define owned-names
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
@@ -319,7 +320,7 @@
     "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT"
     "HTTP_VERSION" "HTTPAUTH" "XOAUTH2_BEARER"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
-    "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
+    "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "MIME_OPTIONS" "INFILESIZE" "INFILESIZE_LARGE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
     "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
     "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
@@ -351,6 +352,20 @@
          (refused-as name (if (curl-easy-option name) 'owned-option 'unknown-option)))
        owned-names)
   (map (lambda (name) (attach (list (cons name (value-for name))))) owned-names))
+
+;; M8 slice 3 (ADR-0039, decision 2): MIME_OPTIONS at CURLMIMEOPT_FORMESCAPE
+;; sends a name's CR and LF raw on 7.85.0 to 8.20.0, and 8.23.0 refuses the
+;; transfer, so it is owned, never set; MIMEPOST, the body field's, too.
+;; EXPECT_100_TIMEOUT_MS stays the hatch's: beside the Expect: blank it waits
+;; on nothing unless a caller asks for Expect.
+(test-equal "MIMEPOST, the body field's, and MIME_OPTIONS, owned and never set, are refused as owned-option, with values their types take, before anything native; their neighbour EXPECT_100_TIMEOUT_MS is taken, and kept as attached"
+  (list (refused-as "MIMEPOST" 'owned-option) (refused-as "MIME_OPTIONS" 'owned-option)
+        taken '(("EXPECT_100_TIMEOUT_MS" long 2000)))
+  (list (attach (list (cons "MIMEPOST" (value-for "MIMEPOST"))))
+        (attach (list (cons "MIME_OPTIONS" (value-for "MIME_OPTIONS"))))
+        (attach '(("EXPECT_100_TIMEOUT_MS" . 2000)))
+        (guard (e (#t (list 'raised (describe e))))
+          (hatch-settings-of (curl-request-with-options base '(("EXPECT_100_TIMEOUT_MS" . 2000)))))))
 
 ;; M7 slice 1 (ADR-0009, amended 2026-11-02): the http-version field's
 ;; HTTP_VERSION, and its three twins, each seen to undo what the field

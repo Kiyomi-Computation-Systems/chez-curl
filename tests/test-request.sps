@@ -78,13 +78,13 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
 
 ;; running-counts : (Listof (Pairof Symbol Natural))
 ;; The counts while the suite's engine runs and no transfer is live: its
 ;; multi handle and its slot, and nothing else.
 (define running-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0) (mime . 0)))
 
 ;; The load runs here, on this thread, before any engine's thread is forked.
 (define version
@@ -511,6 +511,21 @@
         (sends-body? 'delete 'stream) (sends-body? 'delete #f) (sends-body? 'delete #vu8())
         (sends-body? 'get #f) (sends-body? 'head #f)))
 
+;; A multipart body's plan holds (multipart #(PART) ...); method-settings and
+;; sends-body? read its head alone (the M8 plan, section 3.4).
+(define plan-multipart '(multipart #("a" data #vu8(98) #f #f)))
+
+(test-equal "method-settings for a multipart body, written out: the method's own first, CUSTOMREQUEST for put, patch and delete, then MIMEPOST alone, last, at the mime's placeholder, in place of POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; post, libcurl's own POST, MIMEPOST alone; and sends-body? takes it for every method that sends one, a delete's among them"
+  '((post (("MIMEPOST" . mime)))
+    (put (("CUSTOMREQUEST" . "PUT") ("MIMEPOST" . mime)))
+    (patch (("CUSTOMREQUEST" . "PATCH") ("MIMEPOST" . mime)))
+    (delete (("CUSTOMREQUEST" . "DELETE") ("MIMEPOST" . mime)))
+    (#t #t #t #t #f #f))
+  (append (map (lambda (method) (list method (method-settings method plan-multipart #f)))
+               '(post put patch delete))
+          (list (map (lambda (method) (sends-body? method plan-multipart))
+                     '(post put patch delete get head)))))
+
 ;; --- curl-request-with, and the private constructors -----------------------------------
 
 (define base (apply make-curl-request "http://a/b" (all-keys #f)))
@@ -521,14 +536,17 @@
   (list (request-fields (curl-request-with base 'connect-timeout-ms 10 'method 'patch 'body #vu8(4)))
         (request-fields (curl-request-with base))))
 
+;; url is one key more of curl-request-with's, a new URL (ADR-0023, after
+;; slice 3's review): tests/test-multipart.sps holds its refusals beside
+;; make-curl-request's. uri is none.
 (test-equal "curl-request-with refuses as make-curl-request does, as curl-request-with: an unknown key, a missing value, a repeated key, a wrong type, a body kept with get, and what is no request"
-  '((request-refused key url unknown-key)
+  '((request-refused key uri unknown-key)
     (request-refused key body missing-value)
     (request-refused key verify repeated-key)
     (assertion-violation curl-request-with)
     (request-refused body get body-not-allowed)
     (assertion-violation curl-request-with))
-  (list (failed (lambda () (curl-request-with base 'url "http://b/")))
+  (list (failed (lambda () (curl-request-with base 'uri "http://b/")))
         (failed (lambda () (curl-request-with base 'body)))
         (failed (lambda () (curl-request-with base 'verify #t 'verify #t)))
         (failed (lambda () (curl-request-with base 'connect-timeout-ms 0)))
@@ -580,6 +598,25 @@
         (sent-header-lines '(("X-A" . "1")) 'get #f)
         (sent-header-lines '() 'delete 'stream)
         (sent-header-lines '(("Content-Type" . "text/plain")) 'put 'stream)))
+
+;; Beside MIMEPOST the Content-Type: blank sent Content-Type: ; boundary=B,
+;; every part an attachment (ADR-0039, decision 1): a multipart transfer
+;; leaves it out, and keeps Expect:, unless a header of that name is given.
+(test-equal "sent-header-lines for a multipart body: each header as its line, then Expect: alone, for post, put, patch and delete, unless an Expect header, in any case, is given; never Content-Type:"
+  '(("Expect:")
+    ("X-A: 1" "Expect:")
+    ("Expect:")
+    ("Expect:")
+    ("Expect:")
+    ("expect: 100-continue")
+    ("X-E;" "EXPECT: x"))
+  (list (sent-header-lines '() 'post plan-multipart)
+        (sent-header-lines '(("X-A" . "1")) 'put plan-multipart)
+        (sent-header-lines '() 'patch plan-multipart)
+        (sent-header-lines '() 'delete plan-multipart)
+        (sent-header-lines '() 'post '(multipart))
+        (sent-header-lines '(("expect" . "100-continue")) 'post plan-multipart)
+        (sent-header-lines '(("X-E" . "") ("EXPECT" . "x")) 'delete plan-multipart)))
 
 (test-equal "the timings are name-lookup, connect, tls-handshake, first-byte and total, in order, each read from its CURLINFO_*_TIME_T"
   '((name-lookup . 6291507) (connect . 6291508) (tls-handshake . 6291512)

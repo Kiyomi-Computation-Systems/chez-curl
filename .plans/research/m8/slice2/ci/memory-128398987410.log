@@ -1,0 +1,430 @@
+﻿2026-11-07T12:06:49.8714338Z Current runner version: '2.338.2'
+2026-11-07T12:06:49.8757307Z ##[group]Runner Image Provisioner
+2026-11-07T12:06:49.8758743Z Hosted Compute Agent
+2026-11-07T12:06:49.8759771Z Version: 20261028.624
+2026-11-07T12:06:49.8761154Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-07T12:06:49.8763060Z Build Date: 2026-10-28T21:51:42Z
+2026-11-07T12:06:49.8764525Z Worker ID: {755b4043-86f4-469d-8c72-695ff208bc44}
+2026-11-07T12:06:49.8765839Z Region: centralus
+2026-11-07T12:06:49.8766792Z Cloud: Azure
+2026-11-07T12:06:49.8767875Z ##[endgroup]
+2026-11-07T12:06:49.8770346Z ##[group]Operating System
+2026-11-07T12:06:49.8771712Z Ubuntu
+2026-11-07T12:06:49.8773032Z 24.04.5
+2026-11-07T12:06:49.8774047Z LTS
+2026-11-07T12:06:49.8775158Z ##[endgroup]
+2026-11-07T12:06:49.8776233Z ##[group]Runner Image
+2026-11-07T12:06:49.8777421Z Image: ubuntu-24.04
+2026-11-07T12:06:49.8778455Z Version: 20261101.360.1
+2026-11-07T12:06:49.8780724Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-07T12:06:49.8784145Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+2026-11-07T12:06:49.8786123Z ##[endgroup]
+2026-11-07T12:06:49.8788081Z ##[group]GITHUB_TOKEN Permissions
+2026-11-07T12:06:49.8790878Z Contents: read
+2026-11-07T12:06:49.8791987Z Metadata: read
+2026-11-07T12:06:49.8793311Z ##[endgroup]
+2026-11-07T12:06:49.8796758Z Secret source: Actions
+2026-11-07T12:06:49.8798470Z Cache mode: write
+2026-11-07T12:06:49.8799921Z Prepare workflow directory
+2026-11-07T12:06:49.9298924Z Prepare all required actions
+2026-11-07T12:06:49.9371422Z Getting action download info
+2026-11-07T12:06:50.2976916Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-07T12:06:50.3984901Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+2026-11-07T12:06:50.6237515Z Complete job name: memory-2 (the Valgrind gate, shard 2 of 2)
+2026-11-07T12:06:50.7126999Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-11-07T12:06:50.7128152Z with:
+2026-11-07T12:06:50.7128599Z   submodules: recursive
+2026-11-07T12:06:50.7129168Z   repository: Kiyomi-Computation-Systems/chez-curl
+2026-11-07T12:06:50.7133773Z   token: ***
+2026-11-07T12:06:50.7134263Z   ssh-strict: true
+2026-11-07T12:06:50.7134707Z   ssh-user: git
+2026-11-07T12:06:50.7135287Z   persist-credentials: true
+2026-11-07T12:06:50.7135782Z   clean: true
+2026-11-07T12:06:50.7136235Z   sparse-checkout-cone-mode: true
+2026-11-07T12:06:50.7136761Z   fetch-depth: 1
+2026-11-07T12:06:50.7137191Z   fetch-tags: false
+2026-11-07T12:06:50.7137637Z   show-progress: true
+2026-11-07T12:06:50.7138107Z   lfs: false
+2026-11-07T12:06:50.7138536Z   set-safe-directory: true
+2026-11-07T12:06:50.7139045Z   allow-unsafe-pr-checkout: false
+2026-11-07T12:06:50.7140006Z ##[endgroup]
+2026-11-07T12:06:51.0600985Z Syncing repository: Kiyomi-Computation-Systems/chez-curl
+2026-11-07T12:06:51.0605460Z ##[group]Getting Git version info
+2026-11-07T12:06:51.0607009Z Working directory is '/home/runner/work/chez-curl/chez-curl'
+2026-11-07T12:06:51.0609586Z [command]/usr/bin/git version
+2026-11-07T12:06:51.0610776Z git version 2.56.0
+2026-11-07T12:06:51.0615044Z ##[endgroup]
+2026-11-07T12:06:51.0651352Z Temporarily overriding HOME='/home/runner/work/_temp/aa101e02-da5d-4a61-8e47-f2f92d4aa4a8' before making global git config changes
+2026-11-07T12:06:51.1910970Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T12:06:51.1946464Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/chez-curl/chez-curl
+2026-11-07T12:06:51.1952502Z Deleting the contents of '/home/runner/work/chez-curl/chez-curl'
+2026-11-07T12:06:51.1955449Z ##[group]Determining repository object format
+2026-11-07T12:06:51.1958195Z ##[endgroup]
+2026-11-07T12:06:51.1960685Z ##[group]Initializing the repository
+2026-11-07T12:06:51.1963863Z [command]/usr/bin/git init /home/runner/work/chez-curl/chez-curl
+2026-11-07T12:06:51.1966967Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-07T12:06:51.1969915Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-07T12:06:51.1972603Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-07T12:06:51.1975655Z hint: call:
+2026-11-07T12:06:51.1976993Z hint:
+2026-11-07T12:06:51.1978506Z hint: 	git config --global init.defaultBranch <name>
+2026-11-07T12:06:51.1980203Z hint:
+2026-11-07T12:06:51.1981760Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-07T12:06:51.1986669Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-07T12:06:51.1988948Z hint:
+2026-11-07T12:06:51.1990385Z hint: 	git branch -m <name>
+2026-11-07T12:06:51.1992174Z hint:
+2026-11-07T12:06:51.1994200Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-07T12:06:51.1997158Z Initialized empty Git repository in /home/runner/work/chez-curl/chez-curl/.git/
+2026-11-07T12:06:51.2002495Z [command]/usr/bin/git remote add origin https://github.com/Kiyomi-Computation-Systems/chez-curl
+2026-11-07T12:06:51.2010670Z ##[endgroup]
+2026-11-07T12:06:51.2012787Z ##[group]Disabling automatic garbage collection
+2026-11-07T12:06:51.2014171Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-07T12:06:51.2017297Z ##[endgroup]
+2026-11-07T12:06:51.2019084Z ##[group]Setting up auth
+2026-11-07T12:06:51.2020156Z Removing SSH command configuration
+2026-11-07T12:06:51.2021599Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T12:06:51.2027014Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T12:06:51.2198801Z Removing HTTP extra header
+2026-11-07T12:06:51.2207648Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T12:06:51.2262480Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T12:06:51.2536359Z Removing includeIf entries pointing to credentials config files
+2026-11-07T12:06:51.2540291Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T12:06:51.2589293Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T12:06:51.2898364Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-07T12:06:51.2952190Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:06:51.2999104Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:06:51.3050096Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:06:51.3098636Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:06:51.3145750Z ##[endgroup]
+2026-11-07T12:06:51.3147690Z ##[group]Fetching the repository
+2026-11-07T12:06:51.3154225Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +37e6ca0d5fb528fa7164f04bf9b24f861b0cfc98:refs/remotes/pull/51/merge
+2026-11-07T12:06:54.1514430Z From https://github.com/Kiyomi-Computation-Systems/chez-curl
+2026-11-07T12:06:54.1517093Z  * [new ref]         37e6ca0d5fb528fa7164f04bf9b24f861b0cfc98 -> pull/51/merge
+2026-11-07T12:06:54.1520012Z ##[endgroup]
+2026-11-07T12:06:54.1521209Z ##[group]Determining the checkout info
+2026-11-07T12:06:54.1522967Z ##[endgroup]
+2026-11-07T12:06:54.1524936Z [command]/usr/bin/git sparse-checkout disable
+2026-11-07T12:06:54.1595927Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-07T12:06:54.1642997Z ##[group]Checking out the ref
+2026-11-07T12:06:54.1646506Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/51/merge
+2026-11-07T12:06:54.7087294Z Note: switching to 'refs/remotes/pull/51/merge'.
+2026-11-07T12:06:54.7103247Z 
+2026-11-07T12:06:54.7123571Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-07T12:06:54.7124780Z changes and commit them, and you can discard any commits you make in this
+2026-11-07T12:06:54.7143482Z state without impacting any branches by switching back to a branch.
+2026-11-07T12:06:54.7149923Z 
+2026-11-07T12:06:54.7173522Z If you want to create a new branch to retain commits you create, you may
+2026-11-07T12:06:54.7175151Z do so (now or later) by using -c with the switch command. Example:
+2026-11-07T12:06:54.7186812Z 
+2026-11-07T12:06:54.7209220Z   git switch -c <new-branch-name>
+2026-11-07T12:06:54.7233025Z 
+2026-11-07T12:06:54.7253227Z Or undo this operation with:
+2026-11-07T12:06:54.7263248Z 
+2026-11-07T12:06:54.7267966Z   git switch -
+2026-11-07T12:06:54.7268728Z 
+2026-11-07T12:06:54.7269476Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-07T12:06:54.7270634Z 
+2026-11-07T12:06:54.7271558Z HEAD is now at 37e6ca0 Merge 71974bc274e6e780eb132ac29f0ec9d34eac2a48 into 9fdb9f3e0aba83dec2ac41914bef35d31559ea06
+2026-11-07T12:06:54.7275424Z ##[endgroup]
+2026-11-07T12:06:54.7276650Z ##[group]Setting up auth for fetching submodules
+2026-11-07T12:06:54.7278925Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-07T12:06:54.7441288Z [command]/usr/bin/git config --global include.path /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:06:54.7850769Z [command]/usr/bin/git config --global --unset-all url.https://github.com/.insteadOf
+2026-11-07T12:06:54.7917171Z [command]/usr/bin/git config --global --add url.https://github.com/.insteadOf git@github.com:
+2026-11-07T12:06:54.7955011Z [command]/usr/bin/git config --global --add url.https://github.com/.insteadOf org-309242414@github.com:
+2026-11-07T12:06:54.8004405Z ##[endgroup]
+2026-11-07T12:06:54.8005053Z ##[group]Fetching submodules
+2026-11-07T12:06:54.8006518Z [command]/usr/bin/git submodule sync --recursive
+2026-11-07T12:06:54.8301862Z [command]/usr/bin/git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+2026-11-07T12:06:54.8556913Z Submodule 'vendor/chez-srfi' (https://github.com/arcfide/chez-srfi.git) registered for path 'vendor/chez-srfi'
+2026-11-07T12:06:54.8583141Z Cloning into '/home/runner/work/chez-curl/chez-curl/vendor/chez-srfi'...
+2026-11-07T12:06:56.2360177Z From https://github.com/arcfide/chez-srfi
+2026-11-07T12:06:56.2361424Z  * branch            7879b527f267f067416552fb989135ad1b4ea436 -> FETCH_HEAD
+2026-11-07T12:06:56.2678802Z Submodule path 'vendor/chez-srfi': checked out '7879b527f267f067416552fb989135ad1b4ea436'
+2026-11-07T12:06:56.2726338Z [command]/usr/bin/git submodule foreach --recursive git config --local gc.auto 0
+2026-11-07T12:06:56.2991426Z Entering 'vendor/chez-srfi'
+2026-11-07T12:06:56.3058390Z ##[endgroup]
+2026-11-07T12:06:56.3059200Z ##[group]Persisting credentials for submodules
+2026-11-07T12:06:56.3061057Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'url\.https\:\/\/github\.com\/\.insteadOf' && git config --local --unset-all 'url.https://github.com/.insteadOf' || :"
+2026-11-07T12:06:56.3367721Z Entering 'vendor/chez-srfi'
+2026-11-07T12:06:56.3440428Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T12:06:56.3697654Z Entering 'vendor/chez-srfi'
+2026-11-07T12:06:56.3724897Z file:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config	remote.origin.url
+2026-11-07T12:06:56.3759388Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:06:56.3824886Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config includeIf.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path /github/runner_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:06:56.3860881Z [command]/usr/bin/git submodule foreach --recursive git config --local --add 'url.https://github.com/.insteadOf' 'git@github.com:'
+2026-11-07T12:06:56.4126984Z Entering 'vendor/chez-srfi'
+2026-11-07T12:06:56.4184616Z [command]/usr/bin/git submodule foreach --recursive git config --local --add 'url.https://github.com/.insteadOf' 'org-309242414@github.com:'
+2026-11-07T12:06:56.4443048Z Entering 'vendor/chez-srfi'
+2026-11-07T12:06:56.4496086Z ##[endgroup]
+2026-11-07T12:06:56.4554579Z [command]/usr/bin/git log -1 --format=%H
+2026-11-07T12:06:56.4596209Z 37e6ca0d5fb528fa7164f04bf9b24f861b0cfc98
+2026-11-07T12:06:56.4842186Z ##[group]Run pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+2026-11-07T12:06:56.4843273Z [36;1mpkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')[0m
+2026-11-07T12:06:56.4843720Z [36;1mif [ -z "$pkgs" ]; then[0m
+2026-11-07T12:06:56.4844235Z [36;1m  echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"[0m
+2026-11-07T12:06:56.4844775Z [36;1m  exit 1[0m
+2026-11-07T12:06:56.4844977Z [36;1mfi[0m
+2026-11-07T12:06:56.4845186Z [36;1msudo apt-get update -qq[0m
+2026-11-07T12:06:56.4845468Z [36;1m# shellcheck disable=SC2086[0m
+2026-11-07T12:06:56.4845820Z [36;1msudo apt-get install -y --no-install-recommends $pkgs[0m
+2026-11-07T12:06:56.4869670Z shell: /usr/bin/bash -e {0}
+2026-11-07T12:06:56.4869956Z ##[endgroup]
+2026-11-07T12:07:02.0830702Z Reading package lists...
+2026-11-07T12:07:02.3159949Z Building dependency tree...
+2026-11-07T12:07:02.3171183Z Reading state information...
+2026-11-07T12:07:02.4599100Z curl is already the newest version (8.5.0-2ubuntu10.16).
+2026-11-07T12:07:02.4600209Z xz-utils is already the newest version (5.6.1+really5.4.5-1ubuntu0.4).
+2026-11-07T12:07:02.4601233Z libssl-dev is already the newest version (3.0.13-0ubuntu3.16).
+2026-11-07T12:07:02.4602171Z zlib1g-dev is already the newest version (1:1.3.dfsg-3.1ubuntu2.3).
+2026-11-07T12:07:02.4603415Z libcurl3t64-gnutls is already the newest version (8.5.0-2ubuntu10.16).
+2026-11-07T12:07:02.4604279Z libcurl3t64-gnutls set to manually installed.
+2026-11-07T12:07:02.4605053Z openssl is already the newest version (3.0.13-0ubuntu3.16).
+2026-11-07T12:07:02.4606017Z The following additional packages will be installed:
+2026-11-07T12:07:02.4623152Z   libc6-dbg
+2026-11-07T12:07:02.4623663Z Suggested packages:
+2026-11-07T12:07:02.4624298Z   libcurl4-doc libidn-dev libkrb5-dev libldap2-dev librtmp-dev libssh2-1-dev
+2026-11-07T12:07:02.4625178Z   libnghttp2-doc valgrind-dbg valgrind-mpi kcachegrind alleyoop valkyrie
+2026-11-07T12:07:02.4625885Z Recommended packages:
+2026-11-07T12:07:02.4626217Z   gdb
+2026-11-07T12:07:02.4821067Z The following NEW packages will be installed:
+2026-11-07T12:07:02.4829763Z   build-essential libc6-dbg libcurl4-openssl-dev libnghttp2-dev valgrind
+2026-11-07T12:07:02.4831917Z The following packages will be upgraded:
+2026-11-07T12:07:02.4838222Z   ca-certificates
+2026-11-07T12:07:02.5032332Z 1 upgraded, 5 newly installed, 0 to remove and 26 not upgraded.
+2026-11-07T12:07:02.5033559Z Need to get 23.1 MB of archives.
+2026-11-07T12:07:02.5034442Z After this operation, 92.8 MB of additional disk space will be used.
+2026-11-07T12:07:02.5036053Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-11-07T12:07:02.5557116Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 ca-certificates all 20260816ubuntu0.24.04.2 [140 kB]
+2026-11-07T12:07:02.5928686Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 build-essential amd64 12.10ubuntu1 [4928 B]
+2026-11-07T12:07:02.6275307Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4-openssl-dev amd64 8.5.0-2ubuntu10.16 [447 kB]
+2026-11-07T12:07:02.6683199Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnghttp2-dev amd64 1.59.0-1ubuntu0.4 [117 kB]
+2026-11-07T12:07:02.7038711Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libc6-dbg amd64 2.39-0ubuntu8.9 [7474 kB]
+2026-11-07T12:07:02.8148515Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 valgrind amd64 1:3.22.0-0ubuntu3 [14.9 MB]
+2026-11-07T12:07:03.2284896Z Preconfiguring packages ...
+2026-11-07T12:07:03.6969518Z Fetched 23.1 MB in 0s (47.3 MB/s)
+2026-11-07T12:07:03.7560771Z (Reading database ... 
+2026-11-07T12:07:03.7561372Z (Reading database ... 5%
+2026-11-07T12:07:03.7561810Z (Reading database ... 10%
+2026-11-07T12:07:03.7563495Z (Reading database ... 15%
+2026-11-07T12:07:03.7564230Z (Reading database ... 20%
+2026-11-07T12:07:03.7565283Z (Reading database ... 25%
+2026-11-07T12:07:03.7566526Z (Reading database ... 30%
+2026-11-07T12:07:03.7567630Z (Reading database ... 35%
+2026-11-07T12:07:03.7568709Z (Reading database ... 40%
+2026-11-07T12:07:03.7569724Z (Reading database ... 45%
+2026-11-07T12:07:03.7570557Z (Reading database ... 50%
+2026-11-07T12:07:03.7628491Z (Reading database ... 55%
+2026-11-07T12:07:03.9364946Z (Reading database ... 60%
+2026-11-07T12:07:04.1220683Z (Reading database ... 65%
+2026-11-07T12:07:04.3321507Z (Reading database ... 70%
+2026-11-07T12:07:04.5075514Z (Reading database ... 75%
+2026-11-07T12:07:04.6267841Z (Reading database ... 80%
+2026-11-07T12:07:04.7734153Z (Reading database ... 85%
+2026-11-07T12:07:04.8987721Z (Reading database ... 90%
+2026-11-07T12:07:05.0404676Z (Reading database ... 95%
+2026-11-07T12:07:05.0405369Z (Reading database ... 100%
+2026-11-07T12:07:05.0406265Z (Reading database ... 215960 files and directories currently installed.)
+2026-11-07T12:07:05.0449387Z Preparing to unpack .../0-ca-certificates_20260816ubuntu0.24.04.2_all.deb ...
+2026-11-07T12:07:05.0577116Z Unpacking ca-certificates (20260816ubuntu0.24.04.2) over (20260816ubuntu0.24.04.1) ...
+2026-11-07T12:07:05.1333858Z Selecting previously unselected package build-essential.
+2026-11-07T12:07:05.1462953Z Preparing to unpack .../1-build-essential_12.10ubuntu1_amd64.deb ...
+2026-11-07T12:07:05.1483691Z Unpacking build-essential (12.10ubuntu1) ...
+2026-11-07T12:07:05.1733474Z Selecting previously unselected package libcurl4-openssl-dev:amd64.
+2026-11-07T12:07:05.1877476Z Preparing to unpack .../2-libcurl4-openssl-dev_8.5.0-2ubuntu10.16_amd64.deb ...
+2026-11-07T12:07:05.1900790Z Unpacking libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+2026-11-07T12:07:05.2270991Z Selecting previously unselected package libnghttp2-dev:amd64.
+2026-11-07T12:07:05.2412415Z Preparing to unpack .../3-libnghttp2-dev_1.59.0-1ubuntu0.4_amd64.deb ...
+2026-11-07T12:07:05.2421292Z Unpacking libnghttp2-dev:amd64 (1.59.0-1ubuntu0.4) ...
+2026-11-07T12:07:05.2713852Z Selecting previously unselected package libc6-dbg:amd64.
+2026-11-07T12:07:05.2835610Z Preparing to unpack .../4-libc6-dbg_2.39-0ubuntu8.9_amd64.deb ...
+2026-11-07T12:07:05.2845332Z Unpacking libc6-dbg:amd64 (2.39-0ubuntu8.9) ...
+2026-11-07T12:07:05.3996400Z Selecting previously unselected package valgrind.
+2026-11-07T12:07:05.4139021Z Preparing to unpack .../5-valgrind_1%3a3.22.0-0ubuntu3_amd64.deb ...
+2026-11-07T12:07:05.4153353Z Unpacking valgrind (1:3.22.0-0ubuntu3) ...
+2026-11-07T12:07:05.7628383Z Setting up libnghttp2-dev:amd64 (1.59.0-1ubuntu0.4) ...
+2026-11-07T12:07:05.7660025Z Setting up libc6-dbg:amd64 (2.39-0ubuntu8.9) ...
+2026-11-07T12:07:05.7690570Z Setting up ca-certificates (20260816ubuntu0.24.04.2) ...
+2026-11-07T12:07:07.8688251Z Updating certificates in /etc/ssl/certs...
+2026-11-07T12:07:08.3879353Z 0 added, 0 removed; done.
+2026-11-07T12:07:08.3880369Z Running hooks in /etc/ca-certificates/update.d...
+2026-11-07T12:07:08.4258043Z /etc/ssl/certs/adoptium/cacerts successfully populated.
+2026-11-07T12:07:08.4263141Z done.
+2026-11-07T12:07:08.4495876Z Setting up libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+2026-11-07T12:07:08.4549684Z Setting up build-essential (12.10ubuntu1) ...
+2026-11-07T12:07:08.4576814Z Setting up valgrind (1:3.22.0-0ubuntu3) ...
+2026-11-07T12:07:08.4607522Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-11-07T12:07:08.4634512Z Not building database; man-db/auto-update is not 'true'.
+2026-11-07T12:07:09.1746570Z 
+2026-11-07T12:07:09.1747457Z Running kernel seems to be up-to-date.
+2026-11-07T12:07:09.1748164Z 
+2026-11-07T12:07:09.1748559Z No services need to be restarted.
+2026-11-07T12:07:09.1749115Z 
+2026-11-07T12:07:09.1749481Z No containers need to be restarted.
+2026-11-07T12:07:09.1749976Z 
+2026-11-07T12:07:09.1750353Z No user sessions are running outdated binaries.
+2026-11-07T12:07:09.1750895Z 
+2026-11-07T12:07:09.1751388Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-11-07T12:07:10.2183046Z ##[group]Run . /etc/os-release
+2026-11-07T12:07:10.2183390Z [36;1m. /etc/os-release[0m
+2026-11-07T12:07:10.2183729Z [36;1mecho "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"[0m
+2026-11-07T12:07:10.2204554Z shell: /usr/bin/bash -e {0}
+2026-11-07T12:07:10.2204818Z ##[endgroup]
+2026-11-07T12:07:10.3094342Z ##[group]Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+2026-11-07T12:07:10.3094779Z with:
+2026-11-07T12:07:10.3095030Z   path: /home/runner/work/_temp/chez-threads
+2026-11-07T12:07:10.3095564Z   key: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+2026-11-07T12:07:10.3096095Z   enableCrossOsArchive: false
+2026-11-07T12:07:10.3096354Z   fail-on-cache-miss: false
+2026-11-07T12:07:10.3096587Z   lookup-only: false
+2026-11-07T12:07:10.3096796Z ##[endgroup]
+2026-11-07T12:07:10.6477244Z Cache hit for: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+2026-11-07T12:07:11.2673743Z Received 3738789 of 3738789 (100.0%), 7.5 MBs/sec
+2026-11-07T12:07:11.2694403Z Cache Size: ~4 MB (3738789 B)
+2026-11-07T12:07:11.2743951Z [command]/usr/bin/tar -xf /home/runner/work/_temp/2b889cd7-56e6-4677-95c5-cda9135b128f/cache.tzst -P -C /home/runner/work/chez-curl/chez-curl --use-compress-program unzstd
+2026-11-07T12:07:11.3119725Z Cache restored successfully
+2026-11-07T12:07:11.3348516Z Cache restored from key: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+2026-11-07T12:07:11.3504414Z ##[group]Run make check-memory-gate
+2026-11-07T12:07:11.3504747Z [36;1mmake check-memory-gate[0m
+2026-11-07T12:07:11.3524573Z shell: /usr/bin/bash -e {0}
+2026-11-07T12:07:11.3524834Z env:
+2026-11-07T12:07:11.3525092Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+2026-11-07T12:07:11.3525407Z ##[endgroup]
+2026-11-07T12:07:12.0289365Z check-memory-gate: ok a plain: tests/memory-plant-overrun.sps exits 0 without Valgrind, and prints only its line
+2026-11-07T12:07:12.0887435Z check-memory-gate: ok a plain: tests/memory-plant-leak.sps exits 0 without Valgrind, and prints only its line
+2026-11-07T12:07:20.2017775Z check-memory-gate: ok b memory-plant-overrun: test-memory names tests/memory-plant-overrun.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+2026-11-07T12:07:28.2561753Z check-memory-gate: ok b memory-plant-leak: test-memory names tests/memory-plant-leak.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+2026-11-07T12:07:36.5315235Z check-memory-gate: ok b fails: test-memory names a program that exits 1 FAIL, with its exit, its FAIL lines and its last lines, and runs the suite after it
+2026-11-07T12:07:36.5380967Z check-memory-gate: ok c suppression: tests/guix-glibc-locpath.supp holds exactly one entry, guix-glibc-locpath, a definite leak under compute_locale_search_path
+2026-11-07T12:07:36.5383744Z check-memory-gate: skipped d: GUIX_ENVIRONMENT is unset, so test-memory passes no suppression here, and there is none to hold
+2026-11-07T12:07:37.1804437Z check-memory-gate: ok e command, GUIX_ENVIRONMENT unset: timeout runs Valgrind with ADR-0014's flags, no suppression, then Chez, and a Valgrind that runs nothing fails
+2026-11-07T12:07:37.8214830Z check-memory-gate: ok e command, GUIX_ENVIRONMENT set: timeout runs Valgrind with ADR-0014's flags and tests/guix-glibc-locpath.supp, then Chez, and a Valgrind that runs nothing fails
+2026-11-07T12:07:53.9429737Z check-memory-gate: ok f hangs: a program that never ends is named HUNG
+2026-11-07T12:07:54.5599651Z check-memory-gate: ok g none: test-memory refuses to pass with no suite
+2026-11-07T12:07:55.1858255Z check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_OPTS set
+2026-11-07T12:07:55.8036725Z check-memory-gate: ok h options: test-memory refuses to run with a $HOME/.valgrindrc
+2026-11-07T12:07:56.4205766Z check-memory-gate: ok h options: test-memory refuses to run with a ./.valgrindrc, in a copy of the tree
+2026-11-07T12:07:57.0366099Z check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_LIB set, at a copy of Valgrind's directory whose default.supp hides every leak
+2026-11-07T12:07:57.6522096Z check-memory-gate: ok h options: test-memory refuses to run with any other VALGRIND_ variable set, VALGRIND_LAUNCHER
+2026-11-07T12:08:05.8498038Z check-memory-gate: ok h options: a $HOME/.valgrindrc that a suite writes mid-run hides nothing from the next: --command-line-only=yes
+2026-11-07T12:08:10.3981259Z check-memory-gate: ok i suppressions: a suppressions file the gate does not pass, named default.supp, beside Valgrind's own, fails the leak plant it hides, by name
+2026-11-07T12:08:14.9312836Z check-memory-gate: ok i suppressions: a file named default.supp in place of Valgrind's own fails the leak plant it hides, by name
+2026-11-07T12:08:16.4750786Z check-memory-gate: ok j evidence: a CHEZ that is a script exec'ing Chez fails the leak plant, which Valgrind never saw
+2026-11-07T12:08:18.0438892Z check-memory-gate: ok j evidence: a CHEZ that is a script running Chez as a child fails the leak plant, which Valgrind never saw
+2026-11-07T12:08:23.0607652Z check-memory-gate: ok j evidence: a program that execs away from Valgrind, which then reports nothing, fails
+2026-11-07T12:08:27.5617846Z check-memory-gate: ok j evidence: a Valgrind that runs another program than the suite fails the suite
+2026-11-07T12:08:32.1989830Z check-memory-gate: ok k undef: a program that branches on memory nothing initialised fails, exit 9, with Valgrind's report: the plant the next case hides
+2026-11-07T12:08:36.0988195Z check-memory-gate: ok k added: --undef-value-errors=no, added through VALGRIND, hides that plant, and fails it by name
+2026-11-07T12:08:40.6807362Z check-memory-gate: ok k dropped: a Valgrind that drops --leak-check=full hides the leak plant, and fails it by name
+2026-11-07T12:08:45.2300619Z check-memory-gate: ok k changed: a Valgrind that turns --errors-for-leak-kinds=definite to none hides the leak plant, and fails it by name
+2026-11-07T12:08:49.7643349Z check-memory-gate: ok k order: a Valgrind that moves --leak-check=full to the end of its options fails a clean program, by name
+2026-11-07T12:08:54.7950112Z check-memory-gate: ok l forged: a suite that prints a clean ERROR SUMMARY with Valgrind's pid, then execs away, fails: the evidence is Valgrind's own log
+2026-11-07T12:08:59.9159924Z check-memory-gate: ok l stale: a Valgrind log an earlier run left is never read: a Valgrind that writes none fails
+2026-11-07T12:09:00.5320214Z check-memory-gate: ok l names: two suites with one name, in two directories, are refused, so one suite's logs are never another's
+2026-11-07T12:09:05.0753996Z check-memory-gate: ok m awk: an awk that fails, printing nothing, fails a clean program, naming the evidence check
+2026-11-07T12:09:09.6610047Z check-memory-gate: ok m awk: an awk that prints ok, then exits 2, fails a clean program, naming the evidence check
+2026-11-07T12:09:14.1857492Z check-memory-gate: ok m awk: an awk that exits 0, printing nothing, fails a clean program, naming the evidence check
+2026-11-07T12:09:15.9998214Z check-memory-gate: ok n all: with no MEMORY_SHARD, test-memory runs every suite in tests/, in order
+2026-11-07T12:09:18.2734086Z check-memory-gate: ok n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+2026-11-07T12:09:21.9596355Z check-memory-gate: ok n refused: test-memory refuses a MEMORY_SHARD of 0, 3, "1 2", 1', 1" or one, running no suite
+2026-11-07T12:09:23.1867865Z check-memory-gate: ok n beside: test-memory refuses a MEMORY_SHARD beside a MEMORY_SUITES on its command line or in the environment, running no suite
+2026-11-07T12:09:25.6190651Z check-memory-gate: ok n lists: test-memory refuses a shard's list set on its command line or, under make -e, in the environment, and MEMORY_RUN or MEMORY_RUN_NAME set on its command line, running no suite
+2026-11-07T12:09:25.6238735Z check-memory-gate: ok o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+2026-11-07T12:09:25.6240619Z check-memory-gate: the memory gate failed, as it must, its suppression held, and its two shards run every suite once, in all 39 cases
+2026-11-07T12:09:25.6294127Z ##[group]Run make test-memory MEMORY_SHARD=2
+2026-11-07T12:09:25.6294493Z [36;1mmake test-memory MEMORY_SHARD=2[0m
+2026-11-07T12:09:25.6314024Z shell: /usr/bin/bash -e {0}
+2026-11-07T12:09:25.6314278Z env:
+2026-11-07T12:09:25.6314533Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+2026-11-07T12:09:25.6314864Z ##[endgroup]
+2026-11-07T12:09:26.2884860Z deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+2026-11-07T12:09:27.0149903Z === tests/test-check-floors.sps
+2026-11-07T12:09:55.0495635Z test-memory: pass tests/test-check-floors.sps
+2026-11-07T12:09:55.0516397Z === tests/test-check-seam.sps
+2026-11-07T12:10:11.7114886Z test-memory: pass tests/test-check-seam.sps
+2026-11-07T12:10:11.7134748Z === tests/test-constants.sps
+2026-11-07T12:10:40.0656056Z test-memory: pass tests/test-constants.sps
+2026-11-07T12:10:40.0676018Z === tests/test-cookies.sps
+2026-11-07T12:11:21.8468140Z test-memory: pass tests/test-cookies.sps
+2026-11-07T12:11:21.8488860Z === tests/test-curl-testing.sps
+2026-11-07T12:12:14.4446933Z test-memory: pass tests/test-curl-testing.sps
+2026-11-07T12:12:14.4466927Z === tests/test-discovery.sps
+2026-11-07T12:12:26.6742100Z test-memory: pass tests/test-discovery.sps
+2026-11-07T12:12:26.6761111Z === tests/test-headers.sps
+2026-11-07T12:13:06.8724039Z test-memory: pass tests/test-headers.sps
+2026-11-07T12:13:06.8743767Z === tests/test-library-loading.sps
+2026-11-07T12:14:02.5794379Z test-memory: pass tests/test-library-loading.sps
+2026-11-07T12:14:02.5813615Z === tests/test-mailbox.sps
+2026-11-07T12:14:32.5941920Z test-memory: pass tests/test-mailbox.sps
+2026-11-07T12:14:32.5961965Z === tests/test-memory-safety.sps
+2026-11-07T12:14:54.7157888Z test-memory: pass tests/test-memory-safety.sps
+2026-11-07T12:14:54.7177988Z === tests/test-native.sps
+2026-11-07T12:15:16.5097331Z test-memory: pass tests/test-native.sps
+2026-11-07T12:15:16.5117551Z === tests/test-proxy.sps
+2026-11-07T12:16:14.1009990Z test-memory: pass tests/test-proxy.sps
+2026-11-07T12:16:14.1029204Z === tests/test-require-threaded.sps
+2026-11-07T12:16:26.3505388Z test-memory: pass tests/test-require-threaded.sps
+2026-11-07T12:16:26.3525684Z === tests/test-stream-call.sps
+2026-11-07T12:17:43.7396232Z test-memory: pass tests/test-stream-call.sps
+2026-11-07T12:17:43.7416533Z === tests/test-stream.sps
+2026-11-07T12:19:18.1996570Z test-memory: pass tests/test-stream.sps
+2026-11-07T12:19:18.2016848Z === tests/test-transfer-tls.sps
+2026-11-07T12:19:57.4626955Z test-memory: pass tests/test-transfer-tls.sps
+2026-11-07T12:19:57.4647400Z === tests/test-unsupported.sps
+2026-11-07T12:22:18.7876787Z test-memory: pass tests/test-unsupported.sps
+2026-11-07T12:22:18.7897130Z === tests/test-upload.sps
+2026-11-07T12:24:35.7452935Z test-memory: pass tests/test-upload.sps
+2026-11-07T12:24:35.7473098Z === tests/test-variadic.sps
+2026-11-07T12:25:01.6199606Z test-memory: pass tests/test-variadic.sps
+2026-11-07T12:25:01.6218479Z === tests/test-verify.sps
+2026-11-07T12:25:13.6266821Z test-memory: pass tests/test-verify.sps
+2026-11-07T12:25:13.6286919Z === tests/test-version.sps
+2026-11-07T12:25:47.9229302Z test-memory: pass tests/test-version.sps
+2026-11-07T12:25:47.9229950Z test-memory: ran 21, passed 21, failed 0, hung 0
+2026-11-07T12:25:47.9369054Z Post job cleanup.
+2026-11-07T12:25:48.0383221Z [command]/usr/bin/git version
+2026-11-07T12:25:48.0443216Z git version 2.56.0
+2026-11-07T12:25:48.0507188Z Temporarily overriding HOME='/home/runner/work/_temp/50d37fa6-2776-4995-a3a9-4f8d47a3e5e0' before making global git config changes
+2026-11-07T12:25:48.0509369Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-07T12:25:48.0510750Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/chez-curl/chez-curl
+2026-11-07T12:25:48.0564494Z Removing SSH command configuration
+2026-11-07T12:25:48.0566893Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-07T12:25:48.0666031Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-07T12:25:48.1041365Z Entering 'vendor/chez-srfi'
+2026-11-07T12:25:48.1153987Z Removing HTTP extra header
+2026-11-07T12:25:48.1155270Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-07T12:25:48.1227933Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-07T12:25:48.2128190Z Entering 'vendor/chez-srfi'
+2026-11-07T12:25:48.2143524Z Removing includeIf entries pointing to credentials config files
+2026-11-07T12:25:48.2149118Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T12:25:48.2150502Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path
+2026-11-07T12:25:48.2152003Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path
+2026-11-07T12:25:48.2155390Z includeif.gitdir:/github/workspace/.git.path
+2026-11-07T12:25:48.2158629Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-07T12:25:48.2161918Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path
+2026-11-07T12:25:48.2257349Z /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:25:48.2261567Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-4c69b4aa\-dbdd\-4ca2\-9fb8\-fc06ba985a18\.config
+2026-11-07T12:25:48.2436485Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path
+2026-11-07T12:25:48.2440096Z /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:25:48.2445938Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-4c69b4aa\-dbdd\-4ca2\-9fb8\-fc06ba985a18\.config
+2026-11-07T12:25:48.2530028Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-07T12:25:48.2604236Z /github/runner_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:25:48.2609585Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-4c69b4aa\-dbdd\-4ca2\-9fb8\-fc06ba985a18\.config
+2026-11-07T12:25:48.2825901Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-07T12:25:48.2827500Z /github/runner_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:25:48.2831448Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-4c69b4aa\-dbdd\-4ca2\-9fb8\-fc06ba985a18\.config
+2026-11-07T12:25:48.2857555Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-07T12:25:48.3226815Z Entering 'vendor/chez-srfi'
+2026-11-07T12:25:48.3256354Z file:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config	remote.origin.url
+2026-11-07T12:25:48.3323938Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-07T12:25:48.3332559Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path
+2026-11-07T12:25:48.3334175Z includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path
+2026-11-07T12:25:48.3342974Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path
+2026-11-07T12:25:48.3350852Z /home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:25:48.3362872Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path \/home\/runner\/work\/_temp\/git\-credentials\-4c69b4aa\-dbdd\-4ca2\-9fb8\-fc06ba985a18\.config
+2026-11-07T12:25:48.3413503Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --get-all includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path
+2026-11-07T12:25:48.3450295Z /github/runner_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config
+2026-11-07T12:25:48.3465645Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --unset includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path \/github\/runner_temp\/git\-credentials\-4c69b4aa\-dbdd\-4ca2\-9fb8\-fc06ba985a18\.config
+2026-11-07T12:25:48.3511919Z Removing credentials config '/home/runner/work/_temp/git-credentials-4c69b4aa-dbdd-4ca2-9fb8-fc06ba985a18.config'
+2026-11-07T12:25:48.3690179Z Cleaning up orphan processes

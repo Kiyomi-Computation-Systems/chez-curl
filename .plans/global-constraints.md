@@ -31,10 +31,10 @@ provisional. They bind until that record is accepted or amended.
 
 - **No C is compiled for the library: no shim** (ADR-0001).
 - **Variadic entry points are bound once per value type,** with `(__varargs_after 2)`.
-  ADR-0001 names four: chez-curl binds `curl_easy_setopt`, `curl_easy_getinfo` and
-  `curl_multi_setopt`, and `curl_share_setopt` has a row of the conventions table but no
-  binding yet. libcurl has others, `curl_formadd` and the `curl_mprintf` family, which
-  chez-curl does not bind.
+  chez-curl binds five: `curl_easy_setopt`, `curl_easy_getinfo`, `curl_multi_setopt`,
+  `curl_share_setopt` (from M7) and, from M8, `curl_formadd`, once, for the load's mime probe
+  (ADR-0001, amended 2026-11-07). Each is bound last in the load's step 6. libcurl's
+  `curl_mprintf` family is not bound.
   - Each is bound through `bind-variadic`, whose template carries the convention, and
     `test-collect-safe` requires both of every binding of them.
   - x86-64 runs a binding without the convention correctly, so only Apple arm64 can show
@@ -83,11 +83,11 @@ provisional. They bind until that record is accepted or amended.
     `define-syntax` defines. Anywhere else it is stray: as an argument, in data, in a
     macro, bound as a name, or in an export or import. So no library exports a wrapper.
   - A row may name the one wrapper its entry must be bound through, `(bound-by NAME)`.
-    The four variadic rows name `bind-variadic`, and the four multi calls that can block,
+    The five variadic rows name `bind-variadic`, and the four multi calls that can block,
     `curl_multi_poll`, `curl_multi_perform`, `curl_multi_remove_handle` and
     `curl_multi_cleanup`, name `bind-blocking`, whose template carries `__collect_safe`
-    (ADR-0013, amended 2026-10-25), and so does `curl_easy_pause`, from M6 (ADR-0013, amended
-    2026-10-30).
+    (ADR-0013, amended 2026-10-25), and so do `curl_easy_pause`, from M6 (ADR-0013, amended
+    2026-10-30), and `curl_mime_filedata`, which stats its path, from M8.
   - A callable is the whole right-hand side of `(define name ...)`. Each callable, `write-body`
     and, from M6, the header callable `read-head` and the read, seek and prerequest callables
     `read-body`, `seek-body` and `prereq-body` (ADR-0013, amended 2026-10-31), is locked with
@@ -334,7 +334,9 @@ provisional. They bind until that record is accepted or amended.
 - **A submit's caller-side checks have one owner,** `request-checks`, which `curl-submit`
   (through `prepare-transfer`) and `curl-request-check` share: what is no request, the URL's
   copy, the headers' and the user agent's snapshot, the CA file's copy and its refusal against
-  the environment the libcurl loaded with, then the URL's parse and scheme. `curl-request-check`
+  the environment the libcurl loaded with, then the URL's parse and scheme; and, for a multipart
+  body, from M8, `multipart-unsupported`, a caller's `Content-Type`, the body's copy and its
+  paths' `stat`, which a submit hands on to the plan (ADR-0039, amended). `curl-request-check`
   raises what a submit would, its who `curl-request-check` where a submit's is `curl-submit`,
   and copies no body and queues nothing; a submit copies the body after every check (ADR-0023,
   amended 2026-10-28).
@@ -394,7 +396,9 @@ provisional. They bind until that record is accepted or amended.
   `PASSWORD` no longer twins, and added the twin `AWS_SIGV4` and the pin `MAXREDIRS` (ADR-0009,
   amended 2026-11-02). M8 slice 2 added `SUPPRESS_CONNECT_HEADERS`, a twin of the header
   callable's, which every transfer now sets; `HTTP_TRANSFER_DECODING` stays the hatch's (ADR-0009
-  and ADR-0040, amended 2026-11-06).
+  and ADR-0040, amended 2026-11-06). M8 slice 3 made `MIMEPOST` the body field's, no longer a
+  twin, and added the twin `MIME_OPTIONS`, never set; `EXPECT_100_TIMEOUT_MS` stays the hatch's
+  (ADR-0009 and ADR-0039, amended 2026-11-07).
 - **The test seam, `curl-engine-submit-with`, is retired into the hatch** (ADR-0009, amended
   2026-10-27). No submit takes options of its own.
 - **Lifetimes.** Blobs are passed with `CURL_BLOB_COPY`, through a counted `struct curl_blob`
@@ -949,10 +953,17 @@ provisional. They bind until that record is accepted or amended.
 - **A file part names a regular file:** a relative path is resolved against the current directory
   once, when the request is made, and a high-level call's once per call; the path is checked by
   `stat` alone there and at submit, and nothing is opened on the caller's side, where every
-  high-level submit runs in a critical section. The engine's thread, outside any critical section,
+  high-level submit runs in a critical section. A path that is not absolute at submit is
+  `part-file`, and `curl-request-body` answers a copy of a multipart body, its pairs and strings
+  fresh (ADR-0039, amended 2026-11-07). `curl-request-with` keeps a multipart body it is not
+  handed with no `stat`, and takes a `url` key, through which the high level builds each hop, so
+  a submit's `stat` is the one file system check after a request is made (ADR-0023, amended
+  2026-11-07). The engine's thread, outside any critical section,
   checks it by `stat` and opens and closes the file just before `curl_mime_filedata`, and fails the
   transfer on any answer but 0. A path swapped to a FIFO after that check holds the engine's thread
-  for ever, and a file changed after it is the caller's: both documented (ADR-0039, amended).
+  for ever, and a file changed after it is the caller's: both documented, by version, a grown
+  file sent past `Content-Length` on 7.85.0 and 8.5.0 among them (ADR-0039, amended
+  2026-11-07).
 - **The mime is the transfer's, on the engine's thread:** made after `curl_easy_init` on that
   handle, counted as `mime`, freed after `curl_easy_cleanup`; no part's address leaves `native.sls`.
   The load probes for mime with `curl_formadd`, a whole field, and `curl_mime_init`: mime is there

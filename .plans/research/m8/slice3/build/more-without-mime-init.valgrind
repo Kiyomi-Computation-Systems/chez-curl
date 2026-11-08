@@ -1,0 +1,162 @@
+==842== Memcheck, a memory error detector
+==842== Copyright (C) 2002-2026, and GNU GPL'd, by Julian Seward et al.
+==842== Using Valgrind-3.27.0-b80fd12419-20260421 and LibVEX; rerun with -h for copyright info
+==842== Command: /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme --libdirs src:tests:build/scheme-libs --program build/m8s3/gate/more.sps
+==842== Parent PID: 841
+==842== 
+--842-- 
+--842-- Valgrind options:
+--842--    -v
+--842--    --command-line-only=yes
+--842--    --log-file=build/memory/more.valgrind
+--842--    --error-exitcode=9
+--842--    --leak-check=full
+--842--    --show-leak-kinds=definite
+--842--    --errors-for-leak-kinds=definite
+--842--    --suppressions=tests/guix-glibc-locpath.supp
+--842-- Contents of /proc/version:
+--842--   Linux version 7.1.1-76070101-generic (jenkins@warp.pop-os.org) (x86_64-linux-gnu-gcc-11 (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #202606191302~1782222967~22.04~dfed2f1 SMP PREEMPT_DYNAMIC Tue J
+--842-- 
+--842-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-ssse3-avx-avx2-bmi-f16c-rdrand-rdseed-fma
+--842-- Page sizes: currently 4096, max supported 4096
+--842-- Valgrind library directory: /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind
+--842-- Reading syms from /gnu/store/nrlh72nrgyna5mm3p2n62mmld6al0lwv-chez-scheme-10.4.0/lib/csv10.4.0/ta6le/scheme
+--842-- Reading syms from /gnu/store/m31vlvwm79m89fk3xk0z4h7snk61y510-glibc-2.41/lib/ld-linux-x86-64.so.2
+--842-- Reading syms from /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind/memcheck-amd64-linux
+--842--    object doesn't have a dynamic symbol table
+--842-- Scheduler: using generic scheduler lock implementation.
+--842-- Reading suppressions file: tests/guix-glibc-locpath.supp
+--842-- Reading suppressions file: /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind/default.supp
+==842== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-842-by-kishu-on-???
+==842== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-842-by-kishu-on-???
+==842== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-842-by-kishu-on-???
+==842== 
+==842== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==842== don't want to do, unless you know exactly what you're doing,
+==842== or are doing some strange experiment):
+==842==   /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind/../../bin/vgdb --pid=842 ...command...
+==842== 
+==842== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==842==   /path/to/gdb /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme
+==842== and then give GDB the following command
+==842==   target remote | /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind/../../bin/vgdb --pid=842
+==842== --pid is optional if only one valgrind process is running
+==842== 
+--842-- REDIR: 0x4025e60 (ld-linux-x86-64.so.2:strlen) redirected to 0x580be702 (???)
+--842-- REDIR: 0x4024840 (ld-linux-x86-64.so.2:strcmp) redirected to 0x580be71c (???)
+--842-- REDIR: 0x4024620 (ld-linux-x86-64.so.2:index) redirected to 0x580be755 (???)
+--842-- REDIR: 0x40239e0 (ld-linux-x86-64.so.2:bcmp) redirected to 0x580be737 (???)
+--842-- Reading syms from /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind/vgpreload_core-amd64-linux.so
+--842-- Reading syms from /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind/vgpreload_memcheck-amd64-linux.so
+==842== WARNING: new redirection conflicts with existing -- ignoring it
+--842--     old: 0x04024840 (strcmp              ) R-> (0000.0) 0x580be71c ???
+--842--     new: 0x04024840 (strcmp              ) R-> (2016.0) 0x048506f0 strcmp
+==842== WARNING: new redirection conflicts with existing -- ignoring it
+--842--     old: 0x04025e60 (strlen              ) R-> (0000.0) 0x580be702 ???
+--842--     new: 0x04025e60 (strlen              ) R-> (2007.0) 0x0484f420 strlen
+--842-- REDIR: 0x4023cb0 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4854d20 (mempcpy)
+--842-- REDIR: 0x4026000 (ld-linux-x86-64.so.2:strncmp) redirected to 0x484fee0 (strncmp)
+--842-- Reading syms from /gnu/store/m31vlvwm79m89fk3xk0z4h7snk61y510-glibc-2.41/lib/libm.so.6
+--842-- Reading syms from /gnu/store/63jzg3l26jcqydx5j2rizfwd85gp293h-ncurses-6.2.20210619/lib/libncursesw.so.6.2
+--842-- Reading syms from /gnu/store/2jzflb96n50lknzn7znfq9ri4qlbifjc-zlib-1.3.1/lib/libz.so.1.3.1
+--842-- Reading syms from /gnu/store/qiwc11bc3v76h1z5qlwvjkivw5kcwncm-lz4-1.10.0/lib/liblz4.so.1.10.0
+--842-- Reading syms from /gnu/store/7iwcvd0gjrfq6bj7zvf3r59baw6vib5a-gcc-14.3.0-lib/lib/libgcc_s.so.1
+--842-- Reading syms from /gnu/store/m31vlvwm79m89fk3xk0z4h7snk61y510-glibc-2.41/lib/libc.so.6
+--842-- REDIR: 0x4af27b0 (libc.so.6:strnlen) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2830 (libc.so.6:strpbrk) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af0770 (libc.so.6:strcmp) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b071d0 (libc.so.6:wcsnlen) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aef8e0 (libc.so.6:memset) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b06a20 (libc.so.6:wcslen) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aef860 (libc.so.6:memrchr) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b07170 (libc.so.6:wcsncpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aeee80 (libc.so.6:memcpy@@GLIBC_2.14) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b05830 (libc.so.6:wcschr) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af0680 (libc.so.6:index) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2860 (libc.so.6:rindex) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b058d0 (libc.so.6:wcscmp) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aefb30 (libc.so.6:stpncpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b12730 (libc.so.6:wmemchr) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2680 (libc.so.6:strncmp) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aefb90 (libc.so.6:strcasecmp) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af1ae0 (libc.so.6:strcspn) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b06850 (libc.so.6:wcscpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af0610 (libc.so.6:strcat) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2590 (libc.so.6:strncasecmp_l) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af06f0 (libc.so.6:strchrnul) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aeed90 (libc.so.6:bcmp) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af1a70 (libc.so.6:strcpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aefc20 (libc.so.6:strcasecmp_l) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2480 (libc.so.6:strlen) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2710 (libc.so.6:strncpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b127b0 (libc.so.6:wmemcmp) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aefac0 (libc.so.6:stpcpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aef620 (libc.so.6:memmove) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+==842== Preferring higher priority redirection:
+--842--     old: 0x04ba5b00 (__memcpy_avx_unalign) R-> (2018.0) 0x04851da0 __memcpy_avx_unaligned_erms
+--842--     new: 0x04ba5b00 (__memcpy_avx_unalign) R-> (2018.1) 0x04853a70 memmove
+--842-- REDIR: 0x4aeed10 (libc.so.6:memchr) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2a20 (libc.so.6:strspn) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4b054b0 (libc.so.6:wcpncpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4aef740 (libc.so.6:mempcpy) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2500 (libc.so.6:strncasecmp) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4baa6f0 (libc.so.6:__strrchr_avx2) redirected to 0x484ebe0 (rindex)
+--842-- REDIR: 0x4ba8840 (libc.so.6:__strlen_avx2) redirected to 0x484f300 (strlen)
+--842-- REDIR: 0x4ba9920 (libc.so.6:__strncmp_avx2) redirected to 0x484fd00 (strncmp)
+--842-- REDIR: 0x4ba80b0 (libc.so.6:__strcmp_avx2) redirected to 0x4850570 (strcmp)
+--842-- REDIR: 0x4aeb010 (libc.so.6:malloc) redirected to 0x4845700 (malloc)
+--842-- REDIR: 0x4ba5b00 (libc.so.6:__memcpy_avx_unaligned_erms) redirected to 0x4853a70 (memmove)
+--842-- REDIR: 0x4aeb700 (libc.so.6:free) redirected to 0x484897d (free)
+--842-- REDIR: 0x4ba5ab0 (libc.so.6:__mempcpy_avx_unaligned_erms) redirected to 0x4854920 (mempcpy)
+--842-- REDIR: 0x4ba6500 (libc.so.6:__memset_avx2_unaligned_erms) redirected to 0x4853930 (memset)
+--842-- REDIR: 0x4ba6800 (libc.so.6:__stpcpy_avx2) redirected to 0x4853260 (stpcpy)
+--842-- REDIR: 0x4aec240 (libc.so.6:calloc) redirected to 0x484d13b (calloc)
+--842-- Reading syms from /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0
+--842-- Reading syms from /gnu/store/lrjqhf494326pkkbji6g7n632xyjf6my-nghttp2-1.69.0-lib/lib/libnghttp2.so.14.29.4
+--842-- Reading syms from /gnu/store/8jy1vwlfbifgjvf00fa8xizd5hgninfs-libidn2-2.3.8/lib/libidn2.so.0.4.0
+--842-- Reading syms from /gnu/store/0v5jd7dpfc63zagd9awlinwgr3h0wa9h-libpsl-0.21.5/lib/libpsl.so.5.3.5
+--842-- Reading syms from /gnu/store/nbfpv4v8wsn5nk080dy29m27sh1awn5s-nettle-3.10.2/lib/libnettle.so.8.11
+--842-- Reading syms from /gnu/store/6jw108nvfhpnk2i69kql1an4ww25cxrl-gnutls-3.8.13/lib/libgnutls.so.30.42.0
+--842-- Reading syms from /gnu/store/01994fzz1gmx69jxldf42fi6zzadfzsb-mit-krb5-1.21/lib/libgssapi_krb5.so.2.2
+--842-- Reading syms from /gnu/store/mfdx7bdf46vxq41r0r5in64hn5m1zfi4-zstd-1.5.6-lib/lib/libzstd.so.1.5.6
+--842-- Reading syms from /gnu/store/81gcnknln3563vx75kw8fx27lgcd57xr-libunistring-1.3/lib/libunistring.so.5.2.0
+--842-- Reading syms from /gnu/store/w9gl8k4gn13vnsjhr0qcasm8iiqh2yd8-p11-kit-0.26.2/lib/libp11-kit.so.0.4.8
+--842-- Reading syms from /gnu/store/ij3xh4d12m57dzikkb1mmzbjwjgvf37j-libffi-3.4.6/lib/libffi.so.8.1.4
+--842-- Reading syms from /gnu/store/x1a975my92gmbc8shmm3wkh3niifsc2w-libtasn1-4.21.0/lib/libtasn1.so.6.6.5
+--842-- Reading syms from /gnu/store/nbfpv4v8wsn5nk080dy29m27sh1awn5s-nettle-3.10.2/lib/libhogweed.so.6.11
+--842-- Reading syms from /gnu/store/l7f457vinqs1gmx5rjsrz684i7i6q7wb-gmp-6.3.0/lib/libgmp.so.10.5.0
+--842-- Reading syms from /gnu/store/01994fzz1gmx69jxldf42fi6zzadfzsb-mit-krb5-1.21/lib/libkrb5.so.3.3
+--842-- Reading syms from /gnu/store/01994fzz1gmx69jxldf42fi6zzadfzsb-mit-krb5-1.21/lib/libk5crypto.so.3.1
+--842-- Reading syms from /gnu/store/01994fzz1gmx69jxldf42fi6zzadfzsb-mit-krb5-1.21/lib/libcom_err.so.3.0
+--842-- Reading syms from /gnu/store/01994fzz1gmx69jxldf42fi6zzadfzsb-mit-krb5-1.21/lib/libkrb5support.so.0.1
+--842-- Reading syms from /gnu/store/m31vlvwm79m89fk3xk0z4h7snk61y510-glibc-2.41/lib/libresolv.so.2
+--842-- REDIR: 0x4aefa00 (libc.so.6:rawmemchr) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af2620 (libc.so.6:strncat) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4af3270 (libc.so.6:strstr) redirected to 0x483b1a6 (_vgnU_ifunc_wrapper)
+--842-- REDIR: 0x4ba53a0 (libc.so.6:__memcmp_avx2_movbe) redirected to 0x4853120 (bcmp)
+--842-- REDIR: 0x4aeba50 (libc.so.6:realloc) redirected to 0x484d34d (realloc)
+--842-- REDIR: 0x4ba7c80 (libc.so.6:__strchr_avx2) redirected to 0x484ee20 (index)
+--842-- REDIR: 0x4ba5100 (libc.so.6:__memchr_avx2) redirected to 0x48507b0 (memchr)
+--842-- REDIR: 0x4ba6f80 (libc.so.6:__strcasecmp_l_avx2) redirected to 0x4850180 (strcasecmp_l)
+==842== 
+==842== HEAP SUMMARY:
+==842==     in use at exit: 144,863 bytes in 810 blocks
+==842==   total heap usage: 2,064 allocs, 1,254 frees, 288,676 bytes allocated
+==842== 
+==842== Searching for pointers to 810 not-freed blocks
+==842== Checked 80,363,256 bytes
+==842== 
+==842== LEAK SUMMARY:
+==842==    definitely lost: 0 bytes in 0 blocks
+==842==    indirectly lost: 0 bytes in 0 blocks
+==842==      possibly lost: 0 bytes in 0 blocks
+==842==    still reachable: 144,521 bytes in 808 blocks
+==842==         suppressed: 342 bytes in 2 blocks
+==842== Reachable blocks (those to which a pointer was found) are not shown.
+==842== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==842== 
+==842== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
+--842-- 
+--842-- used_suppression:      2 guix-glibc-locpath tests/guix-glibc-locpath.supp:16 suppressed: 342 bytes in 2 blocks
+==842== 
+==842== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)

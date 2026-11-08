@@ -907,6 +907,133 @@
 
 (define h2-not-found (lambda () (list (hex (answer #vu8(#x8d #x0f #x0d 2 #x31 #x30) "not found\n")) 'eof)))
 
+;; --- the parts route (M8 slice 3) --------------------------------------------
+;; parts-body : String
+;; Two parts, boundary BND, then the closing delimiter and CR LF: a, its data
+;; hi|, a backslash and 0x01; f, a filename and a type, the pattern's 300
+;; bytes. Its SHA-256 and each part's first 16 hex digits were computed on
+;; the host (sha256sum, and Python's hashlib, agreeing), never by the origin.
+(define parts-body
+  (string-append "--BND\r\nContent-Disposition: form-data; name=\"a\"\r\n\r\nhi|\\" (string (integer->char 1))
+                 "\r\n--BND\r\nContent-Disposition: form-data; name=\"f\"; filename=\"p.bin\"\r\n"
+                 "Content-Type: application/octet-stream\r\n\r\n" (pattern-text 300) "\r\n--BND--\r\n"))
+(define sha-parts "6454d8e0ec08abcb72817eedcf3a0387bc99943457ed00a3c524da70615a4792")
+
+;; parts-report : String String -> String
+;; /parts' report for parts-body, on FACE, its Expect EXPECT.
+(define (parts-report face expect)
+  (string-append "parts " face " method=POST cl=478 te=- expect=" expect
+                 " ct=multipart/form-data;_boundary=BND bytes=478 sha256=" sha-parts
+                 " boundary=BND preamble=0 closed=1 epilogue=2 count=2\n"
+                 "part 0 headers=Content-Disposition: form-data; name=\"a\" len=5 sha256=2430cdfdae1a3ce9"
+                 " pattern=bad@0 data=hi\\x7c\\\\\\x01\n"
+                 "part 1 headers=Content-Disposition: form-data; name=\"f\"; filename=\"p.bin\"|"
+                 "Content-Type: application/octet-stream len=300 sha256=43f9b5d59eb10881 pattern=ok data=-\n"))
+
+;; status-100-block : Bytevector
+;; :status 100 as nghttp2 writes it, a literal with incremental indexing of
+;; static name 8, 0x48, its digits Huffman-coded when that is shorter, as
+;; content-length-field takes them: 1 and 0 are 5 bits each, so 100 is two
+;; bytes, not three.
+(define status-100-block
+  (let ((huffman (huffman-digits "100")))
+    (if (< (bytevector-length huffman) 3)
+        (join (list #vu8(#x48) (u8-list->bytevector (list (+ #x80 (bytevector-length huffman)))) huffman))
+        (join (list #vu8(#x48 #x03) (octets "100"))))))
+
+;; parts-h2-answer : String Boolean -> Bytevector
+;; The whole frames an HTTP/2 face sends for one parts request on stream 1:
+;; its SETTINGS and the ACK of the client's; when CONTINUE, a HEADERS frame
+;; of :status 100; then :status 200 and its content-length, and DATA holding
+;; REPORT, which ends the stream.
+(define (parts-h2-answer report continue)
+  (join (append (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8()))
+                (if continue (list (frame HEADERS END-HEADERS 1 status-100-block)) '())
+                (list (frame HEADERS END-HEADERS 1 (join (list #vu8(#x88) (content-length-field (string-length report)))))
+                      (frame DATA END-STREAM 1 (octets report))))))
+
+(define (parts-scenarios o)
+  (define ct "Content-Type: multipart/form-data; boundary=BND\r\n")
+  (define sized (string-append "Content-Length: " (number->string (string-length parts-body)) "\r\n"))
+  (define released '("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+  (define (http-answer report)
+    (string-append "HTTP/1.1 200 OK\r\nContent-Length: " (number->string (string-length report))
+                   "\r\nConnection: close\r\n\r\n" report))
+  (test-equal "https /parts, two parts by Content-Length: the report, parts https, whole, then eof"
+    (list (http-answer (parts-report "https" "-")) 'eof)
+    (exchange o 'https (string-append (post "/parts?key=tp-https" ct sized close) parts-body) 2000 http1-tls))
+  (test-equal "https /parts with Expect: 100-continue: a 100 at once, then the report"
+    (list (string-append "HTTP/1.1 100 Continue\r\n\r\n" (http-answer (parts-report "https" "100-continue"))) 'eof)
+    (exchange o 'https (string-append (post "/parts?key=tp-https-continue" ct sized "Expect: 100-continue\r\n" close)
+                                      parts-body)
+              2000 http1-tls))
+  (for-each
+   (lambda (face scheme tls options)
+     (define (named what) (string-append (symbol->string face) " " what))
+     (define (key what) (string-append (symbol->string face) "-parts-" what))
+     (define (half-closed bytes)
+       (parameterize ((wire-probe-tls tls)) (wire-probe-half-close o face bytes 2000)))
+     (define pairs '(("content-length" . "478") ("content-type" . "multipart/form-data; boundary=BND")))
+     (test-equal (named "POST /parts, two parts in one DATA frame: the report, whole frames, then eof; /seen then reads 1")
+       (list (hex (parts-h2-answer (parts-report (symbol->string face) "-") #f)) 'eof (h2-seen 1))
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((p (half-closed (request scheme "POST" (string-append "/parts?key=" (key "one")) pairs parts-body)))
+                (seen (h2-exchange o face (request scheme "GET" (string-append "/seen?key=" (key "one")) '() #f) tls)))
+           (list (hex (probe-bytes p)) (probe-end p) seen))))
+     (test-equal (named "POST /parts?fail=1: the first request of its key answered :status 503 with its report, the second 200")
+       (list (list 'status 503 (parts-report (symbol->string face) "-")) (list 'status 200 (parts-report (symbol->string face) "-")))
+       (guard (e (#t (list 'raised (describe e))))
+         (in-order (lambda (n)
+                     (let* ((p (half-closed (request scheme "POST" (string-append "/parts?key=" (key "fail") "&fail=1")
+                                                     pairs parts-body)))
+                            (bytes (probe-bytes p))
+                            (data (assv 1 (data-by-stream bytes))))
+                       ;; :status 200 is 0x88; 503 a literal of static name
+                       ;; 8, 0x48, then its three digits, as 413's is.
+                       (list 'status
+                             (cond ((= (bytevector-u8-ref bytes 27) #x88) 200)
+                                   ((and (= (bytevector-u8-ref bytes 27) #x48)
+                                         (equal? (map (lambda (i) (bytevector-u8-ref bytes i)) '(28 29 30 31))
+                                                 '(3 53 48 51)))
+                                    503)
+                                   (else (list 'headers (hex bytes))))
+                             (if data (cdr data) 'no-data))))
+                   '(1 2))))
+     (test-equal (named "POST /parts with expect 100-continue: a HEADERS frame of :status 100 at once, then the report, whole frames")
+       (list (hex (parts-h2-answer (parts-report (symbol->string face) "100-continue") #t)) 'eof)
+       (guard (e (#t (list 'raised (describe e))))
+         (let ((p (half-closed (request scheme "POST" (string-append "/parts?key=" (key "continue"))
+                                        (append pairs '(("expect" . "100-continue"))) parts-body))))
+           (list (hex (probe-bytes p)) (probe-end p)))))
+     ;; With hold=1 the 100 waits for /raw/release?key=K, sent to the raw
+     ;; face 800 ms after the probe starts; the probe's DATA follows 2000 ms
+     ;; after its HEADERS, so the 100's HEADERS, at offset 18, comes alone,
+     ;; 500 ms after the probe connected at least, and the report only once
+     ;; the DATA has ended the stream.
+     (test-equal (named "POST /parts?hold=1 with expect 100-continue, its DATA 2000 ms after its HEADERS: counted as its HEADERS arrive, its 100 only once /raw/release names its key, 800 ms on; then the report, whole frames")
+       (list (h2-seen 1) released 'held-until-released
+             (list (hex (parts-h2-answer (parts-report (symbol->string face) "100-continue") #t)) 'eof))
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((first (h2-start scheme "POST" (string-append "/parts?key=" (key "hold") "&hold=1")
+                                 (append pairs '(("expect" . "100-continue")))))
+                (finish (spawned-probe o face (join (list first (frame DATA END-STREAM 1 (octets parts-body)))) 6000
+                                       (append (list "--half-close" "--split"
+                                                     (string-append (number->string (bytevector-length first)) ":2000"))
+                                               options)))
+                (seen (begin (pause-ms 400)
+                             (h2-exchange o face (request scheme "GET" (string-append "/seen?key=" (key "hold")) '() #f)
+                                          tls)))
+                (release (begin (pause-ms 400)
+                                (exchange o 'raw (get (string-append "/raw/release?key=" (key "hold"))) 2000 #f)))
+                (p (finish))
+                (head-at (arrival (probe-arrivals p) 18)))
+           (list seen release
+                 (if (and head-at (probe-connected p) (>= (- head-at (probe-connected p)) 500))
+                     'held-until-released
+                     (list 'connected (probe-connected p) 'head-at head-at))
+                 (list (hex (probe-bytes p)) (probe-end p)))))))
+   '(h2c h2) '("http" "https") (list #f h2-tls) '(() ("--tls" "localhost" "--alpn" "h2"))))
+
 (define (sink-scenarios o)
   (define p10 (pattern-text 10))
   (define bad7 (string-append (substring p10 0 7) "x" (substring p10 8 10)))
@@ -2216,6 +2343,9 @@
 
   ;; --- the sinks
   (sink-scenarios o)
+
+  ;; --- the parts route
+  (parts-scenarios o)
 
   ;; --- the stream calls' routes
   (duplex-scenarios o)

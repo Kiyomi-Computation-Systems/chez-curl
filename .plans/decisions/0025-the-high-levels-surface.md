@@ -3,7 +3,8 @@
 - **Status:** Accepted; amended 2026-10-27: params are written into the URL, then parsed whole
   (ADR-0028); amended 2026-10-27: a second escape during a session's close is documented, not
   prevented; amended 2026-11-05: a call's checks run in one critical section, and after
-  its review, 2026-11-06: every guard around a critical wind
+  its review, 2026-11-06: every guard around a critical wind;
+  amended 2026-11-07: the `multipart` call key (M8 slice 3)
 - **Date:** 2026-10-27
 - **Scope:** chez-curl v1, `(http-client)`, from M5
 - **Settles:** three questions the M5 plan raised about `(http-client)`'s public surface. The
@@ -171,3 +172,18 @@ library (brief §3).
     CI's memory job at `473b1b4`, races so on `main` too, 6 runs of 20, and got the same pause; and a group's step row counts 1 or 2 transfers started, since a
     group submits the next hop inside its step's section, before a pending Ctrl-C runs, and the
     raise's cancel then races the engine starting it.
+
+## Amendment, 2026-11-07: the `multipart` call key (M8 slice 3)
+
+A call takes `multipart`, the parts alone, as `form` takes its pairs (the M8 plan, section 3.1).
+Beside `body` or `form` it is refused, `multipart-beside-body`; with `get` or `head`,
+`body-not-allowed`, its field `multipart`. The call resolves each relative path once, as its first
+request is made, and copies each part's data then, as `call-body` copies a body, so a retry or a
+redirect's hop sends the files and bytes the call began with (ADR-0039, amended 2026-11-07). A
+session's `Content-Type` header is dropped from a multipart call; a call's own is refused by the
+low level, `multipart-content-type`.
+
+After slice 3's review, a redirect's hop is built by `curl-request-with` with a `url` key from the
+last request, its body kept unstat'd or dropped, so the high level's core makes no file system
+call, and a file lost mid-call fails alike at a hop and a retry, at the submit's `stat`, wrapped as
+`&http-exchange` (ADR-0023, amended 2026-11-07).

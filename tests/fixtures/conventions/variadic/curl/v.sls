@@ -7,7 +7,7 @@
 ;; alone, they mismatch too.
 (library (curl v)
   (export setopt-long getinfo setopt-plain multi-setopt share-setopt
-          multi-setopt-one share-setopt-any)
+          multi-setopt-one share-setopt-any formadd formadd-plain)
   (import (rnrs) (only (chezscheme) foreign-procedure foreign-entry?))
 
   (define (required-entry name library) (foreign-entry? name))
@@ -41,4 +41,8 @@
     (foreign-procedure (__varargs_after 1) "curl_multi_setopt" (uptr int long) int))
 
   (define share-setopt-any
-    (foreign-procedure __varargs "curl_share_setopt" (uptr int long) int)))
+    (foreign-procedure __varargs "curl_share_setopt" (uptr int long) int))
+
+  (define formadd (bind-variadic "curl_formadd" (uptr uptr int uptr int uptr int) int #f))
+
+  (define formadd-plain (bind-required "curl_formadd" (uptr uptr int uptr int uptr int) int #f)))

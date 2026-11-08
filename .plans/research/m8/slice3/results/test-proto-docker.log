@@ -1,0 +1,190 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T14:58:52Z mode=test tree=proto lanes= floor openssl gnutls current cpuset=6-11 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane floor: make test in a copy of /w/proto, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node 
+lane floor: FAIL (597 s)
+  [floor] test: FAIL tests/test-auth.sps (exit 1)
+  [floor] test: FAIL tests/test-call-checks.sps (exit 1)
+  [floor] test: pass tests/test-check-floors.sps
+  [floor] test: pass tests/test-check-nothreads.sps
+  [floor] test: FAIL tests/test-check-seam.sps (exit 1)
+  [floor] test: FAIL tests/test-collect-safe.sps (exit 1)
+  [floor] test: FAIL tests/test-conditions.sps (exit 1)
+  [floor] test: FAIL tests/test-constants.sps (exit 1)
+  [floor] test: FAIL tests/test-cookies.sps (exit 1)
+  [floor] test: FAIL tests/test-curl-testing.sps (exit 1)
+  [floor] test: pass tests/test-discovery.sps
+  [floor] test: pass tests/test-drift.sps
+  [floor] test: FAIL tests/test-engine.sps (exit 1)
+  [floor] test: FAIL tests/test-group.sps (exit 1)
+  [floor] test: FAIL tests/test-headers.sps (exit 1)
+  [floor] test: FAIL tests/test-http-client.sps (exit 1)
+  [floor] test: FAIL tests/test-library-loading.sps (exit 1)
+  [floor] test: pass tests/test-load-state.sps
+  [floor] test: FAIL tests/test-mailbox.sps (exit 1)
+  [floor] test: pass tests/test-manifest.sps
+  [floor] test: FAIL tests/test-memory-safety.sps (exit 1)
+  [floor] test: FAIL tests/test-native.sps (exit 1)
+  [floor] test: pass tests/test-origin-tls.sps
+  [floor] test: pass tests/test-origin.sps
+  [floor] test: FAIL tests/test-printed.sps (exit 1)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] test: FAIL tests/test-redirect.sps (exit 1)
+  [floor] test: FAIL tests/test-request.sps (exit 1)
+  [floor] test: pass tests/test-require-threaded.sps
+  [floor] test: FAIL tests/test-retry.sps (exit 1)
+  [floor] test: FAIL tests/test-stream-call.sps (exit 1)
+  [floor] test: FAIL tests/test-stream.sps (exit 1)
+  [floor] test: FAIL tests/test-transfer-tls.sps (exit 1)
+  [floor] test: FAIL tests/test-transfer.sps (exit 1)
+  [floor] test: FAIL tests/test-unsupported.sps (exit 1)
+  [floor] test: FAIL tests/test-upload.sps (exit 1)
+  [floor] test: FAIL tests/test-url-location.sps (exit 1)
+  [floor] test: FAIL tests/test-url-parts.sps (exit 1)
+  [floor] test: FAIL tests/test-url.sps (exit 1)
+  [floor] test: pass tests/test-variadic.sps
+  [floor] test: pass tests/test-verify.sps
+  [floor] test: FAIL tests/test-version.sps (exit 1)
+  [floor] test: ran 42, passed 11, failed 31, hung 0
+== lane openssl: make test in a copy of /w/proto, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node 
+lane openssl: FAIL (593 s)
+  [openssl] test: FAIL tests/test-auth.sps (exit 1)
+  [openssl] test: FAIL tests/test-call-checks.sps (exit 1)
+  [openssl] test: pass tests/test-check-floors.sps
+  [openssl] test: pass tests/test-check-nothreads.sps
+  [openssl] test: FAIL tests/test-check-seam.sps (exit 1)
+  [openssl] test: FAIL tests/test-collect-safe.sps (exit 1)
+  [openssl] test: FAIL tests/test-conditions.sps (exit 1)
+  [openssl] test: FAIL tests/test-constants.sps (exit 1)
+  [openssl] test: FAIL tests/test-cookies.sps (exit 1)
+  [openssl] test: FAIL tests/test-curl-testing.sps (exit 1)
+  [openssl] test: pass tests/test-discovery.sps
+  [openssl] test: pass tests/test-drift.sps
+  [openssl] test: FAIL tests/test-engine.sps (exit 1)
+  [openssl] test: FAIL tests/test-group.sps (exit 1)
+  [openssl] test: FAIL tests/test-headers.sps (exit 1)
+  [openssl] test: FAIL tests/test-http-client.sps (exit 1)
+  [openssl] test: FAIL tests/test-library-loading.sps (exit 1)
+  [openssl] test: pass tests/test-load-state.sps
+  [openssl] test: FAIL tests/test-mailbox.sps (exit 1)
+  [openssl] test: pass tests/test-manifest.sps
+  [openssl] test: FAIL tests/test-memory-safety.sps (exit 1)
+  [openssl] test: FAIL tests/test-native.sps (exit 1)
+  [openssl] test: pass tests/test-origin-tls.sps
+  [openssl] test: pass tests/test-origin.sps
+  [openssl] test: FAIL tests/test-printed.sps (exit 1)
+  [openssl] test: FAIL tests/test-proxy.sps (exit 1)
+  [openssl] test: FAIL tests/test-redirect.sps (exit 1)
+  [openssl] test: FAIL tests/test-request.sps (exit 1)
+  [openssl] test: pass tests/test-require-threaded.sps
+  [openssl] test: FAIL tests/test-retry.sps (exit 1)
+  [openssl] test: FAIL tests/test-stream-call.sps (exit 1)
+  [openssl] test: FAIL tests/test-stream.sps (exit 1)
+  [openssl] test: FAIL tests/test-transfer-tls.sps (exit 1)
+  [openssl] test: FAIL tests/test-transfer.sps (exit 1)
+  [openssl] test: FAIL tests/test-unsupported.sps (exit 1)
+  [openssl] test: FAIL tests/test-upload.sps (exit 1)
+  [openssl] test: FAIL tests/test-url-location.sps (exit 1)
+  [openssl] test: FAIL tests/test-url-parts.sps (exit 1)
+  [openssl] test: FAIL tests/test-url.sps (exit 1)
+  [openssl] test: pass tests/test-variadic.sps
+  [openssl] test: pass tests/test-verify.sps
+  [openssl] test: FAIL tests/test-version.sps (exit 1)
+  [openssl] test: ran 42, passed 11, failed 31, hung 0
+== lane gnutls: make test in a copy of /w/proto, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node 
+lane gnutls: FAIL (583 s)
+  [gnutls] test: FAIL tests/test-auth.sps (exit 1)
+  [gnutls] test: FAIL tests/test-call-checks.sps (exit 1)
+  [gnutls] test: pass tests/test-check-floors.sps
+  [gnutls] test: pass tests/test-check-nothreads.sps
+  [gnutls] test: FAIL tests/test-check-seam.sps (exit 1)
+  [gnutls] test: FAIL tests/test-collect-safe.sps (exit 1)
+  [gnutls] test: FAIL tests/test-conditions.sps (exit 1)
+  [gnutls] test: FAIL tests/test-constants.sps (exit 1)
+  [gnutls] test: FAIL tests/test-cookies.sps (exit 1)
+  [gnutls] test: FAIL tests/test-curl-testing.sps (exit 1)
+  [gnutls] test: pass tests/test-discovery.sps
+  [gnutls] test: pass tests/test-drift.sps
+  [gnutls] test: FAIL tests/test-engine.sps (exit 1)
+  [gnutls] test: FAIL tests/test-group.sps (exit 1)
+  [gnutls] test: FAIL tests/test-headers.sps (exit 1)
+  [gnutls] test: FAIL tests/test-http-client.sps (exit 1)
+  [gnutls] test: FAIL tests/test-library-loading.sps (exit 1)
+  [gnutls] test: pass tests/test-load-state.sps
+  [gnutls] test: FAIL tests/test-mailbox.sps (exit 1)
+  [gnutls] test: pass tests/test-manifest.sps
+  [gnutls] test: FAIL tests/test-memory-safety.sps (exit 1)
+  [gnutls] test: FAIL tests/test-native.sps (exit 1)
+  [gnutls] test: pass tests/test-origin-tls.sps
+  [gnutls] test: pass tests/test-origin.sps
+  [gnutls] test: FAIL tests/test-printed.sps (exit 1)
+  [gnutls] test: FAIL tests/test-proxy.sps (exit 1)
+  [gnutls] test: FAIL tests/test-redirect.sps (exit 1)
+  [gnutls] test: FAIL tests/test-request.sps (exit 1)
+  [gnutls] test: pass tests/test-require-threaded.sps
+  [gnutls] test: FAIL tests/test-retry.sps (exit 1)
+  [gnutls] test: FAIL tests/test-stream-call.sps (exit 1)
+  [gnutls] test: FAIL tests/test-stream.sps (exit 1)
+  [gnutls] test: FAIL tests/test-transfer-tls.sps (exit 1)
+  [gnutls] test: FAIL tests/test-transfer.sps (exit 1)
+  [gnutls] test: FAIL tests/test-unsupported.sps (exit 1)
+  [gnutls] test: FAIL tests/test-upload.sps (exit 1)
+  [gnutls] test: FAIL tests/test-url-location.sps (exit 1)
+  [gnutls] test: FAIL tests/test-url-parts.sps (exit 1)
+  [gnutls] test: FAIL tests/test-url.sps (exit 1)
+  [gnutls] test: pass tests/test-variadic.sps
+  [gnutls] test: pass tests/test-verify.sps
+  [gnutls] test: FAIL tests/test-version.sps (exit 1)
+  [gnutls] test: ran 42, passed 11, failed 31, hung 0
+== lane current: make test in a copy of /w/proto, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include NODE=/src/build/verify/m3s2/node20/node 
+lane current: FAIL (579 s)
+  [current] test: FAIL tests/test-auth.sps (exit 1)
+  [current] test: FAIL tests/test-call-checks.sps (exit 1)
+  [current] test: pass tests/test-check-floors.sps
+  [current] test: pass tests/test-check-nothreads.sps
+  [current] test: FAIL tests/test-check-seam.sps (exit 1)
+  [current] test: FAIL tests/test-collect-safe.sps (exit 1)
+  [current] test: FAIL tests/test-conditions.sps (exit 1)
+  [current] test: FAIL tests/test-constants.sps (exit 1)
+  [current] test: FAIL tests/test-cookies.sps (exit 1)
+  [current] test: FAIL tests/test-curl-testing.sps (exit 1)
+  [current] test: pass tests/test-discovery.sps
+  [current] test: pass tests/test-drift.sps
+  [current] test: FAIL tests/test-engine.sps (exit 1)
+  [current] test: FAIL tests/test-group.sps (exit 1)
+  [current] test: FAIL tests/test-headers.sps (exit 1)
+  [current] test: FAIL tests/test-http-client.sps (exit 1)
+  [current] test: FAIL tests/test-library-loading.sps (exit 1)
+  [current] test: pass tests/test-load-state.sps
+  [current] test: FAIL tests/test-mailbox.sps (exit 1)
+  [current] test: pass tests/test-manifest.sps
+  [current] test: FAIL tests/test-memory-safety.sps (exit 1)
+  [current] test: FAIL tests/test-native.sps (exit 1)
+  [current] test: pass tests/test-origin-tls.sps
+  [current] test: pass tests/test-origin.sps
+  [current] test: FAIL tests/test-printed.sps (exit 1)
+  [current] test: FAIL tests/test-proxy.sps (exit 1)
+  [current] test: FAIL tests/test-redirect.sps (exit 1)
+  [current] test: FAIL tests/test-request.sps (exit 1)
+  [current] test: pass tests/test-require-threaded.sps
+  [current] test: FAIL tests/test-retry.sps (exit 1)
+  [current] test: FAIL tests/test-stream-call.sps (exit 1)
+  [current] test: FAIL tests/test-stream.sps (exit 1)
+  [current] test: FAIL tests/test-transfer-tls.sps (exit 1)
+  [current] test: FAIL tests/test-transfer.sps (exit 1)
+  [current] test: FAIL tests/test-unsupported.sps (exit 1)
+  [current] test: FAIL tests/test-upload.sps (exit 1)
+  [current] test: FAIL tests/test-url-location.sps (exit 1)
+  [current] test: FAIL tests/test-url-parts.sps (exit 1)
+  [current] test: FAIL tests/test-url.sps (exit 1)
+  [current] test: pass tests/test-variadic.sps
+  [current] test: pass tests/test-verify.sps
+  [current] test: FAIL tests/test-version.sps (exit 1)
+  [current] test: ran 42, passed 11, failed 31, hung 0

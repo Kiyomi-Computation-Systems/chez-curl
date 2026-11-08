@@ -6,7 +6,8 @@
   [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
   [bytevector copies](#amendment-2026-10-16-bytevector-copies-go-through-one-checked-wrapper-m0-slice-5));
   amended 2026-10-17 with [what slice 6 built](#amendment-2026-10-17-the-variadic-bindings-m0-slice-6);
-  amended 2026-10-23 with [what M2 slice 1 built](#amendment-2026-10-23-the-checked-copies-and-the-carried-checks-m2-slice-1)
+  amended 2026-10-23 with [what M2 slice 1 built](#amendment-2026-10-23-the-checked-copies-and-the-carried-checks-m2-slice-1);
+  amended 2026-11-07: `curl_formadd` and the mime calls are bound (M8 slice 3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D6. That decision was raised on 2026-10-04, after the brief was written.
@@ -580,3 +581,20 @@ arm64, Apple's libcurl 8.7.1), on PR #22's branch. The probe's output is kept as
   mutant by name, exiting 1, with a failing test through `curl-multi-setopt-long`: the
   binding's annotation is watched failing by behaviour, as the 2026-10-25 amendment planned.
   The maintainer sent the summary line alone, so how many tests failed is not recorded.
+
+## Amendment, 2026-11-07: `curl_formadd` and the mime calls are bound (M8 slice 3)
+
+- **`curl_formadd` is the fifth variadic entry and the seventh variadic use,** bound once,
+  `(uptr uptr int uptr int uptr int)`, through `bind-variadic`, last in the load's step 6. Its one
+  caller is the load's mime probe (ADR-0003, amended 2026-11-07). The 2026-10-17 amendment's
+  "chez-curl binds neither" holds now for the `curl_mprintf` family alone.
+- **The mime calls:** `curl_mime_init`, `_free`, `_addpart`, `_name`, `_data`, `_filename`,
+  `_type` and `curl_formfree` through `bind-required`, and `curl_mime_filedata` through
+  `bind-blocking`, `__collect_safe`, since it stats its path. Every string they take is a counted
+  foreign copy passed as `uptr`, never a `string-not-kept` row: no new string crossing (ADR-0013,
+  amended 2026-10-23). One procedure of `native.sls` adds a whole part, checking the mime's
+  owner, so no part's address leaves it.
+- **The checks:** `check-variadic.sh` and `test-collect-safe` count seven uses, and
+  `test-variadic` reaches `curl_formadd` through rows of its own: a whole field answers 0, an
+  unknown option 4. On x86-64, `make check-variadic` passed all 37 steps
+  (`research/m8/slice3/build/check-variadic.log`); the Apple arm64 half is the Mac's.

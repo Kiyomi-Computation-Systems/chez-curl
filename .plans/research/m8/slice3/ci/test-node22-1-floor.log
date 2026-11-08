@@ -1,0 +1,13 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-seam-exit=0
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-multipart.sps
+%%%% Starting test multipart
+test-multipart: timer swept a tick at a time to 256 ticks for make-curl-request, 256 for curl-request-check and 512 for curl-submit
+test-multipart: libcurl "7.85.0" measured ("7.85.0" (request-size . head-alone) (after-grown-h1 response 400) (after-shrunk-h1 failed perform-failed 28 held) (after-shrunk-none-h1 stalled) (after-removed-h1 failed perform-failed 26) (after-fifo-h1 response 200 whole held) (after-grown-h2 failed perform-failed 92) (after-shrunk-h2 failed perform-failed 92) (after-removed-h2 failed perform-failed 26) (after-fifo-h2 response 200 whole held) (resend-kill-data response 200 whole 2) (resend-kill-file response 200 whole 2) (resend-refused-data response 200 whole 2) (resend-307-data response 200 whole 1) (resend-307-file response 200 whole 1) (resend-reset-file response 200 whole 2))
+# of expected passes      73
+test: pass tests/test-multipart.sps
+test: ran 1, passed 1, failed 0, hung 0

@@ -81,11 +81,23 @@
    ;; default, libcurl's own:
    ;;   method              get, head, post, put, patch or delete; get
    ;;   headers             (Listof (Pairof String String)), Latin-1; ()
-   ;;   body                Bytevector, stream, or #f; #f. post, put and patch
-   ;;                       send an empty one for #f; get and head refuse one.
-   ;;                       stream: the token's puts give the body as it is
-   ;;                       produced, sent at most once, on a connection of
-   ;;                       its own
+   ;;   body                Bytevector, stream, (multipart PART ...), or #f;
+   ;;                       #f. post, put and patch send an empty one for #f;
+   ;;                       get and head refuse one. stream: the token's puts
+   ;;                       give the body as it is produced, sent at most
+   ;;                       once, on a connection of its own. multipart: a
+   ;;                       multipart/form-data body libcurl frames, each
+   ;;                       PART (NAME SOURCE OPTION ...), SOURCE a string,
+   ;;                       sent as UTF-8, a bytevector, or (file PATH), each
+   ;;                       OPTION filename STRING or type STRING, at most
+   ;;                       once each; a name, filename and type hold no
+   ;;                       control char, U+0000 to U+001F or U+007F, and are
+   ;;                       never empty, and a name and filename hold no ";
+   ;;                       a relative PATH is resolved as the request is
+   ;;                       made, and must name a regular file then, at
+   ;;                       submit and as the engine starts the transfer;
+   ;;                       libcurl writes Content-Type, and a Content-Type
+   ;;                       header beside it is refused (ADR-0039)
    ;;   user-agent          a non-empty Latin-1 string, or #f; #f
    ;;   timeout-ms          the whole transfer's bound, or #f; #f
    ;;   connect-timeout-ms  the connection phase's bound, its TLS handshake
@@ -185,12 +197,19 @@
    ;; proxy URL where TLS inside TLS stalls, Ubuntu's 8.5.0 with GnuTLS and
    ;; 7.85.0 unless http/1.1 is asked, as proxy-tls-in-tls.
    ;; curl-request-with : Request Symbol Any ... -> Request
-   ;; A new request, with the keys given replaced and the rest kept.
+   ;; A new request, with the keys given replaced and the rest kept. It
+   ;; takes make-curl-request's keys, and url, a new URL, checked as
+   ;; make-curl-request checks its first argument, its refusals naming
+   ;; curl-request-with: so a redirect's hop is the last request with its
+   ;; URL changed. A multipart body it is not given is kept as the request
+   ;; holds it, its files not stat'd again; a submit stats them.
    ;; curl-request? : Any -> Boolean
    ;; curl-request-url : Request -> String
    ;; curl-request-method : Request -> Symbol
    ;; curl-request-headers : Request -> (Listof (Pairof String String))
-   ;; curl-request-body : Request -> (U Bytevector 'stream #f)
+   ;; curl-request-body : Request -> (U Bytevector 'stream Multipart #f)
+   ;;   a multipart body as a copy, fresh pairs and metadata strings, its
+   ;;   paths resolved, each part's data as given
    ;; curl-request-user-agent : Request -> (U String #f)
    ;; curl-request-timeout-ms : Request -> (U Positive-Integer #f)
    ;; curl-request-connect-timeout-ms : Request -> (U Positive-Integer #f)
@@ -498,7 +517,9 @@
    ;; curl-transfer-error-request-size : &curl-transfer-error -> (U Natural #f)
    ;;   the bytes of request sent: 0 when none was; #f when it is unknown,
    ;;   a transfer cancelled or stopped, or one that ran on libcurl 8.7.0 or
-   ;;   8.7.1, whose count is broken, the Mac's among them
+   ;;   8.7.1, whose count is broken, the Mac's among them; for a multipart
+   ;;   body, the head alone on 7.85.0 and 8.5.0, the head and the body
+   ;;   from 8.20.0
    ;; curl-transfer-error-connect-code : &curl-transfer-error -> (U Positive-Integer #f)
    ;;   the status a proxy refused the transfer's CONNECT with, 403, 407,
    ;;   502, 503 or any other but a 2xx, alike on every libcurl, where the

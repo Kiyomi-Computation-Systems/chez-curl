@@ -1,0 +1,8 @@
+== make
+225 226 227 228 229 230 (sentinel 228)
+(no-raise 19766)
+((refused part-file) 6)
+== check
+196 197 198 199 200 201 (sentinel 285)
+(no-raise 19709)
+((refused part-file) 6)

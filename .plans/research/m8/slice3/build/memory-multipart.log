@@ -1,0 +1,5 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-multipart.sps
+test-memory: pass tests/test-multipart.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+exit 0 seconds 39

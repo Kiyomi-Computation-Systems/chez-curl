@@ -5,8 +5,8 @@
 ;;; response; (curl private engine) runs the transfer.
 ;;;
 ;;; A request is made from a property list, (make-curl-request URL KEY
-;;; VALUE ...), and curl-request-with makes a new one with keys replaced
-;;; (ADR-0023). An unknown key, a key with no value and a repeated key are
+;;; VALUE ...), and curl-request-with makes a new one with keys replaced,
+;;; the URL among them by its url key (ADR-0023). An unknown key, a key with no value and a repeated key are
 ;;; refused by name before anything else is checked. Then its fields are
 ;;; checked, before anything native: wrong types are assertion violations,
 ;;; and a body with get or head, a header or a user agent libcurl would
@@ -47,6 +47,45 @@
 ;;; libcurls, the M4 plan, section 4.1). Nothing follows a redirect:
 ;;; FOLLOWLOCATION is owned, and set only for the private follow field.
 ;;;
+;;; A multipart body (ADR-0039, amended twice; the M8 plan, sections 3.1 and
+;;; 3.4): (multipart PART ...), each PART (NAME SOURCE OPTION ...), NAME a
+;;; string, SOURCE a string, sent as UTF-8, a bytevector, or (file PATH),
+;;; and each OPTION filename STRING or type STRING, once at most. A wrong
+;;; shape is an assertion violation naming the body by its kind. As the
+;;; request is made, the list and its metadata are copied, fresh pairs and
+;;; fresh name, filename, type and path strings, the data kept as given,
+;;; and the copy checked and kept: (multipart) is multipart-empty; a name,
+;;; filename or type that is "" is part-empty, and one holding a control
+;;; char, U+0000 to U+001F or U+007F, or a name or filename a ", part-bytes,
+;;; a file part's default filename, its path's last component, by the
+;;; filename's rules; a header named Content-Type beside it is
+;;; multipart-content-type; then each path, empty or holding U+0000, is
+;;; part-file, a relative one is resolved against current-directory, once,
+;;; and one that names no regular file by stat, symlinks followed, is
+;;; part-file too. Nothing is opened. curl-request-body answers a copy of
+;;; the list, as curl-request-credentials does. A submit checks the
+;;; record's copy again, on a copy of its own, by stat again, without
+;;; resolving: a path that is not absolute there is part-file, which only a
+;;; fault, the private curl-request-with-unresolved-path's, brings; on a
+;;; libcurl whose load found no mime it refuses the body before any of the
+;;; body's own checks, multipart-unsupported, naming what the probe found.
+;;; Then the submit copies each part's data, a
+;;; string's UTF-8, a bytevector's bytes: the data is copied at submit
+;;; alone. On the engine's thread, outside every critical section, before
+;;; the transfer is set up, check-plan-files! checks each file part's path
+;;; by stat, a regular file, then opens and closes it: a failure is the
+;;; transfer's, part-file, with nothing made. start-transfer! then makes the
+;;; mime with the transfer's easy handle, counted as mime, and adds each part
+;;; through native's curl-mime-add-part!: any answer but 0 fails the
+;;; transfer before it starts, part-file for a file's data, mime-failed for
+;;; the rest. MIMEPOST is the transfer's last body option, set in place of
+;;; POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; the transfer leaves the
+;;; Content-Type: blank out of its header list, so libcurl writes
+;;; multipart/form-data and its boundary, and keeps Expect:. MIME_OPTIONS is
+;;; owned and never set, so libcurl escapes nothing the byte rules let
+;;; through. free-transfer! frees the mime after curl_easy_cleanup; an
+;;; abandoned easy handle keeps it, counted, as it keeps its jar.
+;;;
 ;;; A finished transfer's response carries its timings, read as curl_off_t
 ;;; microseconds through native's off_t reader. A failed one carries its
 ;;; request size, CURLINFO_REQUEST_SIZE, and raises its code's class
@@ -61,7 +100,8 @@
 ;;;   - the error buffer, a counted block of CURL_ERROR_SIZE bytes, zeroed
 ;;;     through the checked copy;
 ;;;   - the header list, a string list of Latin-1 copies, counted as slist;
-;;;   - the easy handle, with every setting set-transfer-options! makes.
+;;;   - the easy handle, then, for a multipart body, its mime and parts, then
+;;;     every setting set-transfer-options! makes.
 ;;;
 ;;; The engine adds the easy handle to its multi handle. Once
 ;;; curl_multi_info_read says the transfer is done, finish-transfer reads
@@ -300,14 +340,16 @@
           cookie-jar-handle cookie-jar-handle-set! cookie-jar-state cookie-jar-state-set!
           cookie-jar-holders cookie-jar-holders-set! curl-request-cookie-jar plan-jar
           jar-settings share-settings cookie-line-fault cookie-line-bytes jar-attach!
-          jar-load-lines! jar-read-lines check-cookie-beside-jar)
+          jar-load-lines! jar-read-lines check-cookie-beside-jar
+          check-plan-files! transfer-file-check-gate-set! curl-request-with-unresolved-path
+          transfer-mime-answer-set! transfer-mime-gate-set!)
   (import (curl private require-threaded)
           (rnrs)
           (rnrs mutable-strings)
           (rnrs mutable-pairs)
           (only (chezscheme) critical-section foreign-callable foreign-callable-entry-point
                 lock-object make-mutex with-mutex foreign-sizeof get-thread-id current-time
-                time-second time-nanosecond make-time sleep)
+                time-second time-nanosecond make-time sleep current-directory file-regular?)
           (curl private conditions)
           (curl private constants)
           (curl private counters)
@@ -418,6 +460,12 @@
                          ((proxy-tls-in-tls) "an https:// URL through an https:// proxy, on a libcurl where TLS inside TLS stalls until the transfer's timeout")
                          ((https-proxy-unsupported) "an https:// proxy URL on a libcurl built without HTTPS-proxy support, which would refuse it and write the whole URL, its password with it, into its error buffer")
                          ((cookie-beside-jar) "a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing")
+                         ((part-bytes) "a multipart part's name, filename or type holds a control char, U+0000 to U+001F or U+007F, or its name or filename a quote, which libcurl would escape or send raw by version")
+                         ((part-empty) "a multipart part's name, filename or type is empty")
+                         ((multipart-empty) "a multipart body with no part: libcurl would send a closing delimiter alone")
+                         ((multipart-content-type) "a Content-Type header beside a multipart body: libcurl writes the body's type and its boundary")
+                         ((part-file) "a file part's path is empty, holds U+0000, is not absolute at submit, or names no regular file")
+                         ((multipart-unsupported) "this libcurl has no mime: its curl_formadd or its curl_mime_init said no as it loaded")
                          (else "a body with get or head, which send none")))
                       (make-irritants-condition (list value)))))
 
@@ -811,20 +859,21 @@
   (define (timeout? x)
     (or (not x) (and (long? x) (positive? x))))
 
-  ;; request-settings : Symbol List -> (Listof (Pairof Symbol Any))
+  ;; request-settings : Symbol List [(Listof Symbol)] -> (Listof (Pairof Symbol Any))
   ;; PLIST, KEY VALUE ..., as (KEY . VALUE) pairs, in its order, each key
-  ;; refused by name, as WHO, before anything else is checked: one
-  ;; request-keys lacks, unknown-key; one with no value after it,
+  ;; refused by name, as WHO, before anything else is checked: one KEYS
+  ;; lacks, request-keys by default, unknown-key; one with no value after it,
   ;; missing-value; one given twice, repeated-key. Each is a
   ;; &curl-request-error, field key, whose value is the key as given, or,
   ;; for a key that is no symbol, its kind, shown-key's: a value found
   ;; where a key belongs can be a proxy URL or credentials.
-  (define (request-settings who plist)
+  (define (request-settings who plist . keys)
     (let loop ((rest plist) (found '()))
       (if (null? rest)
           (reverse found)
           (let ((key (car rest)))
-            (unless (memq key request-keys) (refuse-field who 'key (shown-key key) 'unknown-key))
+            (unless (memq key (if (pair? keys) (car keys) request-keys))
+              (refuse-field who 'key (shown-key key) 'unknown-key))
             (when (null? (cdr rest)) (refuse-field who 'key key 'missing-value))
             (when (assq key found) (refuse-field who 'key key 'repeated-key))
             (loop (cddr rest) (cons (cons key (cadr rest)) found))))))
@@ -835,7 +884,7 @@
   ;; curl-request-url : Request -> String
   ;; curl-request-method : Request -> (U 'get 'head 'post 'put 'patch 'delete)
   ;; curl-request-headers : Request -> (Listof (Pairof String String))
-  ;; curl-request-body : Request -> (U Bytevector 'stream #f)
+  ;; curl-request-body : Request -> (U Bytevector 'stream Multipart #f)
   ;; curl-request-user-agent : Request -> (U String #f)
   ;; curl-request-timeout-ms : Request -> (U Positive-Integer #f)
   ;; curl-request-connect-timeout-ms : Request -> (U Positive-Integer #f)
@@ -871,9 +920,13 @@
   ;;   body                a bytevector, sent whole, or #f, none, the default;
   ;;                       or stream, a body the token's puts give as it is
   ;;                       produced, sent at most once, on a connection of
-  ;;                       its own (ADR-0030, ADR-0032). With get or head it
-  ;;                       is refused as body-not-allowed. post, put and patch
-  ;;                       send an empty one when it is #f; delete sends none
+  ;;                       its own (ADR-0030, ADR-0032); or (multipart PART
+  ;;                       ...), a multipart/form-data body libcurl frames,
+  ;;                       resent whole inside a transfer as a whole body is
+  ;;                       (ADR-0039; the header's paragraph). With get or
+  ;;                       head it is refused as body-not-allowed. post, put
+  ;;                       and patch send an empty one when it is #f; delete
+  ;;                       sends none
   ;;   user-agent          a non-empty string, or #f for none, the default
   ;;   timeout-ms          the whole transfer's bound: a positive exact integer
   ;;                       a long holds, or #f, libcurl's default, none
@@ -1030,7 +1083,11 @@
   ;;
   ;; (curl-request-with REQUEST KEY VALUE ...): a new request, with the
   ;; keys given replaced and the rest kept, its private fields among them,
-  ;; checked as make-curl-request checks a new one.
+  ;; checked as make-curl-request checks a new one. It takes one key more,
+  ;; url, the URL make-curl-request takes first, checked as that one is,
+  ;; its refusals naming curl-request-with; make-curl-request does not take
+  ;; it. A multipart body it is not given is kept as REQUEST holds it, not
+  ;; stat'd again; a submit stats it (ADR-0023, after slice 3's review).
   ;;
   ;; The private fields are no keys, and (curl) exports none: FAULT, #f, or
   ;; a positive exact integer, a planted fault that makes the callable
@@ -1080,8 +1137,15 @@
     (checked-accessor 'curl-request-method curl-request? "a request" unchecked-curl-request-method))
   (define curl-request-headers
     (checked-accessor 'curl-request-headers curl-request? "a request" unchecked-curl-request-headers))
+  ;; A multipart body is answered as a copy, multipart-answer's: the list is
+  ;; the request's own, its paths resolved, and a change to it from outside
+  ;; would reach every later submit (ADR-0039, amended 2026-11-07).
   (define curl-request-body
-    (checked-accessor 'curl-request-body curl-request? "a request" unchecked-curl-request-body))
+    (let ((checked (checked-accessor 'curl-request-body curl-request? "a request"
+                                     unchecked-curl-request-body)))
+      (lambda (request)
+        (let ((body (checked request)))
+          (if (multipart? body) (multipart-answer body) body)))))
   (define curl-request-user-agent
     (checked-accessor 'curl-request-user-agent curl-request? "a request" unchecked-curl-request-user-agent))
   (define curl-request-timeout-ms
@@ -1143,16 +1207,23 @@
   ;; attached, and are private copies, so they are kept as they are.
   ;; CREDENTIALS, a PROXY string and PROXY-CA-FILE are copied first, and
   ;; each copy is checked and kept.
-  (define (checked-request who url method headers body user-agent timeout-ms
+  (define (checked-request who url method headers body-given user-agent timeout-ms
                            connect-timeout-ms body-limit ca-file verify proxy stream-buffer
                            body-length http-version credentials proxy-ca-file proxy-verify
                            cookie-jar fault follow options)
     (define (wrong message irritant) (assertion-violation who message (shown-value irritant)))
+    ;; A body kept from a request, kept-body's, is that request's own
+    ;; multipart list, checked as the request was made: it is taken as it
+    ;; is, neither copied nor stat'd again, and only the Content-Type rule,
+    ;; which reads the new request's headers, runs on it. Its submit stats
+    ;; it, the one check of the file system after the request is made.
+    (define kept (and (kept-body? body-given) (kept-body-list body-given)))
+    (define body (or kept body-given))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
       (wrong "a method is get, head, post, put, patch or delete" method))
-    (unless (or (not body) (bytevector? body) (eq? body 'stream))
-      (wrong "a body is a bytevector, stream, or #f" body))
+    (unless (or (not body) (bytevector? body) (eq? body 'stream) (multipart? body))
+      (wrong "a body is a bytevector, stream, (multipart PART ...), or #f" body))
     (unless (timeout? timeout-ms)
       (wrong "a timeout is a positive exact integer a long holds, or #f" timeout-ms))
     (unless (timeout? connect-timeout-ms)
@@ -1196,15 +1267,380 @@
         (refuse-field who 'body-length body-length 'body-length-without-stream))
       (when (and stream-buffer follow)
         (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds))
-      (let ((header-copies (car (snapshot who headers user-agent))))
-        (check-expect-round who stream-buffer header-copies)
-        (check-credentials who credentials header-copies body stream-buffer)
-        (check-cookie-beside-jar who cookie-jar header-copies))
-      (ca-file-copy who ca-file)
-      (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
-                        body-limit ca-file verify proxy stream-buffer body-length http-version
-                        credentials (path-copy who 'proxy-ca-file proxy-ca-file) proxy-verify
-                        cookie-jar fault follow options)))
+      (let ((parts (and (multipart? body) (if kept body (multipart-copy who body)))))
+        (let ((header-copies (car (snapshot who headers user-agent))))
+          (check-expect-round who stream-buffer header-copies)
+          (check-credentials who credentials header-copies body stream-buffer)
+          (check-cookie-beside-jar who cookie-jar header-copies)
+          (when parts (check-multipart-content-type who header-copies)))
+        (ca-file-copy who ca-file)
+        (let ((proxy-ca-file (path-copy who 'proxy-ca-file proxy-ca-file))
+              (body (if (and parts (not kept)) (multipart-paths-checked who parts #t) body)))
+          (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
+                            body-limit ca-file verify proxy stream-buffer body-length http-version
+                            credentials proxy-ca-file proxy-verify cookie-jar fault follow
+                            options)))))
+
+  ;; --- a multipart body (ADR-0039, amended twice; the M8 plan, sections 3.1 and 3.4) ----
+
+  ;; A multipart body, as a request keeps it and curl-request-body answers
+  ;; it: (multipart PART ...), each PART (NAME SOURCE OPTION ...), SOURCE a
+  ;; string, a bytevector or (file PATH), each OPTION filename STRING or
+  ;; type STRING. The plan keeps its own shape, multipart-for-plan's.
+
+  ;; multipart? : Any -> Boolean
+  ;; BODY is a multipart body by its head, (multipart . _): its shape is
+  ;; multipart-copy's to check.
+  (define (multipart? body) (and (pair? body) (eq? (car body) 'multipart)))
+
+  ;; bounded-length : Any -> (U Natural #f)
+  ;; X's length when it is a proper list, else #f: length refuses an
+  ;; improper or a circular list itself, so a cycle is never followed.
+  (define (bounded-length x)
+    (guard (e ((assertion-violation? e) #f)) (length x)))
+
+  ;; part-control? : Char -> Boolean
+  ;; U+0000 to U+001F or U+007F: control-char?'s rule, the credentials'.
+
+  ;; part-fault : String Boolean -> (U 'part-empty 'part-bytes #f)
+  ;; The reason S, a part's name or filename when QUOTED, else its type, is
+  ;; refused: part-empty for "", part-bytes for a control char, U+0000 to
+  ;; U+001F or U+007F, or, when QUOTED, a "; #f when it passes. libcurl sends
+  ;; a type raw, and escapes a name's and a filename's ", CR and LF by
+  ;; version and MIME_OPTIONS, the rest raw (the M8 plan, section 2), so a
+  ;; byte rule of its own holds alike on every libcurl (ADR-0039,
+  ;; decision 2).
+  (define (part-fault s quoted)
+    (if (= (string-length s) 0)
+        'part-empty
+        (let loop ((i 0))
+          (and (< i (string-length s))
+               (let ((c (string-ref s i)))
+                 (if (or (control-char? c) (and quoted (char=? c #\")))
+                     'part-bytes
+                     (loop (+ i 1))))))))
+
+  ;; refuse-part : Symbol Natural Symbol Symbol -> Nothing
+  ;; The refusal, as WHO, of part I's FIELD, name, filename, type or path,
+  ;; for REASON: field body, value (part I FIELD), never the string.
+  (define (refuse-part who i field reason)
+    (refuse-field who 'body (list 'part i field) reason))
+
+  ;; path-last : String -> String
+  ;; PATH's last component, what follows its last /: libcurl's default
+  ;; filename for a file part.
+  (define (path-last path)
+    (let loop ((i (string-length path)))
+      (cond ((= i 0) path)
+            ((char=? (string-ref path (- i 1)) #\/) (substring path i (string-length path)))
+            (else (loop (- i 1))))))
+
+  ;; multipart-copy : Symbol List -> List
+  ;; BODY, a multipart body, as a fresh copy, checked as WHO, its paths as
+  ;; given: fresh pairs, fresh name, filename, type and path strings, each
+  ;; copied before it is read, the data kept as given. A wrong shape is an
+  ;; assertion violation naming the body by its kind: not a proper list; a
+  ;; part not a proper list of a string, a source and options; a source no
+  ;; string, bytevector or (file PATH), PATH a string; an option not
+  ;; filename or type, given twice, or with no string after it. Then, each
+  ;; part in order, by part-fault, the name, the filename and the type, and
+  ;; a file part's path, empty or holding U+0000, part-file, and its default
+  ;; filename, the path's last component when no filename is given and it
+  ;; is not "", by the filename's rules. (multipart) is multipart-empty.
+  ;; Pure: nothing is resolved or stat'd here, multipart-paths-checked's.
+  (define (multipart-copy who body)
+    (define (wrong) (assertion-violation who "a multipart body is (multipart (NAME SOURCE OPTION ...) ...), each SOURCE a string, a bytevector or (file PATH), each OPTION filename STRING or type STRING" (shown-value body)))
+    (let ((n (bounded-length body)))
+      (unless n (wrong))
+      (when (= n 1) (refuse-field who 'body 'multipart 'multipart-empty))
+      (let ((copy
+             (let loop ((rest (cdr body)) (left (- n 1)) (found '()))
+               (cond ((= left 0) (if (null? rest) (reverse found) (wrong)))
+                     ((not (pair? rest)) (wrong))
+                     (else
+                      (loop (cdr rest) (- left 1) (cons (part-copy wrong (car rest)) found)))))))
+        (let check ((parts copy) (i 0))
+          (unless (null? parts)
+            (let* ((part (car parts))
+                   (source (cadr part))
+                   (filename (part-option (cddr part) 'filename))
+                   (type (part-option (cddr part) 'type)))
+              (let ((fault (part-fault (car part) #t)))
+                (when fault (refuse-part who i 'name fault)))
+              (when filename
+                (let ((fault (part-fault filename #t)))
+                  (when fault (refuse-part who i 'filename fault))))
+              (when type
+                (let ((fault (part-fault type #f)))
+                  (when fault (refuse-part who i 'type fault))))
+              (when (pair? source)
+                (let ((path (cadr source)))
+                  (when (or (= (string-length path) 0) (memv #\nul (string->list path)))
+                    (refuse-part who i 'path 'part-file))
+                  (unless filename
+                    (let ((default (path-last path)))
+                      (unless (= (string-length default) 0)
+                        (let ((fault (part-fault default #t)))
+                          (when fault (refuse-part who i 'filename fault)))))))))
+            (check (cdr parts) (+ i 1))))
+        (cons 'multipart copy))))
+
+  ;; part-copy : (-> Nothing) Any -> List
+  ;; PART as a fresh list: a fresh name, the source, a string or bytevector
+  ;; as given or (file PATH) with a fresh PATH, then the options, each
+  ;; string fresh; anything else calls WRONG. PART is walked by the length
+  ;; it had, so a cycle is never followed.
+  (define (part-copy wrong part)
+    (let ((n (bounded-length part)))
+      (unless (and n (>= n 2)) (wrong))
+      ;; Each element is read once, into a local, then checked and copied:
+      ;; the caller's pairs are mutable, and another thread could change one
+      ;; between a check of it and its copy (traps.md).
+      (let* ((given-name (car part))
+             (name (if (string? given-name) (string-copy given-name) (wrong)))
+             (given-source (cadr part))
+             (source
+              (cond ((or (string? given-source) (bytevector? given-source)) given-source)
+                    ((eqv? (bounded-length given-source) 2)
+                     (let ((tag (car given-source)) (path (cadr given-source)))
+                       (if (and (eq? tag 'file) (string? path))
+                           (list 'file (string-copy path))
+                           (wrong))))
+                    (else (wrong)))))
+        (let loop ((rest (cddr part)) (seen '()) (found '()))
+          (if (null? rest)
+              (cons* name source (reverse found))
+              (let ((key (car rest)) (tail (cdr rest)))
+                (unless (and (memq key '(filename type)) (not (memq key seen)) (pair? tail)) (wrong))
+                (let ((value (car tail)))
+                  (unless (string? value) (wrong))
+                  (loop (cdr tail) (cons key seen) (cons (string-copy value) (cons key found))))))))))
+
+  ;; part-option : List Symbol -> (U String #f)
+  ;; The string after KEY in a copy's OPTIONS, or #f.
+  (define (part-option options key)
+    (let loop ((rest options))
+      (cond ((null? rest) #f)
+            ((eq? (car rest) key) (cadr rest))
+            (else (loop (cddr rest))))))
+
+  ;; absolute-path? : String -> Boolean
+  (define (absolute-path? path) (char=? (string-ref path 0) #\/))
+
+  ;; multipart-paths-checked : Symbol List Boolean -> List
+  ;; COPY, a checked copy, its file parts' paths resolved when RESOLVE, the
+  ;; request being made: a relative path is joined to current-directory's
+  ;; answer, once (ADR-0039, amended 2026-11-06, decision 3 revised). When
+  ;; not, at submit, a path that is not absolute is part-file: the record
+  ;; holds resolved paths, and only a fault hands a submit another
+  ;; (ADR-0039, amended 2026-11-07). Then each path is stat'd, symlinks
+  ;; followed, and one that names no regular file is part-file. Nothing is
+  ;; opened: an open of a FIFO would wait, and every high-level submit runs
+  ;; inside a critical section (ADR-0039, amended 2026-11-06). COPY's own
+  ;; pairs are rebuilt where a path changes.
+  (define (multipart-paths-checked who copy resolve)
+    (cons 'multipart
+          (let loop ((parts (cdr copy)) (i 0) (found '()))
+            (if (null? parts)
+                (reverse found)
+                (let* ((part (car parts)) (source (cadr part)))
+                  (if (not (pair? source))
+                      (loop (cdr parts) (+ i 1) (cons part found))
+                      (let* ((given (cadr source))
+                             (path (cond ((absolute-path? given) given)
+                                         (resolve (string-append (current-directory) "/" given))
+                                         (else (refuse-part who i 'path 'part-file)))))
+                        ;; file-regular? answers #f, never raises, for a
+                        ;; string: a guard here took a caller's timer or
+                        ;; interrupt raise for part-file (the slice's
+                        ;; review, review-timer-rerun.log).
+                        (unless (file-regular? path)
+                          (refuse-part who i 'path 'part-file))
+                        (loop (cdr parts) (+ i 1)
+                              (cons (cons* (car part) (list 'file path) (cddr part)) found)))))))))
+
+  ;; check-multipart-content-type : Symbol (Listof (Pairof String String)) -> Void
+  ;; Refuses, as WHO, beside a multipart body, the first of HEADERS, the
+  ;; snapshot's copies, named Content-Type, A to Z folded alone, whatever
+  ;; its value: multipart-content-type, field header-name, value its name as
+  ;; given. libcurl writes the body's type and its boundary, and appends one
+  ;; to a caller's (ADR-0039, decision 1). Checked as the request is made,
+  ;; and again at submit on the submit's own copies.
+  (define (check-multipart-content-type who headers)
+    (for-each (lambda (header)
+                (when (string=? (ascii-folded (car header)) "content-type")
+                  (refuse-field who 'header-name (car header) 'multipart-content-type)))
+              headers))
+
+  ;; multipart-answer : List -> List
+  ;; A request's multipart body as curl-request-body answers it: fresh
+  ;; pairs, fresh name, filename, type and path strings, the data as the
+  ;; request holds it, the caller's own (ADR-0039, amended 2026-11-07, as
+  ;; curl-request-credentials answers its copy).
+  (define (multipart-answer body)
+    (cons 'multipart
+          (map (lambda (part)
+                 (let ((source (cadr part)))
+                   (cons* (string-copy (car part))
+                          (if (pair? source) (list 'file (string-copy (cadr source))) source)
+                          (map (lambda (x) (if (string? x) (string-copy x) x)) (cddr part)))))
+               (cdr body))))
+
+  ;; multipart-for-plan : List -> List
+  ;; A submit's checked copy as its plan holds it, (multipart #(NAME KIND
+  ;; PAYLOAD FILENAME TYPE) ...): KIND data, PAYLOAD a fresh bytevector, a
+  ;; string's UTF-8 or a bytevector's bytes, copied here, at submit alone
+  ;; (ADR-0023, decision 4); or KIND file, PAYLOAD the path. FILENAME and
+  ;; TYPE are #f when not given.
+  (define (multipart-for-plan copy)
+    (cons 'multipart
+          (map (lambda (part)
+                 (let ((source (cadr part)) (options (cddr part)))
+                   (vector (car part)
+                           (if (pair? source) 'file 'data)
+                           (cond ((pair? source) (cadr source))
+                                 ((string? source) (string->utf8 source))
+                                 (else (bytevector-copy source)))
+                           (part-option options 'filename)
+                           (part-option options 'type))))
+               (cdr copy))))
+
+  ;; check-plan-files! : Plan -> Void
+  ;; The engine's check of PLAN's file parts (ADR-0039, amended 2026-11-06,
+  ;; decision 1), on the engine's thread, outside every critical section,
+  ;; before the transfer's setup: each path, in order, by stat, a regular
+  ;; file, symlinks followed, then opened and closed, so a file gone, not
+  ;; regular or unreadable since the submit fails the transfer alike on
+  ;; every lane, before anything is made or sent: &curl-transfer-error,
+  ;; part-file, no code, a request size of 0. An open of a path swapped to a
+  ;; FIFO between the stat and the open waits for a writer, holding the
+  ;; engine's thread: the window the record keeps, not closed. A plan of any
+  ;; other body passes. The gate, a test seam, runs first when armed.
+  (define (check-plan-files! plan)
+    (let ((body (plan-body plan)))
+      (when (multipart? body)
+        (run-file-check-gate!)
+        (for-each (lambda (part)
+                    (when (eq? (vector-ref part 1) 'file)
+                      (let ((path (vector-ref part 2)))
+                        ;; The open's guard takes the I/O conditions an
+                        ;; open raises alone: any other raise is no answer
+                        ;; about the file, and leaves as it was raised.
+                        (unless (and (file-regular? path)
+                                     (guard (e ((i/o-error? e) #f))
+                                       (close-port (open-file-input-port path))
+                                       #t))
+                          (fail 'part-file #f #f #f #f)))))
+                  (cdr body)))))
+
+  ;; file-check-gate : (Vector (U (-> Any) #f))
+  ;; A test seam's procedure, called once on the engine's thread at the
+  ;; start of check-plan-files! for a multipart plan, outside every critical
+  ;; section, then disarmed: a test changes a path there, after the submit's
+  ;; stat and before the engine's, so the engine's check is the one that
+  ;; sees it. #f, unarmed, by default.
+  (define file-check-gate (vector #f))
+
+  ;; transfer-file-check-gate-set! : (U (-> Any) #f) -> Void
+  ;; Arms the gate, the test seam above, or disarms it with #f. (curl) does
+  ;; not export it.
+  (define (transfer-file-check-gate-set! proc)
+    (unless (or (not proc) (procedure? proc))
+      (assertion-violation 'transfer-file-check-gate-set! "a gate is a procedure of no arguments, or #f" proc))
+    (vector-set! file-check-gate 0 proc))
+
+  ;; run-file-check-gate! : -> Void
+  (define (run-file-check-gate!)
+    (let ((g (vector-ref file-check-gate 0)))
+      (when g
+        (vector-set! file-check-gate 0 #f)
+        (g))))
+
+  ;; mime-gate : (Vector (U (-> Any) #f))
+  ;; A test seam's procedure, called once on the engine's thread in
+  ;; start-transfer!, for a multipart plan, after the engine's check and
+  ;; the easy handle and before the mime is made, outside every critical
+  ;; section, then disarmed: a test changes a path there, so the transfer
+  ;; meets libcurl's own answer from curl_mime_filedata, which the engine's
+  ;; check, just before, leaves no other way to reach. #f, unarmed, by
+  ;; default.
+  (define mime-gate (vector #f))
+
+  ;; transfer-mime-gate-set! : (U (-> Any) #f) -> Void
+  ;; Arms the gate, the test seam above, or disarms it with #f. (curl) does
+  ;; not export it.
+  (define (transfer-mime-gate-set! proc)
+    (unless (or (not proc) (procedure? proc))
+      (assertion-violation 'transfer-mime-gate-set! "a gate is a procedure of no arguments, or #f" proc))
+    (vector-set! mime-gate 0 proc))
+
+  ;; run-mime-gate! : -> Void
+  (define (run-mime-gate!)
+    (let ((g (vector-ref mime-gate 0)))
+      (when g
+        (vector-set! mime-gate 0 #f)
+        (g))))
+
+  ;; mime-answer : (Vector (U (Pairof Natural (Pairof Symbol (U Integer #f))) #f))
+  ;; A test seam's planted answer, (I . ANSWER): start-transfer! takes
+  ;; ANSWER, a curl-mime-add-part! answer such as (name . 43), in place of
+  ;; that procedure's for each transfer's part I, after making the call, so
+  ;; a test can watch mime-failed and a refused curl_mime_filedata end a
+  ;; transfer before it starts, its mime freed, on every libcurl: no
+  ;; libcurl refuses a part the request's rules let through. #f, unarmed,
+  ;; by default. Data, never a procedure.
+  (define mime-answer (vector #f))
+
+  ;; transfer-mime-answer-set! : (U (Pairof Natural (Pairof Symbol (U Integer #f))) #f) -> Void
+  ;; Plants the answer above, or takes it away with #f. (curl) does not
+  ;; export it.
+  (define (transfer-mime-answer-set! planted)
+    (unless (or (not planted)
+                (and (pair? planted) (integer? (car planted)) (exact? (car planted))
+                     (<= 0 (car planted)) (pair? (cdr planted))
+                     (memq (cadr planted) '(addpart name data filedata filename type))
+                     (or (not (cddr planted))
+                         (and (integer? (cddr planted)) (exact? (cddr planted))))))
+      (assertion-violation 'transfer-mime-answer-set! "a planted answer is (I STEP . CODE), or #f" planted))
+    (vector-set! mime-answer 0 planted))
+
+  ;; planted-mime-answer : Natural (U (Pairof Symbol (U Integer #f)) #f) -> (U (Pairof Symbol (U Integer #f)) #f)
+  ;; ANSWER, part I's from curl-mime-add-part!, or the planted one for I.
+  (define (planted-mime-answer i answer)
+    (let ((planted (vector-ref mime-answer 0)))
+      (if (and planted (= (car planted) i)) (cdr planted) answer)))
+
+  ;; curl-request-with-unresolved-path : Request Natural String -> Request
+  ;; REQUEST with its multipart body's part I's path PATH, as given, none of
+  ;; the constructor's checks run: the one way a relative path reaches a
+  ;; submit, for the test of its refusal there. A test seam; (curl) does not
+  ;; export it.
+  (define (curl-request-with-unresolved-path request i path)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-with-unresolved-path "not a request" (shown-value request)))
+    (let ((body (unchecked-curl-request-body request)))
+      (unless (and (multipart? body) (integer? i) (exact? i) (< -1 i (length (cdr body)))
+                   (pair? (cadr (list-ref (cdr body) i))) (string? path))
+        (assertion-violation 'curl-request-with-unresolved-path "a multipart request, a file part's index and a path"
+                             i))
+      (new-curl-request (curl-request-url request) (curl-request-method request)
+                        (curl-request-headers request)
+                        (cons 'multipart
+                              (let loop ((parts (cdr body)) (k 0))
+                                (cond ((null? parts) '())
+                                      ((= k i) (cons (cons* (car (car parts)) (list 'file path)
+                                                            (cddr (car parts)))
+                                                     (cdr parts)))
+                                      (else (cons (car parts) (loop (cdr parts) (+ k 1)))))))
+                        (curl-request-user-agent request) (curl-request-timeout-ms request)
+                        (curl-request-connect-timeout-ms request) (curl-request-body-limit request)
+                        (curl-request-ca-file request) (curl-request-verify request)
+                        (request-proxy request) (curl-request-stream-buffer request)
+                        (curl-request-body-length request) (curl-request-http-version request)
+                        (request-credentials request) (request-proxy-ca-file request)
+                        (curl-request-proxy-verify request) (curl-request-cookie-jar request)
+                        (curl-request-fault request) (curl-request-follow request)
+                        (curl-request-options request))))
 
   ;; check-cookie-beside-jar : Symbol (U Jar #f) (Listof (Pairof String String)) -> Void
   ;; Refuses, as WHO, beside a JAR, the first of HEADERS, the snapshot's
@@ -1295,17 +1731,32 @@
     (when (and stream-buffer (expect-continue? headers))
       (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds)))
 
+  ;; kept-body : a request's own multipart list, wrapped, as request-like
+  ;; hands it on when SETTINGS give no body: checked-request takes it as it
+  ;; is. Opaque, and never handed to a caller.
+  (define-record-type kept-body
+    (fields (immutable list))
+    (opaque #t))
+
   ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any
   ;;                (Listof Hatch-Setting) -> Request
   ;; REQUEST with SETTINGS' keys replaced, URL, FAULT, FOLLOW and OPTIONS
-  ;; given, the rest kept, checked as WHO.
+  ;; given, the rest kept, checked as WHO. A multipart body the settings do
+  ;; not name is kept as REQUEST holds it, its paths resolved and checked
+  ;; as REQUEST was made, with no stat: so a retry's request with a new
+  ;; timeout-ms, the high level's, makes no file system call, and its
+  ;; submit's stat is the one check (ADR-0039, after slice 3's review).
   (define (request-like who request settings url fault follow options)
     (define (given key accessor)
       (let ((hit (assq key settings))) (if hit (cdr hit) (accessor request))))
     (checked-request who url
                      (given 'method curl-request-method)
                      (given 'headers curl-request-headers)
-                     (given 'body curl-request-body)
+                     (let ((hit (assq 'body settings)))
+                       (if hit
+                           (cdr hit)
+                           (let ((own (unchecked-curl-request-body request)))
+                             (if (multipart? own) (make-kept-body own) own))))
                      (given 'user-agent curl-request-user-agent)
                      (given 'timeout-ms curl-request-timeout-ms)
                      (given 'connect-timeout-ms curl-request-connect-timeout-ms)
@@ -1332,12 +1783,18 @@
     (request-like 'make-curl-request default-request
                   (request-settings 'make-curl-request plist) url #f #f '()))
 
+  ;; curl-request-with's keys: a request's, and url, the URL make-curl-request
+  ;; takes as its first argument, checked as it checks that one (ADR-0023,
+  ;; after slice 3's review): a hop's request is the last one with its URL
+  ;; and its method and headers changed, the rest kept.
   (define (curl-request-with request . plist)
     (unless (curl-request? request)
       (assertion-violation 'curl-request-with "not a request" (shown-value request)))
-    (request-like 'curl-request-with request (request-settings 'curl-request-with plist)
-                  (curl-request-url request) (curl-request-fault request)
-                  (curl-request-follow request) (curl-request-options request)))
+    (let* ((settings (request-settings 'curl-request-with plist (cons 'url request-keys)))
+           (url (assq 'url settings)))
+      (request-like 'curl-request-with request (if url (remq url settings) settings)
+                    (if url (cdr url) (curl-request-url request)) (curl-request-fault request)
+                    (curl-request-follow request) (curl-request-options request))))
 
   ;; curl-request-with-fault : Request (U Positive-Integer #f) -> Request
   ;; REQUEST with its private fault FAULT, the test seam's (M3 plan, section
@@ -1532,6 +1989,8 @@
                       (case reason
                         ((unknown-option) "the loaded libcurl does not know this option")
                         ((no-handle) "curl_easy_init returned NULL")
+                        ((part-file) "a file part's path names no regular file this process can open, as the engine checked it before the transfer's setup")
+                        ((mime-failed) "libcurl refused a multipart body's mime or one of its parts")
                         ((cancelled) "the transfer was cancelled before it ended")
                         ((stopped) "the transfer's engine stopped before it ended")
                         (else "the transfer failed"))))
@@ -1632,6 +2091,8 @@
   ;; libcurl copies the size the first set, and for a streamed one
   ;; POSTFIELDSIZE_LARGE, put's aside, the read callable and its data, the
   ;; seek callable's, the prerequest callable's and FRESH_CONNECT (ADR-0032);
+  ;; and for a multipart one MIMEPOST, the transfer's mime, its last body
+  ;; option (ADR-0039; MIMEPOST was a twin before, M8 slice 3);
   ;; body-length, put's INFILESIZE_LARGE, the length a streamed put sends.
   ;; The TLS fields set two each, in the order tls-settings makes
   ;; them: ca-file CAINFO, its path, then CAPATH, cleared; verify
@@ -1659,7 +2120,7 @@
   (define request-field-options
     '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
       (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION"
-            "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT")
+            "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "MIMEPOST")
       (user-agent "USERAGENT")
       (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
       (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
@@ -1716,7 +2177,10 @@
   ;;     MAXFILESIZE, in seconds or as a long;
   ;;   - the method's and the body's: HTTPGET and PUT, which set the
   ;;     method, as the method field's POST and UPLOAD do; POSTFIELDS,
-  ;;     POSTFIELDSIZE, HTTPPOST and MIMEPOST, another body, size or form;
+  ;;     POSTFIELDSIZE and HTTPPOST, another body, size or form; and
+  ;;     MIME_OPTIONS, which changes how a multipart body's name and
+  ;;     filename are escaped, never set (ADR-0039, decision 2): MIMEPOST
+  ;;     was its twin until the body field took it over (M8 slice 3);
   ;;     INFILESIZE, an upload's size, as body-length's INFILESIZE_LARGE;
   ;;   - the URL's: PORT, which replaces its port, and REQUEST_TARGET, its
   ;;     target on the request line (the options tables, M4 slice 1);
@@ -1833,7 +2297,7 @@
               "NOSIGNAL" "QUICK_EXIT" "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
             (apply append (map cdr request-field-options))
             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
-              "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
+              "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIME_OPTIONS" "INFILESIZE"
               "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
               "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
               "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
@@ -3742,7 +4206,9 @@
   ;; checks, request-checks'. Each refusal raises here. Then the
   ;; body is copied, after every check, so
   ;; the caller's bytevector may change once this returns (ADR-0023,
-  ;; decision 4); a request's method and the presence of its body cannot
+  ;; decision 4): a multipart body from the copy request-checks checked,
+  ;; each part's data copied here alone, multipart-for-plan's (the M8 plan,
+  ;; section 3.1); a request's method and the presence of its body cannot
   ;; change, so body-not-allowed needs no second check. Last, a request with
   ;; a stream-buffer gets a fresh stream, this submit's alone, and one whose
   ;; body streams a fresh request stream, beside it, sharing its mutex,
@@ -3750,10 +4216,12 @@
   ;; stream-with-rounds and body-length-without-stream, checked as it was
   ;; made, hold here too.
   (define (prepare-transfer request)
-    (let-values (((url fields ca-file credentials proxy proxy-ca-file tunnel unmultiplex)
+    (let-values (((url fields ca-file credentials proxy proxy-ca-file tunnel unmultiplex parts)
                   (request-checks 'curl-submit request)))
-      (let* ((given (curl-request-body request))
-             (body (if (bytevector? given) (bytevector-copy given) given))
+      (let* ((given (unchecked-curl-request-body request))
+             (body (cond ((bytevector? given) (bytevector-copy given))
+                         (parts (multipart-for-plan parts))
+                         (else given)))
              (limit (curl-request-stream-buffer request))
              (stream (and limit (make-response-stream limit)))
              (length (curl-request-body-length request)))
@@ -3771,7 +4239,7 @@
   ;; request-checks : Symbol Request
   ;;                  -> (Values String (Pairof Headers (U String #f)) (U String #f)
   ;;                             (U Credentials #f) (U 'environment #f String) (U String #f)
-  ;;                             (Listof (Pairof String Integer)) Boolean)
+  ;;                             (Listof (Pairof String Integer)) Boolean (U List #f))
   ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
   ;; their one owner: prepare-transfer's, as WHO curl-submit, and
   ;; curl-request-check's (ADR-0023, amended 2026-10-28). In order: what is
@@ -3784,7 +4252,11 @@
   ;; may have changed since the request was made; the credentials beside
   ;; those copies, by check-credentials, for the same reason; a Cookie or
   ;; Host header beside a cookie jar, by check-cookie-beside-jar, for the
-  ;; same reason; then the CA
+  ;; same reason; then, for a multipart body, the loaded libcurl's mime, by
+  ;; check-multipart-supported, a Content-Type header in those copies, by
+  ;; check-multipart-content-type, and the body's own copy, multipart-copy's,
+  ;; its paths checked by multipart-paths-checked without resolving, so a
+  ;; path that is not absolute is part-file; then the CA
   ;; file against the environment the libcurl loaded with, by
   ;; check-ca-environment; then a proxy URL, by check-proxy-url; then an
   ;; https:// proxy URL against the features libcurl reports after its
@@ -3802,8 +4274,10 @@
   ;; the CA file and the credentials; the proxy, environment, #f, or the URL
   ;; the proxy URL's check answered, which PROXY gets; the proxy CA file;
   ;; unshared-tunnel-settings' for the loaded libcurl, the URL's scheme
-  ;; and the proxy; and stops-multiplexing?'s for the loaded libcurl and the
-  ;; proxy. The body is no check's: a submit copies it after.
+  ;; and the proxy; stops-multiplexing?'s for the loaded libcurl and the
+  ;; proxy; and a multipart body's checked copy, its data as the request
+  ;; holds it, or #f for any other body. Any other body is no check's: a
+  ;; submit copies it after.
   (define (request-checks who request)
     (unless (curl-request? request)
       (assertion-violation who "not a request" (shown-value request)))
@@ -3820,6 +4294,12 @@
       (check-credentials who credentials (car fields) (curl-request-body request)
                          (curl-request-stream-buffer request))
       (check-cookie-beside-jar who (unchecked-curl-request-cookie-jar request) (car fields))
+      (let ((parts (let ((body (unchecked-curl-request-body request)))
+                     (and (multipart? body)
+                          (begin
+                            (check-multipart-supported who)
+                            (check-multipart-content-type who (car fields))
+                            (multipart-paths-checked who (multipart-copy who body) #f))))))
       (check-ca-environment who 'ca-file ca-file (curl-request-verify request))
       (let ((reading (and (string? proxy) (check-proxy-url who proxy))))
         (check-https-proxy who (and reading (string=? (cadr reading) "https"))
@@ -3842,7 +4322,22 @@
             (values url fields ca-file credentials (if reading (car reading) proxy) proxy-ca-file
                     (unshared-tunnel-settings version-number scheme
                                               (and reading #t) (and reading (caddr reading)))
-                    (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))))))))
+                    (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))
+                    parts)))))))
+
+  ;; check-multipart-supported : Symbol -> Void
+  ;; Refuses, as WHO, a multipart body on a libcurl whose load said it has
+  ;; no mime, loaded-mime?'s: multipart-unsupported, field body, value
+  ;; multipart, whose irritants are multipart, then what the probe found,
+  ;; loaded-mime-probe's, ((formadd . CODE) (mime-init . made-or-null))
+  ;; (ADR-0039, decision 4, made exact). Every other request goes on.
+  (define (check-multipart-supported who)
+    (unless (loaded-mime?)
+      (raise (condition (make-curl-request-error 'body 'multipart 'multipart-unsupported)
+                        (make-who-condition who)
+                        (make-message-condition
+                         "this libcurl has no mime: its curl_formadd or its curl_mime_init said no as it loaded")
+                        (make-irritants-condition (list 'multipart (loaded-mime-probe)))))))
 
   ;; in-section : (-> Any) -> Any
   ;; THUNK's value, a URL parse of the submit's checks, run in a critical
@@ -4138,13 +4633,14 @@
     (request-checks 'curl-request-check request)
     (if #f #f))
 
-  ;; sends-body? : Symbol (U Bytevector 'stream #f) -> Boolean
+  ;; sends-body? : Symbol (U Bytevector 'stream Multipart #f) -> Boolean
   ;; Whether a transfer of METHOD with BODY sets the body's options: post,
   ;; put and patch always, empty with no body, and delete with one alone,
-  ;; whole or streamed (M4 plan, section 3.2; the M6 plan, section 3.1).
+  ;; whole, streamed or multipart (M4 plan, section 3.2; the M6 plan,
+  ;; section 3.1; the M8 plan, section 3.4).
   (define (sends-body? method body)
     (or (and (memq method '(post put patch)) #t)
-        (and (eq? method 'delete) (or (bytevector? body) (eq? body 'stream)))))
+        (and (eq? method 'delete) (or (bytevector? body) (eq? body 'stream) (multipart? body)))))
 
   ;; header-line : (Pairof String String) -> String
   ;; "Name: value", or "Name;" for an empty value: libcurl's form for a
@@ -4154,10 +4650,13 @@
         (string-append (car header) ";")
         (string-append (car header) ": " (cdr header))))
 
-  ;; sent-header-lines : (Listof (Pairof String String)) Symbol (U Bytevector 'stream #f) -> (Listof String)
+  ;; sent-header-lines : (Listof (Pairof String String)) Symbol (U Bytevector 'stream Multipart #f) -> (Listof String)
   ;; The lines a transfer of METHOD and BODY hands HTTPHEADER, in order:
   ;; header-line of each of HEADERS; then, when it sends a body, "Content-Type:"
-  ;; and "Expect:", each unless HEADERS name one of that name, in any case.
+  ;; and "Expect:", each unless HEADERS name one of that name, in any case,
+  ;; and "Content-Type:" never beside a multipart body: beside MIMEPOST it
+  ;; sent "Content-Type: ; boundary=B", every part an attachment (ADR-0039,
+  ;; decision 1).
   ;; "Name:" takes away libcurl's own header of that name, which it adds to
   ;; every body, its form type, and past 1 MiB, its Expect, after which it
   ;; waits a second for a server that never answers; a header the request
@@ -4168,7 +4667,7 @@
       (exists (lambda (header) (string-ci=? (car header) name)) headers))
     (append (map header-line headers)
             (if (sends-body? method body)
-                (append (if (named? "Content-Type") '() '("Content-Type:"))
+                (append (if (or (multipart? body) (named? "Content-Type")) '() '("Content-Type:"))
                         (if (named? "Expect") '() '("Expect:")))
                 '())))
 
@@ -4180,7 +4679,8 @@
   ;; transfer, and its sink; its URL's CURLU handle; its error buffer; its
   ;; header list, 0 while it holds none; the string lists of its hatch
   ;; settings, each (SETTING . LIST), newest first, () while it holds none;
-  ;; and its easy handle.
+  ;; its easy handle; and its mime, counted as mime, for a multipart body
+  ;; alone, made with that easy handle and freed after it (ADR-0039).
   (define-record-type (live-transfer make-live-transfer live-transfer?)
     (fields (immutable plan live-transfer-plan)
             (mutable key live-transfer-key live-transfer-key-set!)
@@ -4189,7 +4689,8 @@
             (mutable buffer live-transfer-buffer live-transfer-buffer-set!)
             (mutable header-list live-transfer-header-list live-transfer-header-list-set!)
             (mutable lists live-transfer-lists live-transfer-lists-set!)
-            (mutable easy live-transfer-easy live-transfer-easy-set!))
+            (mutable easy live-transfer-easy live-transfer-easy-set!)
+            (mutable mime live-transfer-mime live-transfer-mime-set!))
     ;; Opaque, as its plan is.
     (opaque #t))
 
@@ -4225,14 +4726,18 @@
   (define (live-transfer-upload live)
     (plan-upload (live-transfer-plan live)))
 
-  ;; method-settings : Symbol (U Bytevector 'stream #f) (U Natural #f)
-  ;;                   -> (Listof (Pairof String (U Integer String Bytevector)))
+  ;; method-settings : Symbol (U Bytevector 'stream Multipart #f) (U Natural #f)
+  ;;                   -> (Listof (Pairof String (U Integer String Bytevector 'mime)))
   ;; The settings METHOD and BODY make, in order, as data. For a whole body
   ;; or none: NOBODY at 1 for head; CUSTOMREQUEST at the method's name,
   ;; upcased, for put, patch and delete; then, when sends-body? says so,
   ;; POSTFIELDSIZE_LARGE at the body's length and COPYPOSTFIELDS at the
-  ;; body, an empty one for #f. get makes none, and post none but the
-  ;; body's: libcurl's own POST. For a streamed body, as measured (the M6
+  ;; body, an empty one for #f, or, for a multipart body, MIMEPOST alone at
+  ;; mime, a placeholder set-transfer-options! sets the transfer's mime for:
+  ;; the method's settings first, and the body option last, since the last
+  ;; body option set wins, and UPLOAD or POST set after MIMEPOST read stdin
+  ;; (ADR-0039, context). get makes none, and post none but the body's:
+  ;; libcurl's own POST. For a streamed body, as measured (the M6
   ;; plan, section 3.3): post, POST at 1; put, UPLOAD at 1; patch and
   ;; delete, POST at 1 and CUSTOMREQUEST at the name; then the length,
   ;; LENGTH, or -1 for none, chunked: INFILESIZE_LARGE for put,
@@ -4258,13 +4763,14 @@
                     ((patch) (list (cons (cadr method-names) "PATCH")))
                     ((delete) (list (cons (cadr method-names) "DELETE")))
                     (else '()))
-                  (if (sends-body? method body)
-                      (let ((bytes (or body (make-bytevector 0))))
-                        (list (cons (car body-names) (bytevector-length bytes))
-                              (cons (cadr body-names) bytes)))
-                      '())))))
+                  (cond ((not (sends-body? method body)) '())
+                        ((multipart? body) (list (cons (list-ref body-names 9) 'mime)))
+                        (else
+                         (let ((bytes (or body (make-bytevector 0))))
+                           (list (cons (car body-names) (bytevector-length bytes))
+                                 (cons (cadr body-names) bytes)))))))))
 
-  ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural (Listof (Pairof Hatch-Setting Positive-Integer)) Positive-Integer Boolean Boolean -> Void
+  ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural (Listof (Pairof Hatch-Setting Positive-Integer)) Positive-Integer Boolean Boolean (U Positive-Integer #f) -> Void
   ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
   ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER,
   ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY, HEADERFUNCTION and
@@ -4276,7 +4782,8 @@
   ;; unshared-tunnel-settings', ask it, once either way, then FORBID_REUSE
   ;; when they ask it (ADR-0037, amended 2026-11-03); then method-settings'
   ;; for the plan's method, body and body-length, a string through a C string and the
-  ;; body through a counted copy, call-with-foreign-bytes'; and as the
+  ;; body through a counted copy, call-with-foreign-bytes', MIMEPOST at
+  ;; MIME, the transfer's mime, for its placeholder; and as the
   ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
   ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one; then
   ;; proxy-settings' for the plan's proxy, proxy CA file and verification,
@@ -4294,7 +4801,7 @@
   ;; settings, in the order they were attached, through set-hatch-option!,
   ;; a string list's from LISTS, the lists start-transfer! built (ADR-0009,
   ;; decision 2).
-  (define (set-transfer-options! easy plan key buffer header-list lists url quick-exit fresh)
+  (define (set-transfer-options! easy plan key buffer header-list lists url quick-exit fresh mime)
     (set-pinned-options! easy buffer quick-exit)
     (set-option! easy "ERRORBUFFER" buffer #f)
     (set-option! easy (field-option 'url) url buffer)
@@ -4316,6 +4823,7 @@
     (for-each (lambda (setting)
                 (let ((value (cdr setting)))
                   (cond ((string? value) (set-string-option! easy (car setting) value buffer))
+                        ((eq? value 'mime) (set-option! easy (car setting) mime buffer))
                         ((bytevector? value)
                          (call-with-foreign-bytes value
                            (lambda (address) (set-option! easy (car setting) address buffer))))
@@ -4376,13 +4884,19 @@
   ;; for each hatch setting of a non-empty list, of UTF-8 copies, counted as
   ;; slist (ADR-0009, decision 4), and its easy handle, set by
   ;; set-transfer-options!, with QUICK_EXIT where the libcurl knows it,
-  ;; unless QUICK-EXIT is #f, an engine made without it. Each object is
-  ;; made, and recorded in the live record, in one critical section. A raise
-  ;; frees what was
+  ;; unless QUICK-EXIT is #f, an engine made without it; for a multipart
+  ;; body, after the easy handle, its mime, made with that handle, as
+  ;; 7.85.0 requires, then each part through curl-mime-add-part!, native's
+  ;; one procedure: a NULL mime, or any answer but 0, fails the transfer
+  ;; before it starts, part-file for curl_mime_filedata's answer, its code
+  ;; with it, mime-failed for the rest (the M8 plan, section 3.4). Each
+  ;; object is made, and recorded in the live record, in one critical
+  ;; section. A raise frees what was
   ;; made, by free-transfer!, then raises again: the URL's refusal, or a
-  ;; &curl-transfer-error, setopt-failed, unknown-option or no-handle.
+  ;; &curl-transfer-error, setopt-failed, unknown-option, no-handle,
+  ;; part-file or mime-failed.
   (define (start-transfer! plan quick-exit moves seams)
-    (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f)))
+    (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f #f)))
       (guard (e (#t (free-transfer! live) (raise e)))
         (critical-section
          (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f
@@ -4447,24 +4961,50 @@
            (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
            (live-transfer-easy-set! live easy)
            (sink-easy-set! (live-transfer-sink live) easy)))
+        (let ((body (plan-body plan)))
+          (when (multipart? body)
+            (run-mime-gate!)
+            (critical-section
+             (let ((mime (curl-mime-init (live-transfer-easy live))))
+               (when (eqv? mime 0) (fail 'mime-failed #f #f #f #f))
+               (live-transfer-mime-set! live mime)))
+            (let parts ((rest (cdr body)) (i 0))
+              (unless (null? rest)
+                (let* ((part (car rest))
+                       (answer (planted-mime-answer
+                                i (curl-mime-add-part! (live-transfer-mime live)
+                                                       (vector-ref part 0) (vector-ref part 1)
+                                                       (vector-ref part 2) (vector-ref part 3)
+                                                       (vector-ref part 4)))))
+                  (when answer
+                    (fail (if (eq? (car answer) 'filedata) 'part-file 'mime-failed)
+                          (cdr answer) #f (live-transfer-buffer live) #f))
+                  (parts (cdr rest) (+ i 1)))))))
         (set-transfer-options! (live-transfer-easy live) plan (live-transfer-key live)
                                (live-transfer-buffer live) (live-transfer-header-list live)
                                (live-transfer-lists live) (live-transfer-url live) quick-exit
-                               (not (memq 'reusing seams)))
+                               (not (memq 'reusing seams)) (live-transfer-mime live))
         live)))
 
   ;; abandon-transfer-easy! : Live -> Void
   ;; LIVE's easy handle forgotten, and not freed, so that free-transfer!
   ;; frees everything but it: for a handle the engine could not take out of
   ;; its multi handle, whose curl_easy_cleanup would remove it there, a call
-  ;; that can block. It stays counted as easy, so a suite sees it.
+  ;; that can block. It stays counted as easy, so a suite sees it. Its mime
+  ;; is forgotten with it, unfreed and still counted as mime: the handle
+  ;; holds it, as it holds its jar's share, and a mime freed under a live
+  ;; handle is one libcurl could still read (the M8 plan, section 3.4).
   (define (abandon-transfer-easy! live)
-    (critical-section (live-transfer-easy-set! live #f)))
+    (critical-section
+     (live-transfer-easy-set! live #f)
+     (live-transfer-mime-set! live #f)))
 
   ;; free-transfer! : Live -> Void
   ;; Closes LIVE's request stream, if it has one, so a later put takes
   ;; nothing; then frees what LIVE holds, the other way round from its making: the easy
   ;; handle, which the engine has taken out of its multi handle first, then
+  ;; its mime, after curl_easy_cleanup, the order libcurl's own examples
+  ;; take, then
   ;; the hatch's string lists, the header list, the error buffer, the CURLU
   ;; and the key. Each free, and the clearing of its record, is one critical
   ;; section. A field never made holds #f, or 0 for the header list, or ()
@@ -4478,6 +5018,11 @@
        (when easy
          (curl-easy-cleanup easy)
          (live-transfer-easy-set! live #f))))
+    (critical-section
+     (let ((mime (live-transfer-mime live)))
+       (when mime
+         (curl-mime-free mime)
+         (live-transfer-mime-set! live #f))))
     (for-each
      (lambda (held)
        (critical-section

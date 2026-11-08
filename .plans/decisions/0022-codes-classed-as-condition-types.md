@@ -1,6 +1,7 @@
 # ADR-0022: libcurl's codes are classed as condition types
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size; amended 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3), and on the Mac (2026-10-29); amended 2026-11-06: `header-limit` is too-large (M8 slice 2)
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size; amended 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3), and on the Mac (2026-10-29); amended 2026-11-06: `header-limit` is too-large (M8 slice 2);
+  amended 2026-11-07: a multipart body's request size, and the engine's two reasons (M8 slice 3)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, what a failed transfer raises, from M4
 - **Settles:** the brief's "error taxonomy mapping `CURLE_*` to conditions" (§8, M4); the
@@ -245,3 +246,13 @@ Linux libcurl but 0 for 8.5.0's HTTP/2 trailers, whose refusal libcurl loses, an
 HTTP/2 head on Apple's 8.7.1, 23 for its trailers. `&curl-too-large` now holds 63, 100, the body limit and the header cap. Its request
 size is CURLINFO_REQUEST_SIZE's, as `body-limit`'s is. `test-conditions` writes the twelve out, and
 `test-transfer`'s and `test-headers`' class tables give `header-limit` too-large.
+
+## Amendment, 2026-11-07: a multipart body's request size, and the engine's two reasons (M8 slice 3)
+
+- **For a multipart body, `CURLINFO_REQUEST_SIZE` holds the head alone on 7.85.0 and 8.5.0,** and
+  the head and the body from 8.20.0, alike on the five Linux libcurls in both runs
+  (`research/m8/slice3/`); on 8.7.0 and 8.7.1 it reads 0, the 2026-10-27 amendment's.
+  `conditions.sls` says so.
+- **`part-file` and `mime-failed` are reasons of `&curl-transfer-error`,** with a request size of
+  0, as `setopt-failed` is: the engine's file check, `curl_mime_filedata`'s answer, or another mime
+  call's, before the transfer starts. The transfer error's reasons are fourteen.

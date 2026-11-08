@@ -145,7 +145,7 @@
                             (symbol->string kind) " 1" counts-tail))
      (with-counts (list kind)
        (lambda () (verdict (runner-after (lambda () (test-assert "passes" #t))))))))
- '(block easy url slist curl-string transfer multi share))
+ '(block easy url slist curl-string transfer multi share mime))
 
 (test-equal "every kind left is named, each with its count"
   (list 1 (string-append "suite-exit-status: exit 1 (native objects left: block 1, easy 1, url 1, slist 1, curl-string 1, transfer 3"
@@ -163,7 +163,7 @@
                                         (test-assert "fails" #f)))))))
 
 (test-equal "the counts are back at zero once with-counts returns: a pass exits 0, and nothing is said"
-  (list '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
+  (list '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
         '(0 ""))
   (list (native-counts)
         (verdict (runner-after (lambda () (test-assert "passes" #t))))))

@@ -1,0 +1,22 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (4 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      225
+test: pass tests/test-transfer.sps
+=== tests/test-multipart.sps
+%%%% Starting test multipart
+test-multipart: libcurl "8.20.0" measured ("8.20.0" (request-size . head-and-body) (after-grown-h1 response 200 unterminated) (after-shrunk-h1 failed perform-failed 26) (after-shrunk-none-h1 failed perform-failed 26) (after-removed-h1 failed perform-failed 26) (after-fifo-h1 response 200 whole held) (after-grown-h2 response 200 unterminated) (after-shrunk-h2 failed perform-failed 26) (after-removed-h2 failed perform-failed 26) (after-fifo-h2 response 200 whole held) (resend-kill-data response 200 whole 2) (resend-kill-file response 200 whole 2) (resend-refused-data response 200 whole 2) (resend-307-data response 200 whole 1) (resend-307-file response 200 whole 1) (resend-reset-file response 200 whole 2))
+# of expected passes      56
+test: pass tests/test-multipart.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      121
+test: pass tests/test-collect-safe.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+test: ran 4, passed 4, failed 0, hung 0

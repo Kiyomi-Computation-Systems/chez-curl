@@ -2,7 +2,8 @@
 
 - **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: as built
   (M4 slice 1); amended 2026-10-27: M5 follows a redirect from its `Location`; amended
-  2026-10-28: a submit's checks, without the submit (M5 slice 4)
+  2026-10-28: a submit's checks, without the submit (M5 slice 4);
+  amended 2026-11-07: a fourth body kind, multipart (M8 slice 3)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s request record, from M4
 - **Settles:** the request's public shape, and whether M4's request carries a body; the
@@ -168,3 +169,33 @@ before any submit.
   nothing native and queues nothing; `test-transfer-tls` pins its Guix environment refusal
   beside a submit's; and `test-group` holds that `http-parallel` refuses an `ftp` spec before
   any submit, its session's generator untouched.
+
+## Amendment, 2026-11-07: a fourth body kind, multipart (M8 slice 3)
+
+- **A request's `body` takes `(multipart PART ...)`** beside a bytevector, `stream` and `#f`
+  (ADR-0039; the M8 plan, section 3.1). Its list and metadata are copied and checked when the
+  request is made and again at submit; a part's data is copied at submit alone, as a bytevector
+  body's is (decision 4).
+- **`curl-request-body` answers a copy of a multipart body,** fresh pairs and strings, the data as
+  given, and a submit refuses a file part whose path is not absolute (ADR-0039, amended
+  2026-11-07).
+- **`request-checks` hands its checked copy on** to the plan, so a submit stats each path once and
+  uses what it checked; `curl-request-check` drops it.
+
+**After slice 3's review, 2026-11-07:**
+
+- **`curl-request-with` keeps a multipart body it is not handed as the request holds it,** with no
+  `stat`, since it was checked when made; a submit's `stat` is the one check after that.
+- **Decided by the maintainer, the recommended option: `curl-request-with` takes a `url` key,**
+  checked as `make-curl-request` checks its URL. A redirect's hop is then the last request with
+  its URL, method and headers changed, and its body kept or dropped, so the high level's core makes
+  no file system call. A file lost mid-call fails alike at a hop and at a retry, at the submit's
+  `stat`. Rejected: leaving the hop to `make-curl-request`, which stats in the core and fails a lost
+  file two ways; and a new `(curl)` export doing the same.
+- **As built:** the `url` key goes through `make-curl-request`'s own URL checks, in the same
+  order, its refusals naming `curl-request-with`; `make-curl-request`, whose URL is positional,
+  refuses `url` as `unknown-key`. A hop now keeps the last request's hatch options, fault and
+  follow, where `make-curl-request` gave `()`, `#f` and `#f`: the high level sets none, since
+  `check-seam` keeps `(curl unsupported)` and `(curl private ...)` from `(http-client ...)`. A test
+  holds 120 hops (every redirect kind and method, multipart and bytevector bodies, credentials
+  across origins and not) field by field to what the old builder made.
