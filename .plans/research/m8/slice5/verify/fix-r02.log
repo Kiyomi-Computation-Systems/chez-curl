@@ -1,0 +1,7 @@
+%%%% Starting test origin
+FAIL http /json, a POST of a string holding U+00E9 and U+1F600, as UTF-8: 201, the body's 14 bytes, and the string back as UTF-8 bytes: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 101\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":14,\"json\":{\"s\":\"Ã©ð\"}}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 98\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":14,\"json\":{\"s\":\"é=\x0;\"}}" eof)
+# of expected passes      437
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 437, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

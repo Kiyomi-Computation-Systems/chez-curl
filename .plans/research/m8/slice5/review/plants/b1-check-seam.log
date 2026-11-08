@@ -1,0 +1,3 @@
+check-seam: src/curl/private/planted.sls: (curl private planted) imports (jsonparse easy), but a library under src/ may import only the (rnrs ...) libraries except (rnrs eval), (only (chezscheme) name ...), and (curl ...) and (http-client ...) libraries
+check-seam: FAILED (problems: 1)
+make: *** [Makefile:431: check-seam] Error 1

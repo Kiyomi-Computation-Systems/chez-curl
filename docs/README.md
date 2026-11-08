@@ -31,6 +31,8 @@ It has two levels, and a program may use either, or both:
 - [Quick start](quickstart.md): from a clone to a first request.
 - [The high level](high-level.md): sessions, verbs, responses, bodies,
   forms, multipart, params, timeouts and limits.
+- [Headers and JSON](headers-and-json.md): setting a request's headers,
+  reading a response's, and calling a JSON API.
 - [Redirects and retries](redirects-and-retries.md): what a call follows, and
   what a policy retries.
 - [Auth and proxies](auth-and-proxies.md): credentials, and proxies by URL
@@ -54,10 +56,12 @@ It has two levels, and a program may use either, or both:
 
 ## The examples
 
-[`examples/`](../examples) holds ten small programs to copy from. Each runs
-from the repository's root against the test server, `tests/origin.mjs`, and
-takes its base URL: `http://`, the address its `http` names, and no trailing
-`/`, since each example adds its own paths.
+[`examples/`](../examples) holds eleven small programs to copy from. Each
+runs from the repository's root against the test server, `tests/origin.mjs`,
+and takes its base URL: `http://`, the address its `http` names, and no
+trailing `/`, since each example adds its own paths. `json-api.sps` alone
+needs jsonparse, a submodule ([Headers and JSON](headers-and-json.md#a-json-api)),
+and runs as `scheme --libdirs src:build/scheme-libs --program examples/json-api.sps URL`.
 
 ```sh
 node tests/origin.mjs        # prints {"node":...,"http":"127.0.0.1:PORT",...}; Ctrl-D ends it
@@ -68,6 +72,7 @@ scheme --libdirs src --program examples/quick-start.sps http://127.0.0.1:PORT
 |---|---|
 | [`quick-start.sps`](../examples/quick-start.sps) | one `http-get` |
 | [`form-and-params.sps`](../examples/form-and-params.sps) | params on a query, and a form as a body |
+| [`json-api.sps`](../examples/json-api.sps) | headers on a session and a call, and a JSON API, with jsonparse |
 | [`multipart.sps`](../examples/multipart.sps) | a multipart body of a string, bytes and a file |
 | [`session-retries.sps`](../examples/session-retries.sps) | a session's defaults, a redirect, and a retry policy |
 | [`stream-download.sps`](../examples/stream-download.sps) | a response read from a port as it arrives |

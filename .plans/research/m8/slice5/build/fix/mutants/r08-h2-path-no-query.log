@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL h2c /json, through Node's client: a GET with Accept 200, its :path whole, query in, as target; a POST 201; a GET without Accept 406; each content-type application/json and its content-length
+  expected: ((200 "application/json" "68" "{\"method\":\"GET\",\"target\":\"/json?page=2\",\"accept\":\"application/json\"}") (201 "application/json" "91" "{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":6,\"json\":[1,2]}") (406 "application/json" "40" "{\"error\":\"not-acceptable\",\"accept\":null}"))
+  actual:   ((200 "application/json" "61" "{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}") (201 "application/json" "91" "{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":6,\"json\":[1,2]}") (406 "application/json" "40" "{\"error\":\"not-acceptable\",\"accept\":null}"))
+# of expected passes      437
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 437, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

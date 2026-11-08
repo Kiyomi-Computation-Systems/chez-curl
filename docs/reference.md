@@ -1018,7 +1018,8 @@ http-response-header : Response String -> (U String #f)
 
 The first header of that name, in any A to Z case, or `#f`. Raises an
 assertion violation for anything but a response, or a name that is no
-string. See [The high level](high-level.md).
+string. See [The high level](high-level.md) and
+[Headers and JSON](headers-and-json.md).
 
 ### `http-response-text`
 

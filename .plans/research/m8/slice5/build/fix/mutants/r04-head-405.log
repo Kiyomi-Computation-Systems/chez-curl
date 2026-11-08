@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL http /json, a HEAD with Accept: the 200's head, its Content-Type and its Content-Length, and no body: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 62\r\nConnection: close\r\n\r\n" eof)
+  actual:   ("HTTP/1.1 405 Method Not Allowed\r\nContent-Type: application/json\r\nContent-Length: 18\r\nConnection: close\r\n\r\n" eof)
+# of expected passes      437
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 437, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

@@ -1,0 +1,4 @@
+check-pins: chez-srfi 7879b52: Akku.lock, the recorded commit and the checkout agree
+check-pins: vendor/jsonparse 2e3ae12bc1c34230b00f00363d4d8ae9ff26f7d0: the recorded commit and the checkout agree
+check-pins: vendor/jsonparse/vendor/byte-machine c1f77911efb55030df0b2cd811903d74d2ba3d64: the recorded commit and the checkout agree
+check-pins rc=0

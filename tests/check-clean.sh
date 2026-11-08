@@ -13,7 +13,7 @@
 #   4. the listing must be unchanged: nothing outside build/ removed or
 #      altered, and no link followed;
 #   5. make clean again, with no build/, must exit 0;
-#   6. make deps must then work, and link SRFI-64 again.
+#   6. make deps must then work, and link SRFI-64 and jsonparse again.
 #
 # The copy is the working tree without .git, build/ and .claude/ (Claude
 # Code's local state, which can hold whole worktrees), with the chez-srfi
@@ -137,6 +137,12 @@ if ! (cd "$copy" && "$make" --no-print-directory deps) >"$tmp/deps-after.log" 2>
   fail "make deps failed after make clean" "$tmp/deps-after.log"
 elif [ ! -L "$copy/build/scheme-libs/srfi/:64.sls" ]; then
   fail "make deps linked no build/scheme-libs/srfi/:64.sls after make clean" "$tmp/deps-after.log"
+else
+  for lib in jsonparse/easy.sls generated/jsonparse.sls byte-machine/runtime.sls; do
+    if [ ! -f "$copy/build/scheme-libs/$lib" ]; then
+      fail "make deps linked no build/scheme-libs/$lib after make clean" "$tmp/deps-after.log"
+    fi
+  done
 fi
 
 if [ "$status" -eq 0 ]; then

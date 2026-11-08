@@ -1,0 +1,20 @@
+%%%% Starting test origin
+FAIL http /json, a PUT with no Content-Type: 415, as a POST's is: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":null}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 73\r\nConnection: close\r\n\r\n{\"method\":\"PUT\",\"target\":\"/json\",\"content-type\":null,\"bytes\":2,\"json\":{}}" eof)
+FAIL http /json, a POST of {} with no Content-Type: 415, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":null}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 74\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":null,\"bytes\":2,\"json\":{}}" eof)
+FAIL http /json, a POST of {} with Content-Type: text/plain: 415, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 62\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 82\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"text/plain\",\"bytes\":2,\"json\":{}}" eof)
+FAIL http /json, a POST of {} with Content-Type: application/json-patch+json: 415, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 79\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"application/json-patch+json\"}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 99\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json-patch+json\",\"bytes\":2,\"json\":{}}" eof)
+FAIL http /json, a POST with Accept, Content-Type: text/plain, and a body that is no JSON: 415, Content-Type read before the body: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 62\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}" eof)
+  actual:   ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":1}" eof)
+# of expected passes      424
+# of unexpected failures  5
+suite-exit-status: exit 1 (pass 424, fail 5, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

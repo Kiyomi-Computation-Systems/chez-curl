@@ -1,0 +1,6 @@
+chez-curl: libcurl loaded and accepted
+  path:     /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 (override)
+  version:  8.20.0
+  TLS:      GnuTLS/3.8.13
+  features: ipv6 ssl libz asynchdns spnego largefile idn tlsauth-srp http2 gssapi kerberos5 unix-sockets psl https-proxy altsvc zstd hsts threadsafe
+  host:     x86_64-unknown-linux-gnu

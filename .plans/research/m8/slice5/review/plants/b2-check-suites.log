@@ -1,0 +1,3 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+check-suites: every suite ends with (exit (suite-exit-status runner)) (46 checked)

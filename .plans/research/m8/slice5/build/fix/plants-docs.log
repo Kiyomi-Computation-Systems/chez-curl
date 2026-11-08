@@ -1,0 +1,15 @@
+== control: test-docs exit 0 (0 FAIL lines)
+== p1-page-run-line: test-docs exit 1, restored
+FAIL every run line of an example a page writes, in a block or a code span, names the library path that example's head comment names; the scan finds one of each
+== p2-index-run-line: test-docs exit 1, restored
+FAIL every run line of an example a page writes, in a block or a code span, names the library path that example's head comment names; the scan finds one of each
+== p3-quickstart-run-line: test-docs exit 1, restored
+FAIL every run line of an example a page writes, in a block or a code span, names the library path that example's head comment names; the scan finds one of each
+== p4-page-reason: test-docs exit 1, restored
+FAIL every code span in the first column of a table headed Reason or Reasons is a reason a -reasons list of the code's holds; the scan finds some
+== p5-errors-reason: test-docs exit 1, restored
+FAIL every code span in the first column of a table headed Reason or Reasons is a reason a -reasons list of the code's holds; the scan finds some
+== p6-errors-reasons-cell: test-docs exit 1, restored
+FAIL every code span in the first column of a table headed Reason or Reasons is a reason a -reasons list of the code's holds; the scan finds some
+== p7-tls-reason: test-docs exit 1, restored
+FAIL every code span in the first column of a table headed Reason or Reasons is a reason a -reasons list of the code's holds; the scan finds some

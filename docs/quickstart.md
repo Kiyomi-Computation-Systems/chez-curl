@@ -99,11 +99,11 @@ Against any server, the URL is yours:
 
 ## Running the tests
 
-The suites need a pinned SRFI library, a submodule, and Node.js, `openssl`
-and GNU `timeout`:
+The suites need two submodules, a pinned SRFI library and jsonparse, which
+one example uses, and Node.js, `openssl` and GNU `timeout`:
 
 ```sh
-git submodule update --init
+git submodule update --init --recursive
 make test
 ```
 

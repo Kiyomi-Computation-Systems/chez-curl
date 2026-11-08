@@ -1,0 +1,100 @@
+== accept-any: exit 1
+FAIL http /json, a GET with Accept: */* alone, which libcurl sends unless told: 406, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with Accept: text/html: 406, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with Accept: application/json-seq, a type that only begins application/json: 406, the Accept it got: the whole answer, then eof
+== accept-case: exit 1
+FAIL http /json, a GET with Application/JSON, in another case: 200, the Accept it got: the whole answer, then eof
+== accept-no-split: exit 1
+FAIL http /json, a GET with several ranges, application/json the second: 200, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with two Accept lines, application/json the second's, joined by a comma: 200, the Accept it got: the whole answer, then eof
+== accept-no-trim: exit 1
+FAIL http /json, a GET with several ranges, application/json the second: 200, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with two Accept lines, application/json the second's, joined by a comma: 200, the Accept it got: the whole answer, then eof
+== accept-params: exit 1
+FAIL http /json, a GET with application/json's parameters, q among them: 200, the Accept it got: the whole answer, then eof
+== accept-star: exit 1
+FAIL http /json, a GET with Accept: */* alone, which libcurl sends unless told: 406, the Accept it got: the whole answer, then eof
+== accept-substring: exit 1
+FAIL http /json, a GET with Accept: application/json-seq, a type that only begins application/json: 406, the Accept it got: the whole answer, then eof
+== bom-dropped: exit 1
+FAIL http /json, a POST with both headers and a byte-order mark before {}: 400, not-json, its byte count: the whole answer, then eof
+== ct-case: exit 1
+FAIL http /json, a POST with Content-Type: Application/Json, in another case: 201, the Content-Type it got: the whole answer, then eof
+== ct-params: exit 1
+FAIL http /json, a POST with Content-Type: application/json; charset=utf-8: 201, the Content-Type it got: the whole answer, then eof
+== ct-prefix: exit 1
+FAIL http /json, a POST of {} with Content-Type: application/json-patch+json: 415, the Content-Type it got: the whole answer, then eof
+== delete-body: exit 1
+FAIL http /json, a DELETE with a body that is no JSON and no Content-Type: 200, its body unread: the whole answer, then eof
+== first-header-only: exit 1
+FAIL http /json, a GET with two Accept lines, application/json the second's, joined by a comma: 200, the Accept it got: the whole answer, then eof
+== h2-method-get: exit 1
+FAIL h2c /json, through Node's client: a GET with Accept 200, a POST 201, a GET without Accept 406, each content-type application/json and its content-length
+== h2-no-content-type: exit 1
+FAIL h2c /json, through Node's client: a GET with Accept 200, a POST 201, a GET without Accept 406, each content-type application/json and its content-length
+== http-no-content-type: exit 1
+FAIL http /json, a GET with Accept: application/json: 200, its method, target and Accept: the whole answer, then eof
+FAIL http /json, a GET with no Accept: 406, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with Accept: */* alone, which libcurl sends unless told: 406, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with Accept: text/html: 406, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with Accept: application/json-seq, a type that only begins application/json: 406, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with application/json's parameters, q among them: 200, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with several ranges, application/json the second: 200, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with Application/JSON, in another case: 200, the Accept it got: the whole answer, then eof
+FAIL http /json, a GET with two Accept lines, application/json the second's, joined by a comma: 200, the Accept it got: the whole answer, then eof
+FAIL http /json, a POST with both headers and a JSON body: 201, the body parsed, its byte count, and what came with it: the whole answer, then eof
+FAIL http /json: the same POST twice gets the same bytes, as nothing is kept
+FAIL http /json, a POST with Content-Type: application/json; charset=utf-8: 201, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST with Content-Type: Application/Json, in another case: 201, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a PATCH with both headers: 201, as a POST is: the whole answer, then eof
+FAIL http /json, a PUT with no Content-Type: 415, as a POST's is: the whole answer, then eof
+FAIL http /json, a DELETE with a body that is no JSON and no Content-Type: 200, its body unread: the whole answer, then eof
+FAIL http /json, a POST of {} with no Content-Type: 415, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST of {} with Content-Type: text/plain: 415, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST of {} with Content-Type: application/json-patch+json: 415, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST with both headers and a trailing comma: 400, not-json, its byte count: the whole answer, then eof
+FAIL http /json, a POST with both headers and no body: 400, not-json, its byte count: the whole answer, then eof
+FAIL http /json, a POST with both headers and a byte-order mark before {}: 400, not-json, its byte count: the whole answer, then eof
+FAIL http /json, a POST with both headers and a string holding the byte 0xFF: 400, not-utf-8, its byte count: the whole answer, then eof
+FAIL http /json, a POST with both headers and a string holding ED A0 80, an encoded surrogate: 400, not-utf-8, its byte count: the whole answer, then eof
+FAIL http /json, a POST with no Accept, Content-Type: text/plain, and a body that is no JSON: 406, Accept read first: the whole answer, then eof
+FAIL http /json, a POST with Accept, Content-Type: text/plain, and a body that is no JSON: 415, Content-Type read before the body: the whole answer, then eof
+== join-no-space: exit 1
+FAIL http /json, a GET with two Accept lines, application/json the second's, joined by a comma: 200, the Accept it got: the whole answer, then eof
+== lax-utf8: exit 1
+FAIL http /json, a POST with both headers and a string holding the byte 0xFF: 400, not-utf-8, its byte count: the whole answer, then eof
+FAIL http /json, a POST with both headers and a string holding ED A0 80, an encoded surrogate: 400, not-utf-8, its byte count: the whole answer, then eof
+== no-415: exit 1
+FAIL http /json, a PUT with no Content-Type: 415, as a POST's is: the whole answer, then eof
+FAIL http /json, a POST of {} with no Content-Type: 415, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST of {} with Content-Type: text/plain: 415, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST of {} with Content-Type: application/json-patch+json: 415, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST with Accept, Content-Type: text/plain, and a body that is no JSON: 415, Content-Type read before the body: the whole answer, then eof
+== no-parse: exit 1
+FAIL http /json, a POST with both headers and a JSON body: 201, the body parsed, its byte count, and what came with it: the whole answer, then eof
+FAIL http /json: the same POST twice gets the same bytes, as nothing is kept
+FAIL http /json, a POST with Content-Type: application/json; charset=utf-8: 201, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST with Content-Type: Application/Json, in another case: 201, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a PATCH with both headers: 201, as a POST is: the whole answer, then eof
+FAIL http /json, a POST with both headers and a trailing comma: 400, not-json, its byte count: the whole answer, then eof
+FAIL http /json, a POST with both headers and no body: 400, not-json, its byte count: the whole answer, then eof
+FAIL http /json, a POST with both headers and a byte-order mark before {}: 400, not-json, its byte count: the whole answer, then eof
+FAIL h2c /json, through Node's client: a GET with Accept 200, a POST 201, a GET without Accept 406, each content-type application/json and its content-length
+== no-patch: exit 1
+FAIL http /json, a PATCH with both headers: 201, as a POST is: the whole answer, then eof
+== no-put: exit 1
+FAIL http /json, a PUT with no Content-Type: 415, as a POST's is: the whole answer, then eof
+== order-body-before-ct: exit 1
+FAIL http /json, a POST with Accept, Content-Type: text/plain, and a body that is no JSON: 415, Content-Type read before the body: the whole answer, then eof
+== order-ct-before-accept: exit 1
+FAIL http /json, a POST with no Accept, Content-Type: text/plain, and a body that is no JSON: 406, Accept read first: the whole answer, then eof
+== repeat-differs: exit 1
+FAIL http /json: the same POST twice gets the same bytes, as nothing is kept
+== status-200-for-body: exit 1
+FAIL http /json, a POST with both headers and a JSON body: 201, the body parsed, its byte count, and what came with it: the whole answer, then eof
+FAIL http /json: the same POST twice gets the same bytes, as nothing is kept
+FAIL http /json, a POST with Content-Type: application/json; charset=utf-8: 201, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a POST with Content-Type: Application/Json, in another case: 201, the Content-Type it got: the whole answer, then eof
+FAIL http /json, a PATCH with both headers: 201, as a POST is: the whole answer, then eof
+FAIL h2c /json, through Node's client: a GET with Accept 200, a POST 201, a GET without Accept 406, each content-type application/json and its content-length
+runner exit 0

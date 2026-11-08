@@ -1,0 +1,75 @@
+== session User-Agent header; call user-agent #f -> 200
+GET /echo HTTP/1.1
+Host: 127.0.0.1:33451
+Accept: */*
+X-A: 1
+
+
+== session user-agent; call user-agent #f -> 200
+GET /echo HTTP/1.1
+Host: 127.0.0.1:33451
+Accept: */*
+
+
+== session Content-Type: application/json; call form -> 200
+POST /echo HTTP/1.1
+Host: 127.0.0.1:33451
+Accept: */*
+Content-Type: application/json
+Content-Length: 3
+
+a=b
+== session Content-Type: application/json; a GET -> 200
+GET /echo HTTP/1.1
+Host: 127.0.0.1:33451
+Accept: */*
+Content-Type: application/json
+
+
+== session Content-Type: application/json; call multipart -> 200
+parts http method=POST cl=149 te=- expect=- ct=multipart/form-data;_boundary=------------------------FaBeEgUeCq9UfGOlesEehh bytes=149 sha256=6742e588ad05a377e985905c416593cfb8f200972f88b9ad767fd2e5a6a045f9 boundary=------------------------FaBeEgUeCq9UfGOlesEehh preamble=0 closed=1 epilogue=2 count=1
+part 0 headers=Content-Disposition: form-data; name="a" len=1 sha256=3e23e8160039594a pattern=bad@0 data=b
+
+== h2c, Accept empty -> 200
+:method: GET
+:scheme: http
+:authority: 127.0.0.1:40599
+:path: /echo
+accept: 
+
+
+== h2c, two X-Two -> 200
+:method: GET
+:scheme: http
+:authority: 127.0.0.1:40599
+:path: /echo
+accept: */*
+x-two: a
+x-two: b
+
+
+== h2c, Host named -> 200
+:method: GET
+:scheme: http
+:authority: example.test
+:path: /echo
+accept: */*
+
+
+("call user-agent and User-Agent header" (refused header-name duplicates-field))
+("call user-agent \"\"" (assertion "Exception in make-curl-request: a user agent is a non-empty string or #f with irritant (kind string)"))
+("call headers not string pairs" (assertion "Exception in make-curl-request: headers are a list of (NAME . VALUE) strings with irritant (kind list)"))
+("high level producer beside Expect: 100-continue" (refused stream-buffer stream-with-rounds))
+("high level bytes body beside Expect: 100-continue" accepted)
+("session user-agent \"\"" (assertion "Exception in make-curl-request: a user agent is a non-empty string or #f with irritant (kind string)"))
+("session headers not string pairs" (assertion "Exception in make-curl-request: headers are a list of (NAME . VALUE) strings with irritant (kind list)"))
+("session two Host" (refused header-name duplicates-field))
+("session user-agent beside User-Agent header" (refused header-name duplicates-field))
+("low level body stream, no stream-buffer, Expect: 100-continue" accepted)
+("low level stream-buffer, Expect: 100-continue" (refused stream-buffer stream-with-rounds))
+("low level two Host, different case" (refused header-name duplicates-field))
+("low level a name holding U+00E9" (refused header-name not-a-token))
+("low level a name holding a colon" (refused header-name not-a-token))
+("low level a value of a lone space" (refused header-value surrounding-whitespace))
+("low level a value with VT inside" accepted)
+("low level a value ending in FF" (refused header-value surrounding-whitespace))

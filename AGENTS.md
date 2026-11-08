@@ -18,6 +18,8 @@
 ### Dependencies
 
 * libcurl
+* jsonparse, for `examples/json-api.sps` alone: the `vendor/jsonparse`
+  submodule, byte-machine nested in it (ADR-0041)
 
 ### Guix development container
 
@@ -32,8 +34,8 @@
   toolchain has no `cc`) and `CHEZ_CURL_LIBCURL` (the profile's
   `libcurl.so.4`, ADR-0002). It sets no `LD_LIBRARY_PATH`.
 * Anything that needs the network or git runs on the host: fetches, pushes,
-  downloads, `make check-pins`, and `git submodule update --init`, which a
-  fresh clone needs once before `make deps`. The container has no git.
+  downloads, `make check-pins`, and `git submodule update --init --recursive`,
+  which a fresh clone needs once before `make deps`. The container has no git.
 
 ### Layout, process & libraries
 
@@ -50,8 +52,9 @@
   entry in `docs/reference.md` (`tests/test-reference.sps`). A Scheme block in
   README.org or `docs/` is an example's text or a fragment, and a program's
   output a run of its `examples/expected/` file (`tests/test-docs.sps`). An
-  example imports public libraries alone; `tests/example-runner.sps` prints
-  its counts (`tests/test-examples.sps`).
+  example imports public libraries alone, but `examples/json-api.sps` also
+  `(jsonparse easy)`; `tests/example-runner.sps` prints its counts
+  (`tests/test-examples.sps`).
 * `Makefile` should have a `help` command which lists all of its commands
 * Libraries are R6RS `.sls`; libraries and programs contain their own code —
   no shared include bodies. R6RS forbids assigning an exported variable —

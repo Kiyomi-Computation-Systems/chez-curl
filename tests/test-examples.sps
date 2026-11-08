@@ -8,12 +8,17 @@
 ;;;     NAME.out: an example deleted with its output fails here;
 ;;;   - each example starts #!r6rs, and its one import form names public
 ;;;     libraries alone, (rnrs), (curl), (curl unsupported) and (http-client),
-;;;     so a reader can copy it;
+;;;     so a reader can copy it; json-api may name (jsonparse easy) too, and
+;;;     no other example may (ADR-0041);
 ;;;   - each example's head comment holds one run line, the one the pages
 ;;;     teach, naming the example itself:
 ;;;       ;;;   scheme --libdirs src --program examples/NAME.sps URL
-;;;   - each runs as a child, `$CHEZ --libdirs src --program
-;;;     tests/example-runner.sps examples/NAME.sps URL`, from the
+;;;     json-api's names src:build/scheme-libs, where make deps links
+;;;     jsonparse;
+;;;   - each runs as a child, `$CHEZ --libdirs LIBDIRS --program
+;;;     tests/example-runner.sps examples/NAME.sps URL`, LIBDIRS the one its
+;;;     head comment's run line names, so it runs as a reader running that
+;;;     line would, from the
 ;;;     repository's root, URL the origin's http base URL, with no trailing
 ;;;     /, under GNU timeout's 60 s, twice against one origin, every example
 ;;;     once and then every one again: each run exits 0; its stdout is
@@ -71,12 +76,25 @@
 ;; examples/expected/NAME.out. Written out, so that an example deleted with
 ;; its output fails the listing.
 (define examples
-  '("cookie-jar" "engine-and-tokens" "errors" "form-and-params" "group" "multipart"
+  '("cookie-jar" "engine-and-tokens" "errors" "form-and-params" "group" "json-api" "multipart"
     "quick-start" "session-retries" "stream-download" "stream-upload"))
 
-;; allowed-imports : (Listof (Listof Symbol))
-;; The libraries an example may import: R6RS's, and chez-curl's public ones.
-(define allowed-imports '((rnrs) (curl) (curl unsupported) (http-client)))
+;; jsonparse-examples : (Listof String)
+;; The examples that import (jsonparse easy) too, and run with
+;; build/scheme-libs on their library path (ADR-0041).
+(define jsonparse-examples '("json-api"))
+
+;; allowed-imports : String -> (Listof (Listof Symbol))
+;; The libraries NAME may import: R6RS's, and chez-curl's public ones; and
+;; (jsonparse easy) for a jsonparse example.
+(define (allowed-imports name)
+  (append '((rnrs) (curl) (curl unsupported) (http-client))
+          (if (member name jsonparse-examples) '((jsonparse easy)) '())))
+
+;; libdirs : String -> String
+;; The library path NAME's run line must name.
+(define (libdirs name)
+  (if (member name jsonparse-examples) "src:build/scheme-libs" "src"))
 
 ;; zero-counts : (Listof (Pairof Symbol 0))
 ;; (curl private counters)' native counts, every kind 0, in its order.
@@ -127,7 +145,7 @@
 ;; run-line : String -> String
 ;; The run line NAME's head comment holds, the form the pages teach.
 (define (run-line name)
-  (string-append ";;;   scheme --libdirs src --program examples/" name ".sps URL"))
+  (string-append ";;;   scheme --libdirs " (libdirs name) " --program examples/" name ".sps URL"))
 
 ;; contains? : String String -> Boolean
 (define (contains? part text)
@@ -159,6 +177,27 @@
                        (reverse found)))))
       (filter (lambda (line) (contains? "--program" line)) head))))
 
+;; words : String -> (Listof String)
+;; TEXT's words, split at spaces.
+(define (words text)
+  (let loop ((i 0) (start 0) (found '()))
+    (cond ((= i (string-length text))
+           (reverse (if (< start i) (cons (substring text start i) found) found)))
+          ((char=? (string-ref text i) #\space)
+           (loop (+ i 1) (+ i 1) (if (< start i) (cons (substring text start i) found) found)))
+          (else (loop (+ i 1) start found)))))
+
+;; run-libdirs : String -> String
+;; The library path NAME's one head run line names after --libdirs, which
+;; its child runs with; "src" when it has no one run line, or names none,
+;; which its run-line test fails.
+(define (run-libdirs name)
+  (let ((lines (head-run-lines name)))
+    (or (and (list? lines) (= (length lines) 1) (string? (car lines))
+             (let ((tail (member "--libdirs" (words (car lines)))))
+               (and tail (pair? (cdr tail)) (cadr tail))))
+        "src")))
+
 ;; example-shape : String -> (List (U String #f) Any)
 ;; NAME's first line, and the libraries its first datum imports that are
 ;; not allowed: () when that datum is an import form of allowed libraries
@@ -171,7 +210,7 @@
         (list (first-line text)
               (let ((datum (read (open-string-input-port text))))
                 (if (and (pair? datum) (eq? (car datum) 'import) (list? datum))
-                    (filter (lambda (spec) (not (member spec allowed-imports))) (cdr datum))
+                    (filter (lambda (spec) (not (member spec (allowed-imports name)))) (cdr datum))
                     (list 'no-import datum))))))))
 
 ;; child-script : String
@@ -187,20 +226,20 @@
    "( exec \"$t\" -s KILL 60 \"$@\" </dev/null >\"$out\" 2>&3 3>&- )\n"
    "exit $?\n"))
 
-;; run-program : String String String -> (List Integer (U String List) String)
-;; The program at PATH run through the runner against BASE, its stdout in
-;; the file OUT: the exit status, the stdout's bytes as Latin-1, and the
-;; stderr.
-(define (run-program path base out)
+;; run-program : String String String String -> (List Integer (U String List) String)
+;; The program at PATH run through the runner against BASE, LIBDIRS its
+;; library path, its stdout in the file OUT: the exit status, the stdout's
+;; bytes as Latin-1, and the stderr.
+(define (run-program path libdirs base out)
   (let ((r (capture-command (list "sh" "-c" child-script "sh" out
-                                  (getenv "CHEZ") "--libdirs" "src"
+                                  (getenv "CHEZ") "--libdirs" libdirs
                                   "--program" "tests/example-runner.sps" path base))))
     (list (car r) (file-bytes out) (caddr r))))
 
 ;; run-example : String Integer String String -> (List Integer (U String List) String)
 ;; NAME's run in ROUND against BASE, its stdout in a file of DIR.
 (define (run-example name round base dir)
-  (run-program (string-append "examples/" name ".sps") base
+  (run-program (string-append "examples/" name ".sps") (run-libdirs name) base
                (string-append dir "/" name "-" (number->string round) ".out")))
 
 ;; read-counts : String -> Any
@@ -274,7 +313,7 @@
                                      (cons (cons (cons (car rest) (car names))
                                                  (run-example (car names) (car rest) base dir))
                                            done))))))))
-                 (control (run-program "tests/example-leak.sps" base
+                 (control (run-program "tests/example-leak.sps" "src" base
                                        (string-append dir "/control.out"))))
             (list examples-run control))))))))
 
@@ -303,7 +342,7 @@
 (for-each
  (lambda (name)
    (test-equal (string-append "examples/" name ".sps starts #!r6rs, and its one import form names"
-                              " public libraries alone: (rnrs), (curl), (curl unsupported), (http-client)")
+                              " these libraries alone: " (written (allowed-imports name)))
      (list "#!r6rs" '())
      (example-shape name))
    (test-equal (string-append "examples/" name ".sps's head comment holds one run line, the pages' form,"

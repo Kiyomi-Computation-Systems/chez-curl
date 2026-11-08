@@ -1,0 +1,17 @@
+== make deps (no build/ yet: absent)
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+deps exit 0
+total 24
+lrwxrwxrwx 1 kishu users   102 Nov  8 20:55 byte-machine -> /home/kishu/src/chez-curl/build/m8s5-review/tree/vendor/jsonparse/vendor/byte-machine/src/byte-machine
+lrwxrwxrwx 1 kishu users    79 Nov  8 20:55 generated -> /home/kishu/src/chez-curl/build/m8s5-review/tree/vendor/jsonparse/src/generated
+lrwxrwxrwx 1 kishu users    79 Nov  8 20:55 jsonparse -> /home/kishu/src/chez-curl/build/m8s5-review/tree/vendor/jsonparse/src/jsonparse
+drwxrwxr-x 2 kishu users 12288 Nov  8 20:55 srfi
+{"node":"v24.18.0","pid":834,"http":"127.0.0.1:39695","raw":"127.0.0.1:45463","h2c":"127.0.0.1:40617"}
+http face: 127.0.0.1:39695
+run 1: exit 0, stdout same as examples/expected/json-api.out, stderr 0 bytes
+run 2: exit 0, stdout same as examples/expected/json-api.out, stderr 0 bytes
+run 3: exit 0, stdout same as examples/expected/json-api.out, stderr 0 bytes
+from examples/: exit 255 ; stderr: Exception: library (http-client) not found
+own program, vendor paths direct: exit 0, stdout 2, stderr 
+origin exit 0

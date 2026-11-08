@@ -42,6 +42,7 @@
 //                                        body "redirect CODE\n"
 //           GET /chunked                 three writes, each its own chunk
 //           ANY /echo                    the request as Node parsed it
+//           ANY /json[?QUERY]            the JSON route, below
 //           GET /pattern/N[?delay=MS]    1 to 268435456: 200, Content-Length N,
 //                                        the body N bytes, byte i being i mod
 //                                        251, written 16384 bytes a write, a
@@ -358,7 +359,7 @@
 // does and reads the body whole; then answers :status 200, a sink header
 // holding the summary line without its newline, content-length N, and N
 // bytes of the pattern, as /pattern/N writes them.
-// /parts is http's, below.
+// /parts and /json are http's, below.
 // Anything else, /chunked, /connects and /close-after included, is 404,
 // "not found\n". No date, and no header beyond these.
 //
@@ -385,6 +386,34 @@
 // With fail=F, 1 to 10, the answer's status is 503, its report as ever,
 // while K's count, this request's own among it, is F or less, so a retry
 // policy's resends each show what they sent; 200 after.
+//
+// The JSON route (M8 slice 5; the M8 plan, section 3.10), on http, the https
+// faces, h2c and h2 alike: ANY /json, with any query or none, a stand-in for
+// a JSON API that insists on its headers. It counts and keeps nothing, so a
+// request gets the same bytes every time. A header's value is the values of
+// every header of its name, in any case, joined by ", ", each as Node read
+// it, Latin-1; a media type is a value's text before its first ;, spaces and
+// tabs trimmed, A to Z folded. The answer, the first rule that holds:
+//   406 unless Accept, split at each comma, holds a range whose media type is
+//       application/json: */* alone is not enough, and a range's parameters,
+//       q among them, are ignored;
+//   415 for a POST, PUT or PATCH unless Content-Type's media type is
+//       application/json, its parameters ignored;
+//   400 for a POST, PUT or PATCH unless its body is UTF-8, every sequence
+//       well formed, that JSON.parse takes whole: a byte-order mark is kept,
+//       and is no JSON;
+//   201 for a POST, PUT or PATCH; 200 for any other method, its body unread.
+// Each is Content-Type: application/json (content-type over HTTP/2), then
+// Content-Length (content-length), then http's Connection, and its body one
+// line of JSON, with no newline, as JSON.stringify writes it, the members in
+// this order: M the method and T the target as received, :path over HTTP/2;
+// A and CT the Accept and Content-Type values, or null for none; N the body's
+// bytes; V the body as JSON.parse read it:
+//   406  {"error":"not-acceptable","accept":A}
+//   415  {"error":"unsupported-media-type","content-type":CT}
+//   400  {"error":"not-utf-8","bytes":N} or {"error":"not-json","bytes":N}
+//   200  {"method":M,"target":T,"accept":A}
+//   201  {"method":M,"target":T,"content-type":CT,"bytes":N,"json":V}
 //
 // The auth route (M7 slice 2; the M7 plan, section 5.2), on http, the https
 // faces, h2c and h2 alike: ANY /auth, its query NAME=VALUE pairs as /sink's are,
@@ -645,6 +674,7 @@ function route(target) {
   }
   if (path === '/chunked' && query === undefined) return { kind: 'chunked' };
   if (path === '/echo') return { kind: 'echo' };
+  if (path === '/json') return { kind: 'json' };
   if ((m = /^\/pattern\/([1-9][0-9]*)$/.exec(path))) {
     const bytes = decimal(m[1], 1, 268435456);
     const delay = delayQuery(query);
@@ -1461,6 +1491,64 @@ function headTracker(face) {
   };
 }
 
+// --- the JSON route (the M8 plan, section 3.10) ---------------------------
+
+// JSON_TYPE: the media type /json reads and writes.
+const JSON_TYPE = 'application/json';
+
+// asciiFolded: TEXT with A to Z as a to z, every other char as it is.
+const asciiFolded = (text) => text.replace(/[A-Z]/g, (c) => c.toLowerCase());
+
+// fieldValue: the values of every header of PAIRS, a flat list of names and
+// values as received, named NAME, lower case, in any case, joined by ", ";
+// or null for none.
+function fieldValue(pairs, name) {
+  const values = [];
+  for (let i = 0; i + 1 < pairs.length; i += 2) {
+    if (asciiFolded(pairs[i]) === name) values.push(pairs[i + 1]);
+  }
+  return values.length === 0 ? null : values.join(', ');
+}
+
+// mediaType: TEXT's media type: its text before the first ;, spaces and
+// tabs trimmed, A to Z folded.
+const mediaType = (text) => asciiFolded(text.split(';')[0].replace(/^[ \t]+|[ \t]+$/g, ''));
+
+// acceptsJson: whether ACCEPT, an Accept value or null, holds a range, split
+// at each comma, whose media type is application/json.
+const acceptsJson = (accept) => accept !== null && accept.split(',').some((range) => mediaType(range) === JSON_TYPE);
+
+// jsonUtf8: a UTF-8 decoder that refuses any malformed sequence, and keeps a
+// byte-order mark, which JSON.parse then refuses.
+const jsonUtf8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
+
+// jsonAnswer: /json's answer to METHOD on TARGET, with header PAIRS, a flat
+// list of names and values as received, and BODY, its bytes: { status,
+// bytes }, the bytes JSON.stringify's, as UTF-8.
+function jsonAnswer(method, target, pairs, body) {
+  const answer = (status, value) => ({ status, bytes: Buffer.from(JSON.stringify(value), 'utf8') });
+  const accept = fieldValue(pairs, 'accept');
+  if (!acceptsJson(accept)) return answer(406, { error: 'not-acceptable', accept });
+  if (!['POST', 'PUT', 'PATCH'].includes(method)) return answer(200, { method, target, accept });
+  const type = fieldValue(pairs, 'content-type');
+  if (type === null || mediaType(type) !== JSON_TYPE) {
+    return answer(415, { error: 'unsupported-media-type', 'content-type': type });
+  }
+  let text;
+  try {
+    text = jsonUtf8.decode(body);
+  } catch {
+    return answer(400, { error: 'not-utf-8', bytes: body.length });
+  }
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    return answer(400, { error: 'not-json', bytes: body.length });
+  }
+  return answer(201, { method, target, 'content-type': type, bytes: body.length, json });
+}
+
 // --- the well-formed HTTP/1.1 faces: http and the https faces -------------
 
 // send: writes one whole response, its headers in the order given, then
@@ -1528,6 +1616,11 @@ function respond(req, res, body) {
       lines += '\n';
       const bytes = Buffer.concat([Buffer.from(lines, 'latin1'), body]);
       return send(res, 200, ['Content-Length', String(bytes.length)], bytes);
+    }
+    case 'json': {
+      const answer = jsonAnswer(req.method, req.url, req.rawHeaders, body);
+      return send(res, answer.status, ['Content-Type', JSON_TYPE, 'Content-Length', String(answer.bytes.length)],
+                  answer.bytes);
     }
     default:
       // /answer, /refuse, /answer-at, /mirror, /seq, /head and /head-auth
@@ -2175,6 +2268,11 @@ function h2Respond(stream, headers, rawHeaders, body) {
       lines += '\n';
       const bytes = Buffer.concat([Buffer.from(lines, 'latin1'), body]);
       return h2Send(stream, 200, ['content-length', String(bytes.length)], bytes);
+    }
+    case 'json': {
+      const answer = jsonAnswer(headers[':method'], headers[':path'], rawHeaders, body);
+      return h2Send(stream, answer.status,
+                    ['content-type', JSON_TYPE, 'content-length', String(answer.bytes.length)], answer.bytes);
     }
     default:
       // /chunked, /close-after and /proxy-arm are HTTP/1.1 routes.

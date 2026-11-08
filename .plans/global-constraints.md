@@ -979,7 +979,11 @@ provisional. They bind until that record is accepted or amended.
 - **The docs:** a thin README.org, Markdown in `docs/`, a hand-written `docs/reference.md` that a
   test holds to every export, and examples a test runs (ADR-0038). No page cites `.plans/` (the
   M8 plan, §3.5). A record's "documented in README.org" is kept by README.org or a page it links
-  (ADR-0038, amended 2026-11-08). An example imports public libraries alone; a wrapper prints its
-  native counts.
+  (ADR-0038, amended 2026-11-08). An example imports public libraries alone, but `json-api`,
+  which may import `(jsonparse easy)` too; a wrapper prints its native counts.
+- **jsonparse is one example's dependency:** `vendor/jsonparse`, a submodule pinned by its
+  gitlink, byte-machine its own nested submodule; `make deps` links both into `build/scheme-libs`
+  and never fetches, and `make check-pins` holds each checkout to its gitlink. No library under
+  `src/` imports it, and chez-curl has no JSON of its own (ADR-0041; ADR-0025).
 - **The release:** `Akku.manifest`'s version is CHANGELOG.md's latest release, held by a test. A
   tag is made and pushed only when the maintainer asks (ADR-0038; the M8 plan, §3.6).

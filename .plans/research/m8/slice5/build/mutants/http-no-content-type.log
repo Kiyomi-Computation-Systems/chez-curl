@@ -1,0 +1,83 @@
+%%%% Starting test origin
+FAIL http /json, a GET with Accept: application/json: 200, its method, target and Accept: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 61\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Length: 61\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+FAIL http /json, a GET with no Accept: 406, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 40\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":null}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Length: 40\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":null}" eof)
+FAIL http /json, a GET with Accept: */* alone, which libcurl sends unless told: 406, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 41\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"*/*\"}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Length: 41\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"*/*\"}" eof)
+FAIL http /json, a GET with Accept: text/html: 406, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 47\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"text/html\"}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Length: 47\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"text/html\"}" eof)
+FAIL http /json, a GET with Accept: application/json-seq, a type that only begins application/json: 406, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 58\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"application/json-seq\"}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Length: 58\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"application/json-seq\"}" eof)
+FAIL http /json, a GET with application/json's parameters, q among them: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 72\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json; q=0.5;v=1\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Length: 72\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json; q=0.5;v=1\"}" eof)
+FAIL http /json, a GET with several ranges, application/json the second: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 79\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"text/html,  application/json\\t,*/*\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Length: 79\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"text/html,  application/json\\t,*/*\"}" eof)
+FAIL http /json, a GET with Application/JSON, in another case: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 61\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"Application/JSON\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Length: 61\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"Application/JSON\"}" eof)
+FAIL http /json, a GET with two Accept lines, application/json the second's, joined by a comma: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 72\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"text/html, application/json\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Length: 72\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"text/html, application/json\"}" eof)
+FAIL http /json, a POST with both headers and a JSON body: 201, the body parsed, its byte count, and what came with it: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof)
+FAIL http /json: the same POST twice gets the same bytes, as nothing is kept
+  expected: (("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof) ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof))
+  actual:   (("HTTP/1.1 201 Created\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof) ("HTTP/1.1 201 Created\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof))
+FAIL http /json, a POST with Content-Type: application/json; charset=utf-8: 201, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 103\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json; charset=utf-8\",\"bytes\":2,\"json\":[]}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Length: 103\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json; charset=utf-8\",\"bytes\":2,\"json\":[]}" eof)
+FAIL http /json, a POST with Content-Type: Application/Json, in another case: 201, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 88\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"Application/Json\",\"bytes\":2,\"json\":[]}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Length: 88\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"Application/Json\",\"bytes\":2,\"json\":[]}" eof)
+FAIL http /json, a PATCH with both headers: 201, as a POST is: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 89\r\nConnection: close\r\n\r\n{\"method\":\"PATCH\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":2,\"json\":{}}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Length: 89\r\nConnection: close\r\n\r\n{\"method\":\"PATCH\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":2,\"json\":{}}" eof)
+FAIL http /json, a PUT with no Content-Type: 415, as a POST's is: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":null}" eof)
+  actual:   ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":null}" eof)
+FAIL http /json, a DELETE with a body that is no JSON and no Content-Type: 200, its body unread: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 64\r\nConnection: close\r\n\r\n{\"method\":\"DELETE\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Length: 64\r\nConnection: close\r\n\r\n{\"method\":\"DELETE\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+FAIL http /json, a POST of {} with no Content-Type: 415, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":null}" eof)
+  actual:   ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":null}" eof)
+FAIL http /json, a POST of {} with Content-Type: text/plain: 415, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 62\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}" eof)
+  actual:   ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Length: 62\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}" eof)
+FAIL http /json, a POST of {} with Content-Type: application/json-patch+json: 415, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 79\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"application/json-patch+json\"}" eof)
+  actual:   ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Length: 79\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"application/json-patch+json\"}" eof)
+FAIL http /json, a POST with both headers and a trailing comma: 400, not-json, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":8}" eof)
+  actual:   ("HTTP/1.1 400 Bad Request\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":8}" eof)
+FAIL http /json, a POST with both headers and no body: 400, not-json, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":0}" eof)
+  actual:   ("HTTP/1.1 400 Bad Request\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":0}" eof)
+FAIL http /json, a POST with both headers and a byte-order mark before {}: 400, not-json, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":5}" eof)
+  actual:   ("HTTP/1.1 400 Bad Request\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":5}" eof)
+FAIL http /json, a POST with both headers and a string holding the byte 0xFF: 400, not-utf-8, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"error\":\"not-utf-8\",\"bytes\":3}" eof)
+  actual:   ("HTTP/1.1 400 Bad Request\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"error\":\"not-utf-8\",\"bytes\":3}" eof)
+FAIL http /json, a POST with both headers and a string holding ED A0 80, an encoded surrogate: 400, not-utf-8, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"error\":\"not-utf-8\",\"bytes\":5}" eof)
+  actual:   ("HTTP/1.1 400 Bad Request\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"error\":\"not-utf-8\",\"bytes\":5}" eof)
+FAIL http /json, a POST with no Accept, Content-Type: text/plain, and a body that is no JSON: 406, Accept read first: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 40\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":null}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Length: 40\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":null}" eof)
+FAIL http /json, a POST with Accept, Content-Type: text/plain, and a body that is no JSON: 415, Content-Type read before the body: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 62\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}" eof)
+  actual:   ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Length: 62\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}" eof)
+# of expected passes      403
+# of unexpected failures  26
+suite-exit-status: exit 1 (pass 403, fail 26, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

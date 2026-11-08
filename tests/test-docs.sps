@@ -29,11 +29,20 @@
 ;;; - no page says ADR- or ADR and a space, then a digit; "not yet",
 ;;;   "unreleased", "on main" or "TODO"; "slice" and a digit; M and a digit,
 ;;;   then "slice"; or a date written YYYY-MM-DD: in any case, a line's end
-;;;   between two words read as a space.
+;;;   between two words read as a space;
+;;; - every run line of an example a page writes, in a block or a code span,
+;;;   the words scheme, --libdirs, LIBDIRS, --program and examples/NAME.sps
+;;;   in a row, names the LIBDIRS NAME's own head comment names in its run
+;;;   line;
+;;; - every code span in the first column of a table whose first header
+;;;   cell is Reason or Reasons is a reason the code defines: a member of a
+;;;   list whose name ends -reasons that (curl private conditions) or
+;;;   (http-client private conditions) exports.
 ;;;
 ;;; Out of its reach, with no oracle but a reader's reading of the code,
 ;;; which the slice's review makes: a fragment whose comment gives a wrong
-;;; answer, and prose that says something wrong.
+;;; answer, and prose that says something wrong, a reason table's account of
+;;; what a reason means among it. A wrong claim in prose stays the review's.
 ;;;
 ;;; The oracles: the checkout's files, read as bytes; Chez's own read; the
 ;;; names the three public libraries export, as Chez's library-exports lists
@@ -77,6 +86,8 @@
         (srfi :64)
         (curl-testing)
         (only (chezscheme) directory-list file-regular? library-exports)
+        (only (curl private conditions) curl-request-error-reasons)
+        (only (http-client private conditions) http-request-error-reasons)
         (only (curl private transfer) request-keys)
         (only (http-client private call) session-keys call-keys port-keys group-keys retry-keys))
 
@@ -524,6 +535,32 @@
                  (rows (cdr ls) (cons (car ls) out)))))
           (else (scan (cdr ls))))))
 
+;; tables-headed : (Listof String) (Listof String) -> (Listof (Listof String))
+;; The body rows of every table of the prose whose header's first cell is
+;; one of FIRSTS, each read as table-rows reads one, the tables in order.
+(define (tables-headed prose firsts)
+  (let scan ((ls prose) (out '()))
+    (cond ((or (null? ls) (null? (cdr ls))) (reverse out))
+          ((and (has-bar? (car ls)) (delimiter-row? (cadr ls))
+                (= (length (cells (car ls))) (length (cells (cadr ls))))
+                (member (car (cells (car ls))) firsts))
+           (let rows ((rest (cddr ls)) (acc '()))
+             (if (or (null? rest) (string=? (trim (car rest)) "") (not (has-bar? (car rest))))
+                 (scan rest (cons (reverse acc) out))
+                 (rows (cdr rest) (cons (car rest) acc)))))
+          (else (scan (cdr ls) out)))))
+
+;; first-cell-code : String -> (Listof String)
+;; The text of each code span of a table row's first cell, in order, its
+;; backticks dropped; none for a row of no cell.
+(define (first-cell-code row)
+  (let ((cs (cells row)))
+    (if (null? cs)
+        '()
+        (let ((cell (car cs)))
+          (map (lambda (r) (let ((k (run cell (car r) #\`))) (substring cell (+ (car r) k) (- (cdr r) k))))
+               (code-ranges cell))))))
+
 ;; --- names in code ---------------------------------------------------------------
 
 ;; markdown-code : (Listof String) -> (Listof (Pair Nat String))
@@ -630,6 +667,53 @@
        (let walk ((x d))
          (cond ((pair? x) (append (bound (car x)) (walk (cdr x))))
                (else '()))))))
+
+;; --- run lines -------------------------------------------------------------------
+
+;; run-lines-in : String -> (Listof (Pair String String))
+;; Each run line of an example the text holds, the words scheme, --libdirs,
+;; LIBDIRS, --program and examples/NAME.sps in a row, a line's end read as
+;; a blank, as (NAME . LIBDIRS), in order.
+(define (run-lines-in text)
+  (let loop ((ws (words (list->string (map (lambda (c) (if (char=? c #\newline) #\space c)) (string->list text)))))
+             (out '()))
+    (if (< (length ws) 5)
+        (reverse out)
+        (let ((path (list-ref ws 4)))
+          (if (and (string=? (car ws) "scheme") (string=? (cadr ws) "--libdirs") (string=? (list-ref ws 3) "--program")
+                   (starts? path "examples/") (ends? path ".sps") (> (string-length path) 13))
+              (loop (cdr ws) (cons (cons (substring path 9 (- (string-length path) 4)) (caddr ws)) out))
+              (loop (cdr ws) out))))))
+
+;; head-libdirs : String -> (U String #f)
+;; The LIBDIRS examples/NAME.sps's head comment names: the word after
+;; --libdirs in the one line of its head, the ;;; lines after its first up
+;; to any other, that holds --program; #f for no such file, a head with no
+;; such line or more than one, or a line with no word after --libdirs.
+(define (head-libdirs name)
+  (let ((path (string-append "examples/" name ".sps")))
+    (and (file-regular? path)
+         (let* ((ls (file-lines (slurp-bytes path)))
+                (head (let loop ((ls (if (pair? ls) (cdr ls) '())) (out '()))
+                        (if (and (pair? ls) (starts? (car ls) ";;;")) (loop (cdr ls) (cons (car ls) out)) (reverse out))))
+                (runs (filter (lambda (l) (member "--program" (words l))) head)))
+           (and (= (length runs) 1)
+                (let ((tail (member "--libdirs" (words (car runs)))))
+                  (and tail (pair? (cdr tail)) (cadr tail))))))))
+
+;; page-run-lines : Page -> (Listof (List Symbol Nat String String))
+;; Each run line of an example in the page's blocks, every language's, and
+;; in its prose's code spans, as (block LINE NAME LIBDIRS) or (code LINE
+;; NAME LIBDIRS), LINE the block's or the span's.
+(define (page-run-lines p)
+  (append
+   (apply append
+          (map (lambda (b) (map (lambda (r) (list 'block (block-line b) (car r) (cdr r)))
+                                (run-lines-in (joined (block-lines b)))))
+               (page-blocks p)))
+   (apply append
+          (map (lambda (lc) (map (lambda (r) (list 'code (car lc) (car r) (cdr r))) (run-lines-in (cdr lc))))
+               (if (page-org? p) (org-code (page-prose p)) (markdown-code (page-prose p)))))))
 
 ;; --- headings and anchors --------------------------------------------------------
 
@@ -1183,6 +1267,32 @@
 (define (known? name)
   (and (known-names-ok?) (exists (lambda (names) (member name names)) known-names) #t))
 
+;; condition-libraries : the libraries whose lists hold every reason.
+(define condition-libraries '((curl private conditions) (http-client private conditions)))
+
+;; code-reasons : (U (Listof String) (List 'raised String))
+;; Every reason the code defines: each member of each list either library
+;; exports whose name ends -reasons, as library-exports lists them.
+(define code-reasons
+  (guarded
+   (lambda ()
+     (apply append
+            (map (lambda (l)
+                   (apply append
+                          (map (lambda (n)
+                                 (let ((v (eval n (environment l))))
+                                   (if (and (list? v) (for-all symbol? v)) (map symbol->string v) '())))
+                               (filter (lambda (n) (ends? (symbol->string n) "-reasons")) (library-exports l)))))
+                 condition-libraries)))))
+
+;; code-reasons-ok? : -> Boolean
+;; Whether code-reasons was read, and holds every reason of the two lists
+;; this suite imports by name, so a reading that found fewer lists fails.
+(define (code-reasons-ok?)
+  (and (list? code-reasons) (for-all string? code-reasons)
+       (for-all (lambda (r) (and (member (symbol->string r) code-reasons) #t))
+                (append curl-request-error-reasons http-request-error-reasons))))
+
 ;; block-line-of : Block String -> Nat — the page's line of the block's first line that holds NAME as a name; the block's own line for none.
 (define (block-line-of b name)
   (let loop ((ls (block-lines b)) (n (+ (block-line b) 1)))
@@ -1326,6 +1436,30 @@
 (test-equal "the reader takes the first table whose first column is headed Example, its rows up to its end, and each row's code and link"
   table-expected
   (guarded (lambda () (let ((rows (table-rows table-prose "Example"))) (list rows (example-rows rows))))))
+
+;; Prose with a Reason table, a table of another header, and a Reasons
+;; table that a line with no bar ends.
+(define reason-prose
+  '("| Reason | What |" "|---|---|" "| `a` | one |" "| `b`, `c`: d | two |" ""
+    "| What | Reason |" "|--|--|" "| `x` | y |" ""
+    "| Reasons | Page |" "|:--|--|" "| `e` | f |" "Not a row." "| `g` | after |"))
+
+(test-equal "the reader takes every table headed Reason or Reasons, and each code span of each row's first cell"
+  '(("a") ("b" "c") ("e"))
+  (guarded (lambda () (map first-cell-code (apply append (tables-headed reason-prose '("Reason" "Reasons")))))))
+
+;; Text with run lines of examples, one across a line's end, and near misses.
+(define run-line-text
+  (string-append "scheme --libdirs src:x --program\nexamples/b.sps URL\n"
+                 "scheme --libdirs src --program examples/a.sps http://h\n"
+                 "scheme --libdirs src --program app.sps\n"
+                 "chez --libdirs src --program examples/c.sps\n"
+                 "scheme --program examples/d.sps --libdirs src\n"
+                 "scheme --libdirs src --program examples/.sps\n"))
+
+(test-equal "the reader takes each run line of an example, scheme --libdirs LIBDIRS --program examples/NAME.sps, a line's end inside one among it, and no other"
+  '(("b" . "src:x") ("a" . "src"))
+  (guarded (lambda () (run-lines-in run-line-text))))
 
 (test-equal "the Markdown reader takes each code span of the prose, a line's end inside one among it, with its line"
   code-expected
@@ -1587,6 +1721,37 @@
                                        (directory-list "examples"))))
                  (append (map (lambda (e) (list 'left-out e)) (filter (lambda (e) (not (member e names))) examples))
                          (map (lambda (n) (list 'no-example n)) (filter (lambda (n) (not (member n examples))) names))))))))
+
+;; --- run lines and reasons ------------------------------------------------------------
+
+(test-equal "every run line of an example a page writes, in a block or a code span, names the library path that example's head comment names; the scan finds one of each"
+  '(block code ())
+  (let ((found (apply append (map (lambda (p) (map (lambda (r) (cons (page-name p) r)) (page-run-lines p)))
+                                  (the-pages)))))
+    (list (if (exists (lambda (f) (eq? (cadr f) 'block)) found) 'block 'no-block)
+          (if (exists (lambda (f) (eq? (cadr f) 'code)) found) 'code 'no-code)
+          (noted "a run line naming another library path than its example's head, as (page where line name libdirs head):"
+                 (fold-right (lambda (f out)
+                               (let ((head (head-libdirs (list-ref f 3))))
+                                 (if (equal? head (list-ref f 4)) out (cons (append f (list head)) out))))
+                             '() found)))))
+
+(test-equal "every code span in the first column of a table headed Reason or Reasons is a reason a -reasons list of the code's holds; the scan finds some"
+  '(checked ())
+  (if (not (code-reasons-ok?))
+      (list 'code-reasons code-reasons)
+      (let* ((spans (apply append
+                           (map (lambda (p)
+                                  (if (page-org? p)
+                                      '()
+                                      (map (lambda (c) (list (page-name p) c))
+                                           (apply append
+                                                  (map first-cell-code
+                                                       (apply append (tables-headed (page-prose p) '("Reason" "Reasons"))))))))
+                                (the-pages))))
+             (bad (filter (lambda (s) (not (member (cadr s) code-reasons))) spans)))
+        (list (if (pair? spans) 'checked 'none-found)
+              (noted "a reason table's first-column code that no -reasons list holds, as (page code):" bad)))))
 
 (test-end "docs")
 

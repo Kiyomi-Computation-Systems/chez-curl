@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL http /json, a POST with both headers and a byte-order mark before {}: 400, not-json, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":5}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 88\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":5,\"json\":{}}" eof)
+# of expected passes      428
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 428, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

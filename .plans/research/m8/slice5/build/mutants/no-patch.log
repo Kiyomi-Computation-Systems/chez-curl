@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL http /json, a PATCH with both headers: 201, as a POST is: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 89\r\nConnection: close\r\n\r\n{\"method\":\"PATCH\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":2,\"json\":{}}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 63\r\nConnection: close\r\n\r\n{\"method\":\"PATCH\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+# of expected passes      428
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 428, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

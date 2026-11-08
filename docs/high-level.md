@@ -43,7 +43,8 @@ and `credentials` ([Reference](reference.md) has each), and four of its own:
 A call's value replaces its session's. A call's header replaces every session
 header of its name, in any case; a call's `User-Agent` header sets no
 `user-agent`, and a call's `user-agent` drops the session's `User-Agent`
-header. [Redirects and retries](redirects-and-retries.md) has the first three.
+header ([Headers and JSON](headers-and-json.md)).
+[Redirects and retries](redirects-and-retries.md) has the first three.
 
 ## Verbs and responses
 

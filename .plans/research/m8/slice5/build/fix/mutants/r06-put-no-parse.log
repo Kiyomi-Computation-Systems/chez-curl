@@ -1,0 +1,11 @@
+%%%% Starting test origin
+FAIL http /json, a PUT of malformed JSON with both headers: 400, not-json, as a POST's is: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"not-json\",\"bytes\":3}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 90\r\nConnection: close\r\n\r\n{\"method\":\"PUT\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":3,\"json\":\"[1,\"}" eof)
+FAIL http /json, a PUT of JSON with both headers: 201, the body parsed: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 100\r\nConnection: close\r\n\r\n{\"method\":\"PUT\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":16,\"json\":[1,{\"a\":null}]}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 106\r\nConnection: close\r\n\r\n{\"method\":\"PUT\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":16,\"json\":\"[1, {\\\"a\\\": null}]\"}" eof)
+# of expected passes      436
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 436, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

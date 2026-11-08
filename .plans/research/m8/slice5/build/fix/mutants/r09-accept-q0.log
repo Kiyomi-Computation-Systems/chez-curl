@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL http /json, a GET with Accept: application/json;q=0, its q ignored as every parameter is: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 65\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json;q=0\"}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 58\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"application/json;q=0\"}" eof)
+# of expected passes      437
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 437, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

@@ -1,0 +1,10 @@
+("application/json" "application/json")
+("application/json; charset=utf-8" "application/json")
+(" Application/JSON\t;charset=UTF-8" "application/json")
+("APPLICATION/JSON" "application/json")
+("application/json-seq" "application/json-seq")
+("text/html" "text/html")
+("" "")
+(";" "")
+("application/ json" "application/ json")
+exit 0

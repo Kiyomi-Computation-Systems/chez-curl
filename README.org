@@ -74,7 +74,7 @@ its absolute path. The [[file:docs/quickstart.md][quick start]] says more.
      (display (http-response-text response)))))
 #+end_src
 
-[[file:examples/][examples/]] holds nine more, each run by =make test=.
+[[file:examples/][examples/]] holds ten more, each run by =make test=.
 
 ** Documentation
 
@@ -83,6 +83,7 @@ The pages are in [[file:docs/README.md][docs/]]:
 - [[file:docs/quickstart.md][Quick start]]: from a clone to a first request.
 - [[file:docs/high-level.md][The high level]]: sessions, verbs, responses, bodies, forms, multipart,
   params, timeouts and limits.
+- [[file:docs/headers-and-json.md][Headers and JSON]]: setting and reading headers, and a JSON API.
 - [[file:docs/redirects-and-retries.md][Redirects and retries]].
 - [[file:docs/auth-and-proxies.md][Auth and proxies]].
 - [[file:docs/cookies.md][Cookies]].

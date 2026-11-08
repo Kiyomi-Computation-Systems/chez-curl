@@ -1,0 +1,2 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs

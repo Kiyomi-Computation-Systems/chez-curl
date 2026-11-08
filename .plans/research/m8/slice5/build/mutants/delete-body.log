@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL http /json, a DELETE with a body that is no JSON and no Content-Type: 200, its body unread: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 64\r\nConnection: close\r\n\r\n{\"method\":\"DELETE\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+  actual:   ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":null}" eof)
+# of expected passes      428
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 428, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

@@ -1,0 +1,43 @@
+%%%% Starting test examples
+FAIL examples/cookie-jar.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/cookie-jar.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/cookie-jar.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/cookie-jar.sps URL")
+FAIL examples/engine-and-tokens.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/engine-and-tokens.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/engine-and-tokens.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/engine-and-tokens.sps URL")
+FAIL examples/errors.sps starts #!r6rs, and its one import form names these libraries alone: ((rnrs) (curl) (curl unsupported) (http-client))
+  expected: ("#!r6rs" ())
+  actual:   ("#!r6rs" ((jsonparse easy)))
+FAIL examples/errors.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/errors.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/errors.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/errors.sps URL")
+FAIL examples/errors.sps, run 1 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/errors.out byte for byte, and on stderr one counts line, every count zero
+  expected: (0 "404\n(timeout 200 #t)\n(too-large perform-failed)\n(http-version prior-knowledge-over-https)\ncurl-error\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+  actual:   (255 "" "Exception: library (jsonparse easy) not found\n")
+FAIL examples/errors.sps, run 2 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/errors.out byte for byte, and on stderr one counts line, every count zero
+  expected: (0 "404\n(timeout 200 #t)\n(too-large perform-failed)\n(http-version prior-knowledge-over-https)\ncurl-error\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+  actual:   (255 "" "Exception: library (jsonparse easy) not found\n")
+FAIL examples/form-and-params.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/form-and-params.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/form-and-params.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/form-and-params.sps URL")
+FAIL examples/group.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/group.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/group.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/group.sps URL")
+FAIL examples/multipart.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/multipart.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/multipart.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/multipart.sps URL")
+FAIL examples/quick-start.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/quick-start.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/quick-start.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/quick-start.sps URL")
+FAIL examples/session-retries.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/session-retries.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/session-retries.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/session-retries.sps URL")
+FAIL examples/stream-download.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/stream-download.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/stream-download.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/stream-download.sps URL")
+FAIL examples/stream-upload.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/stream-upload.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/stream-upload.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/stream-upload.sps URL")
+# of expected passes      36
+# of unexpected failures  13
+suite-exit-status: exit 1 (pass 36, fail 13, xpass 0): a suite needs a pass, and no fail or xpass

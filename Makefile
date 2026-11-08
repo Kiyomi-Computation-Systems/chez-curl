@@ -48,6 +48,14 @@ GOAL = $(strip $(if $(MAKECMDGOALS),$(MAKECMDGOALS),$@))
 SRFI_SRC  := vendor/chez-srfi
 SRFI_LIBS := build/scheme-libs
 
+# jsonparse, which examples/json-api.sps alone imports, is a git submodule
+# pinned by its gitlink, and byte-machine, whose runtime jsonparse's parser
+# imports, is jsonparse's own submodule, pinned by jsonparse's gitlink
+# (ADR-0041). `make deps` links both into SRFI_LIBS too. Neither is in
+# Akku.lock: jsonparse is on no Akku archive yet.
+JSON_SRC := vendor/jsonparse
+BM_SRC   := $(JSON_SRC)/vendor/byte-machine
+
 # Chez's library path for the suites: src/ holds chez-curl's own libraries,
 # (curl private ...) among them, and tests/ holds (curl-testing).
 LIBDIRS := src:tests:$(SRFI_LIBS)
@@ -215,8 +223,10 @@ check-guix-inside: ## (inside the container) Assert the pinned toolchain, isolat
 # following an existing link to a directory into the submodule. A rerun
 # changes nothing, and `set -e` keeps a failed link from hiding behind the
 # loop's last iteration. Every path is quoted, since the checkout's may hold
-# a space.
-deps: ## Link vendor/chez-srfi into build/scheme-libs; never fetches
+# a space. Then it links jsonparse's two library directories and
+# byte-machine's one in the same way, after checking a library in each is
+# there.
+deps: ## Link vendor/chez-srfi and vendor/jsonparse into build/scheme-libs; never fetches
 	@if [ ! -f $(SRFI_SRC)/%3a64.sls ]; then \
 	  echo "deps: $(SRFI_SRC)/%3a64.sls not found, so the submodule is empty or missing. Run 'git submodule update --init $(SRFI_SRC)' on the host: make deps never fetches, and the container has no network." >&2; \
 	  exit 1; \
@@ -231,6 +241,18 @@ deps: ## Link vendor/chez-srfi into build/scheme-libs; never fetches
 	  [ "$$d" = "$$b" ] || ln -sfn "$$f" "$$dst/$$d"; \
 	done
 	@echo "deps: $(SRFI_SRC) linked into $(SRFI_LIBS)/srfi"
+	@for f in $(JSON_SRC)/src/jsonparse/easy.sls $(JSON_SRC)/src/generated/jsonparse.sls $(BM_SRC)/src/byte-machine/runtime.sls; do \
+	  if [ ! -f "$$f" ]; then \
+	    echo "deps: $$f not found, so a submodule is empty or missing. Run 'git submodule update --init --recursive $(JSON_SRC)' on the host: make deps never fetches, and the container has no network." >&2; \
+	    exit 1; \
+	  fi; \
+	done
+	@set -e; \
+	dst="$(abspath $(SRFI_LIBS))"; \
+	ln -sfn "$(abspath $(JSON_SRC))/src/jsonparse" "$$dst/jsonparse"; \
+	ln -sfn "$(abspath $(JSON_SRC))/src/generated" "$$dst/generated"; \
+	ln -sfn "$(abspath $(BM_SRC))/src/byte-machine" "$$dst/byte-machine"
+	@echo "deps: $(JSON_SRC) and $(BM_SRC) linked into $(SRFI_LIBS)"
 
 # Three places name the chez-srfi commit, and nothing else keeps them equal:
 # Akku.lock (what a consumer installs), the gitlink the superproject records
@@ -245,7 +267,12 @@ deps: ## Link vendor/chez-srfi into build/scheme-libs; never fetches
 # counts only when git's toplevel for it is that directory itself. Read-only.
 # It needs git, which the container does not have: run it on the host and in
 # CI. `make test` does not run it.
-check-pins: ## Fail unless Akku.lock, the gitlink and the checkout name one chez-srfi commit
+#
+# jsonparse and byte-machine have no lock, so each checkout is held to its
+# gitlink alone: jsonparse's in this repository, byte-machine's in
+# jsonparse's (ADR-0041). The parent's own toplevel is checked first, since an
+# empty jsonparse directory would answer for this repository.
+check-pins: ## Fail unless Akku.lock, the gitlink and the checkout name one chez-srfi commit, and jsonparse's and byte-machine's checkouts are their gitlinks
 	@scripts/require-tools "$(GOAL)" git
 	@lock=$$(sed -n 's#.*/chez-srfi_[^"]*-akku\.[0-9]*\.\([a-f0-9]\{7,40\}\)_repack.*#\1#p' Akku.lock | head -n 1); \
 	rec=$$(git ls-files -s -- $(SRFI_SRC) | awk '$$1 == "160000" && $$3 == 0 { print $$2 }'); \
@@ -285,6 +312,33 @@ check-pins: ## Fail unless Akku.lock, the gitlink and the checkout name one chez
 	if [ "$$fail" -eq 0 ]; then \
 	  echo "check-pins: chez-srfi $$lock: Akku.lock, the recorded commit and the checkout agree"; \
 	fi; \
+	exit $$fail
+	@fail=0; \
+	for sub in ".:$(JSON_SRC)" "$(JSON_SRC):vendor/byte-machine"; do \
+	  parent=$${sub%%:*}; rel=$${sub#*:}; \
+	  if [ "$$parent" = . ]; then dir=$$rel; owner="this repository"; else dir="$$parent/$$rel"; owner=$$parent; fi; \
+	  ptop=$$(git -C "$$parent" rev-parse --show-toplevel 2>/dev/null); \
+	  pwant=$$(cd "$$parent" 2>/dev/null && pwd -P); \
+	  if [ -z "$$ptop" ] || [ "$$ptop" != "$$pwant" ]; then \
+	    echo "check-pins: $$parent is not checked out. Run 'git submodule update --init --recursive $(JSON_SRC)' on the host." >&2; \
+	    fail=1; continue; \
+	  fi; \
+	  rec=$$(git -C "$$parent" ls-files -s -- "$$rel" | awk '$$1 == "160000" && $$3 == 0 { print $$2 }'); \
+	  top=$$(git -C "$$dir" rev-parse --show-toplevel 2>/dev/null); \
+	  want=$$(cd "$$dir" 2>/dev/null && pwd -P); \
+	  if [ -z "$$rec" ]; then \
+	    echo "check-pins: could not read the commit $$owner records for $$rel (is it a git submodule there?)" >&2; \
+	    fail=1; \
+	  elif [ -z "$$top" ] || [ "$$top" != "$$want" ]; then \
+	    echo "check-pins: $$dir is not checked out. Run 'git submodule update --init --recursive $(JSON_SRC)' on the host." >&2; \
+	    fail=1; \
+	  elif ! out=$$(git -C "$$dir" rev-parse HEAD 2>/dev/null) || [ "$$out" != "$$rec" ]; then \
+	    echo "check-pins: PIN DRIFT: $$owner records $$rec for $$rel, but $$dir is checked out at $${out:-nothing}. To restore it, run 'git submodule update --init --recursive $(JSON_SRC)' on the host." >&2; \
+	    fail=1; \
+	  else \
+	    echo "check-pins: $$dir $$rec: the recorded commit and the checkout agree"; \
+	  fi; \
+	done; \
 	exit $$fail
 
 # There is nothing to compile (ADR-0001). build loads libcurl as (curl)
