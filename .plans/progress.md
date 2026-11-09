@@ -23,7 +23,11 @@ close-out under **Close-outs**, newest first.
   the container, 46 of 46, `check-memory-gate`'s 45 cases, and three suites under the gate; the
   two changed suites on the four Docker libcurls under Node 20.10.0 and 22.23.4
   ([research](research/m8/slice5/)). The example's media-type helper's parameter rule is held
-  by no test: the route sends the bare type.
+  by no test: the route sends the bare type. The Mac's `make test` at `8779295`: 44 of 46 in a
+  run the laptop slept through, a raw-face exchange and an h2c probe each past its 10 s or 30 s
+  deadline ([log](research/m8/slice5/mac/mac-8.7.1-make-test-slept.log)); then, kept awake by
+  `caffeinate -i`, 46 of 46, `test-examples` 49 and `test-origin` 437
+  ([log](research/m8/slice5/mac/mac-8.7.1-make-test-2.log)).
   - **Decided by the maintainer, 2026-11-08,** each the recommended option: a slice before the
     release, headers and a JSON API, so 0.1.0's docs hold it; jsonparse as one pinned submodule,
     byte-machine nested in it, a dependency of one example alone; one page, Headers and JSON.
