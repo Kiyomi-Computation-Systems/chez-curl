@@ -1,0 +1,4 @@
+check-pins: chez-srfi 7879b52: Akku.lock, the recorded commit and the checkout agree
+check-pins: ./vendor/jsonparse is not checked out. Run 'git submodule update --init --recursive vendor/jsonparse' on the host.
+check-pins: vendor/jsonparse is not checked out. Run 'git submodule update --init --recursive vendor/jsonparse' on the host.
+make: *** [Makefile:278: check-pins] Error 1

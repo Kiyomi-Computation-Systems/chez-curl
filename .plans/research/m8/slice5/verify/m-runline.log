@@ -1,0 +1,7 @@
+%%%% Starting test examples
+FAIL examples/json-api.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src:build/scheme-libs --program examples/json-api.sps URL
+  expected: (";;;   scheme --libdirs src:build/scheme-libs --program examples/json-api.sps URL")
+  actual:   (";;;   scheme --libdirs src --program examples/json-api.sps URL")
+# of expected passes      48
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 48, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

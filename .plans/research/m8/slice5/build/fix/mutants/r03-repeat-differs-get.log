@@ -1,0 +1,11 @@
+%%%% Starting test origin
+FAIL http /json, a GET with Accept and Content-Type: text/plain, which a GET's answer never reads: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 61\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 74\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\",\"again\":true}" eof)
+FAIL http /json: the same GET twice gets the same bytes, as nothing is kept
+  expected: (("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 69\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json?twice=1\",\"accept\":\"application/json\"}" eof) ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 69\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json?twice=1\",\"accept\":\"application/json\"}" eof))
+  actual:   (("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 69\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json?twice=1\",\"accept\":\"application/json\"}" eof) ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 82\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json?twice=1\",\"accept\":\"application/json\",\"again\":true}" eof))
+# of expected passes      436
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 436, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

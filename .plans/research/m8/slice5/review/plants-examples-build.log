@@ -1,0 +1,44 @@
+== control: make deps, then test-examples
+   deps exit 0
+   test-examples exit 0
+== e1: allowed-imports takes (jsonparse easy) for every example; errors.sps imports it
+   test-examples exit 1
+   FAIL examples/errors.sps, run 1 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/errors.out byte for byte, and on stderr one counts line, every count zero
+   FAIL examples/errors.sps, run 2 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/errors.out byte for byte, and on stderr one counts line, every count zero
+== e2: jsonparse-examples names errors too; errors.sps imports jsonparse, its run line src:build/scheme-libs
+   test-examples exit 0
+   test-docs exit 0
+== e3: every child runs with build/scheme-libs, its run line unchanged; allowed-imports loosened; errors.sps imports jsonparse
+   test-examples exit 0
+   test-docs exit 0
+   errors.sps as its own run line says, --libdirs src:
+   exit 255: Exception: library (jsonparse easy) not found
+== b1: a src library imports (jsonparse easy): check-seam
+   check-seam exit 2
+   check-seam: src/curl/private/planted.sls: (curl private planted) imports (jsonparse easy), but a library under src/ may import only the (rnrs ...) libraries except (rnrs eval), (only (chezscheme) name ...), and (curl ...) and (http-client ...) libraries
+== b2: a suite imports (jsonparse easy): check-suites, then the suite
+   check-suites exit 0
+   test-reference exit 0
+== b3: vendor/jsonparse empty, as a clone before its submodule update
+   deps exit 2
+   | deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+   | deps: vendor/jsonparse/src/jsonparse/easy.sls not found, so a submodule is empty or missing. Run 'git submodule update --init --recursive vendor/jsonparse' on the host: make deps never fetches, and the container has no network.
+   | make: *** [Makefile:234: deps] Error 1
+   check-seam exit 0
+   build exit 0
+   check-suites exit 2 (make: *** [Makefile:234: deps] Error 1)
+   test exit 2 (0 suites started)
+   a program of (curl) alone, --libdirs src:
+   | 8.20.0
+== b4: byte-machine empty, as a non-recursive submodule update
+   deps exit 2
+   | deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+   | deps: vendor/jsonparse/vendor/byte-machine/src/byte-machine/runtime.sls not found, so a submodule is empty or missing. Run 'git submodule update --init --recursive vendor/jsonparse' on the host: make deps never fetches, and the container has no network.
+   | make: *** [Makefile:234: deps] Error 1
+== b5: jsonparse's src/generated gone
+   deps exit 2
+   | deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+   | deps: vendor/jsonparse/src/generated/jsonparse.sls not found, so a submodule is empty or missing. Run 'git submodule update --init --recursive vendor/jsonparse' on the host: make deps never fetches, and the container has no network.
+   | make: *** [Makefile:234: deps] Error 1
+== after: make deps again
+   deps exit 0

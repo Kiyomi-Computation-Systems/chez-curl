@@ -1,0 +1,9 @@
+%%%% Starting test examples
+# of expected passes      49
+test-examples exit 0
+%%%% Starting test docs
+# of expected passes      46
+test-docs exit 0
+%%%% Starting test reference
+# of expected passes      21
+test-reference exit 0

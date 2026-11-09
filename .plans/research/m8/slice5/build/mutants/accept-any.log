@@ -1,0 +1,14 @@
+%%%% Starting test origin
+FAIL http /json, a GET with Accept: */* alone, which libcurl sends unless told: 406, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 41\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"*/*\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 48\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"*/*\"}" eof)
+FAIL http /json, a GET with Accept: text/html: 406, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 47\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"text/html\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 54\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"text/html\"}" eof)
+FAIL http /json, a GET with Accept: application/json-seq, a type that only begins application/json: 406, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 58\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"application/json-seq\"}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 65\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json-seq\"}" eof)
+# of expected passes      426
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 426, fail 3, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

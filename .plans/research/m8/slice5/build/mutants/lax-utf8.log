@@ -1,0 +1,11 @@
+%%%% Starting test origin
+FAIL http /json, a POST with both headers and a string holding the byte 0xFF: 400, not-utf-8, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"error\":\"not-utf-8\",\"bytes\":3}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 91\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":3,\"json\":\"ï¿½\"}" eof)
+FAIL http /json, a POST with both headers and a string holding ED A0 80, an encoded surrogate: 400, not-utf-8, its byte count: the whole answer, then eof
+  expected: ("HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"error\":\"not-utf-8\",\"bytes\":5}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 97\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":5,\"json\":\"ï¿½ï¿½ï¿½\"}" eof)
+# of expected passes      427
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 427, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

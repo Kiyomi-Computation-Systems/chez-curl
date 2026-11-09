@@ -1,0 +1,4 @@
+check-pins: chez-srfi 7879b52: Akku.lock, the recorded commit and the checkout agree
+check-pins: ./vendor/jsonparse 2e3ae12bc1c34230b00f00363d4d8ae9ff26f7d0: the recorded commit and the checkout agree
+check-pins: PIN DRIFT: vendor/jsonparse records c1f77911efb55030df0b2cd811903d74d2ba3d64 for vendor/byte-machine, but vendor/jsonparse/vendor/byte-machine is checked out at 1b6f3e651e45dbca69dabe94e61c78ab6f4d08f6. To restore it, run 'git submodule update --init --recursive vendor/jsonparse' on the host.
+make: *** [Makefile:278: check-pins] Error 1

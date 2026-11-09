@@ -1285,6 +1285,7 @@
                '("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n" eof))))
   (sink-scenarios o)
   (parts-scenarios o)
+  (json-scenarios o)
   (duplex-scenarios o))
 
 ;; --- the parts route (M8 slice 3) -------------------------------------------------
@@ -1418,6 +1419,212 @@
                         "/parts?key=pt-refused&fail=11" "/parts?key=pt-refused&x=1")))
            (seen (seen-of o "pt-refused")))
       (append rows (list seen)))))
+
+;; --- the JSON route (the M8 plan, section 3.10) ------------------------------------
+;; Each answer's body is written out here, by the route's rule, as the bytes
+;; JSON.stringify writes; each request is built here, byte by byte.
+
+;; json-head : String String -> String
+;; The http face's head of STATUS, its status line's code and reason, for
+;; the JSON BODY, its bytes each a char, as Latin-1 reads them, with
+;; Connection: close.
+(define (json-head status body)
+  (string-append "HTTP/1.1 " status "\r\nContent-Type: application/json\r\nContent-Length: "
+                 (number->string (string-length body)) "\r\nConnection: close\r\n\r\n"))
+
+;; json-answer : String String -> (List String Symbol)
+;; The http face's whole answer of STATUS with the JSON BODY, its bytes
+;; each a char, as Latin-1 reads them: its head, then BODY; then eof.
+(define (json-answer status body)
+  (list (string-append (json-head status body) body) 'eof))
+
+;; json-h2 : String
+;; Node's own HTTP/2 client, run as node -e JSON-H2 HOST PORT against h2c:
+;; on one session, one after another, a GET of /json?page=2 with Accept:
+;; application/json; a POST of /json with that Accept, Content-Type:
+;; application/json and the body [1, 2]; and a GET of /json with no Accept.
+;; It prints one line, a list of each answer as (STATUS TYPE LENGTH BODY),
+;; TYPE and LENGTH its content-type and content-length, or #f, and BODY a
+;; string, as Chez reads it, and exits 0; an error prints (failed CODE), and
+;; 10 s on it prints (deadline); either exits 1.
+(define json-h2
+  (string-append
+   "const http2 = require('node:http2');"
+   "const [host, port] = process.argv.slice(1);"
+   "const fail = (code) => { console.log(`(failed ${code})`); process.exit(1); };"
+   "setTimeout(() => { console.log('(deadline)'); process.exit(1); }, 10000);"
+   "const session = http2.connect(`http://${host}:${port}`);"
+   "session.on('error', (err) => fail(err.code));"
+   "const field = (v) => (v === undefined ? '#f' : JSON.stringify(v));"
+   "const ask = (headers, body) => new Promise((resolve) => {"
+   "  const s = session.request(headers); let head = null; const chunks = [];"
+   "  s.on('response', (h) => { head = h; });"
+   "  s.on('data', (c) => chunks.push(c));"
+   "  s.on('end', () => resolve(`(${head[':status']} ${field(head['content-type'])} ${field(head['content-length'])} ${JSON.stringify(Buffer.concat(chunks).toString('latin1'))})`));"
+   "  s.on('error', (err) => fail(err.code));"
+   "  s.end(body);"
+   "});"
+   "(async () => {"
+   "  const out = [];"
+   "  out.push(await ask({ ':method': 'GET', ':path': '/json?page=2', accept: 'application/json' }));"
+   "  out.push(await ask({ ':method': 'POST', ':path': '/json', accept: 'application/json',"
+   "                       'content-type': 'application/json' }, '[1, 2]'));"
+   "  out.push(await ask({ ':method': 'GET', ':path': '/json' }));"
+   "  session.close(); console.log(`(${out.join(' ')})`); process.exit(0);"
+   "})().catch((err) => fail(err.code));"))
+
+(define (json-scenarios o)
+  (define accept-json "Accept: application/json\r\n")
+  (define ct-json "Content-Type: application/json\r\n")
+  ;; with-body : String String String String ... -> String
+  ;; METHOD of TARGET, with these header lines after Host, then
+  ;; Content-Length, Connection: close, and BODY.
+  (define (with-body method target body . headers)
+    (apply string-append method " " target " HTTP/1.1\r\nHost: 127.0.0.1\r\n"
+           (append headers (list "Content-Length: " (number->string (string-length body)) "\r\n" close "\r\n"
+                                 body))))
+  (define (json-row name request want)
+    (test-equal (string-append "http /json, " name ": the whole answer, then eof")
+      want
+      (exchange o 'http request 2000)))
+  (define post-ada "{ \"name\": \"Ada\", \"n\": [1, 2.5, null, true] }")
+  (define ada-201
+    (json-answer "201 Created"
+                 (string-append "{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\","
+                                "\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}")))
+  ;; --- Accept
+  (json-row "a GET with Accept: application/json: 200, its method, target and Accept"
+            (get "/json" accept-json close)
+            (json-answer "200 OK" "{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}"))
+  (for-each
+   (lambda (row)
+     (json-row (string-append "a GET with " (car row) ": 406, the Accept it got")
+               (apply get "/json" (append (cadr row) (list close)))
+               (json-answer "406 Not Acceptable"
+                            (string-append "{\"error\":\"not-acceptable\",\"accept\":" (caddr row) "}"))))
+   '(("no Accept" () "null")
+     ("Accept: */* alone, which libcurl sends unless told" ("Accept: */*\r\n") "\"*/*\"")
+     ("Accept: text/html" ("Accept: text/html\r\n") "\"text/html\"")
+     ("Accept: application/json-seq, a type that only begins application/json"
+      ("Accept: application/json-seq\r\n") "\"application/json-seq\"")))
+  (for-each
+   (lambda (row)
+     (json-row (string-append "a GET with " (car row) ": 200, the Accept it got")
+               (apply get "/json" (append (cadr row) (list close)))
+               (json-answer "200 OK" (string-append "{\"method\":\"GET\",\"target\":\"/json\",\"accept\":"
+                                                    (caddr row) "}"))))
+   '(("application/json's parameters, q among them" ("Accept: application/json; q=0.5;v=1\r\n")
+      "\"application/json; q=0.5;v=1\"")
+     ("several ranges, application/json the second" ("Accept: text/html,  application/json\t,*/*\r\n")
+      "\"text/html,  application/json\\t,*/*\"")
+     ("Application/JSON, in another case" ("Accept: Application/JSON\r\n") "\"Application/JSON\"")
+     ("two Accept lines, application/json the second's, joined by a comma"
+      ("Accept: text/html\r\n" "accept: application/json\r\n") "\"text/html, application/json\"")
+     ("Accept: application/json;q=0, its q ignored as every parameter is" ("Accept: application/json;q=0\r\n")
+      "\"application/json;q=0\"")
+     ("Accept and Content-Type: text/plain, which a GET's answer never reads"
+      ("Accept: application/json\r\n" "Content-Type: text/plain\r\n") "\"application/json\"")))
+  (json-row "a GET of /json?page=2&q=a%20b: 200, its target as received, the query in it"
+            (get "/json?page=2&q=a%20b" accept-json close)
+            (json-answer "200 OK"
+                         "{\"method\":\"GET\",\"target\":\"/json?page=2&q=a%20b\",\"accept\":\"application/json\"}"))
+  (let ((twice (json-answer "200 OK" "{\"method\":\"GET\",\"target\":\"/json?twice=1\",\"accept\":\"application/json\"}")))
+    (test-equal "http /json: the same GET twice gets the same bytes, as nothing is kept"
+      (list twice twice)
+      (in-order (lambda (n) (exchange o 'http (get "/json?twice=1" accept-json close) 2000)) '(1 2))))
+  (json-row "a HEAD with Accept: the 200's head, its Content-Type and its Content-Length, and no body"
+            (string-append "HEAD /json HTTP/1.1\r\nHost: 127.0.0.1\r\n" accept-json close "\r\n")
+            (list (json-head "200 OK" "{\"method\":\"HEAD\",\"target\":\"/json\",\"accept\":\"application/json\"}")
+                  'eof))
+  ;; --- a body: Content-Type, then the body
+  (json-row "a POST with both headers and a JSON body: 201, the body parsed, its byte count, and what came with it"
+            (with-body "POST" "/json?x=1" post-ada accept-json ct-json)
+            ada-201)
+  (test-equal "http /json: the same POST twice gets the same bytes, as nothing is kept"
+    (list ada-201 ada-201)
+    (in-order (lambda (n) (exchange o 'http (with-body "POST" "/json?x=1" post-ada accept-json ct-json) 2000))
+              '(1 2)))
+  (for-each
+   (lambda (row)
+     (json-row (string-append "a POST with " (car row) ": 201, the Content-Type it got")
+               (with-body "POST" "/json" "[]" accept-json (cadr row))
+               (json-answer "201 Created" (string-append "{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":"
+                                                         (caddr row) ",\"bytes\":2,\"json\":[]}"))))
+   '(("Content-Type: application/json; charset=utf-8" "Content-Type: application/json; charset=utf-8\r\n"
+      "\"application/json; charset=utf-8\"")
+     ("Content-Type: Application/Json, in another case" "Content-Type: Application/Json\r\n"
+      "\"Application/Json\"")))
+  (json-row "a PATCH with both headers: 201, as a POST is"
+            (with-body "PATCH" "/json" "{}" accept-json ct-json)
+            (json-answer "201 Created"
+                         "{\"method\":\"PATCH\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":2,\"json\":{}}"))
+  (json-row "a PUT of malformed JSON with both headers: 400, not-json, as a POST's is"
+            (with-body "PUT" "/json" "[1," accept-json ct-json)
+            (json-answer "400 Bad Request" "{\"error\":\"not-json\",\"bytes\":3}"))
+  (json-row "a PUT of JSON with both headers: 201, the body parsed"
+            (with-body "PUT" "/json" "[1, {\"a\": null}]" accept-json ct-json)
+            (json-answer "201 Created"
+                         "{\"method\":\"PUT\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":16,\"json\":[1,{\"a\":null}]}"))
+  ;; U+00E9 is C3 A9 in UTF-8, and U+1F600 F0 9F 98 80; JSON.stringify
+  ;; writes both as they are, so the answer's UTF-8 holds the same bytes.
+  (json-row "a POST of a string holding U+00E9 and U+1F600, as UTF-8: 201, the body's 14 bytes, and the string back as UTF-8 bytes"
+            (with-body "POST" "/json" "{\"s\":\"\xc3;\xa9;\xf0;\x9f;\x98;\x80;\"}" accept-json ct-json)
+            (json-answer "201 Created"
+                         (string-append "{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\","
+                                        "\"bytes\":14,\"json\":{\"s\":\"\xc3;\xa9;\xf0;\x9f;\x98;\x80;\"}}")))
+  (json-row "a POST with two Content-Type lines, application/json then text/plain: 415, the two read joined"
+            (with-body "POST" "/json" "{}" accept-json ct-json "Content-Type: text/plain\r\n")
+            (json-answer "415 Unsupported Media Type"
+                         "{\"error\":\"unsupported-media-type\",\"content-type\":\"application/json, text/plain\"}"))
+  (json-row "a PUT with no Content-Type: 415, as a POST's is"
+            (with-body "PUT" "/json" "{}" accept-json)
+            (json-answer "415 Unsupported Media Type" "{\"error\":\"unsupported-media-type\",\"content-type\":null}"))
+  (json-row "a DELETE with a body that is no JSON and no Content-Type: 200, its body unread"
+            (with-body "DELETE" "/json" "x" accept-json)
+            (json-answer "200 OK" "{\"method\":\"DELETE\",\"target\":\"/json\",\"accept\":\"application/json\"}"))
+  (for-each
+   (lambda (row)
+     (json-row (string-append "a POST of {} with " (car row) ": 415, the Content-Type it got")
+               (apply with-body "POST" "/json" "{}" accept-json (cadr row))
+               (json-answer "415 Unsupported Media Type"
+                            (string-append "{\"error\":\"unsupported-media-type\",\"content-type\":" (caddr row) "}"))))
+   '(("no Content-Type" () "null")
+     ("Content-Type: text/plain" ("Content-Type: text/plain\r\n") "\"text/plain\"")
+     ("Content-Type: application/json-patch+json" ("Content-Type: application/json-patch+json\r\n")
+      "\"application/json-patch+json\"")))
+  (for-each
+   (lambda (row)
+     (json-row (string-append "a POST with both headers and " (car row) ": 400, " (cadr row) ", its byte count")
+               (with-body "POST" "/json" (caddr row) accept-json ct-json)
+               (json-answer "400 Bad Request"
+                            (string-append "{\"error\":\"" (cadr row) "\",\"bytes\":"
+                                           (number->string (string-length (caddr row))) "}"))))
+   '(("a trailing comma" "not-json" "{\"a\":1,}")
+     ("no body" "not-json" "")
+     ("a byte-order mark before {}" "not-json" "\xef;\xbb;\xbf;{}")
+     ("a string holding the byte 0xFF" "not-utf-8" "\"\xff;\"")
+     ("a string holding ED A0 80, an encoded surrogate" "not-utf-8" "\"\xed;\xa0;\x80;\"")))
+  ;; --- the rules' order
+  (json-row "a POST with no Accept, Content-Type: text/plain, and a body that is no JSON: 406, Accept read first"
+            (with-body "POST" "/json" "{" "Content-Type: text/plain\r\n")
+            (json-answer "406 Not Acceptable" "{\"error\":\"not-acceptable\",\"accept\":null}"))
+  (json-row "a POST with Accept, Content-Type: text/plain, and a body that is no JSON: 415, Content-Type read before the body"
+            (with-body "POST" "/json" "{" accept-json "Content-Type: text/plain\r\n")
+            (json-answer "415 Unsupported Media Type"
+                         "{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}"))
+  ;; --- HTTP/2, on h2c, through Node's own client
+  (test-equal "h2c /json, through Node's client: a GET with Accept 200, its :path whole, query in, as target; a POST 201; a GET without Accept 406; each content-type application/json and its content-length"
+    (map (lambda (row)
+           (list (car row) "application/json" (number->string (string-length (cadr row))) (cadr row)))
+         '((200 "{\"method\":\"GET\",\"target\":\"/json?page=2\",\"accept\":\"application/json\"}")
+           (201 "{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":6,\"json\":[1,2]}")
+           (406 "{\"error\":\"not-acceptable\",\"accept\":null}")))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((f (origin-face o 'h2c))
+             (r (capture-command (list node "-e" json-h2 (car f) (number->string (cdr f))))))
+        (if (= (car r) 0)
+            (read (open-string-input-port (cadr r)))
+            (list 'exit r))))))
 
 ;; --- the sinks (the M6 plan, slice 2) -------------------------------------------
 ;; Each test has keys of its own: the counts live as long as the origin, and

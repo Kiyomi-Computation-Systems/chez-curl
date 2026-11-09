@@ -1,0 +1,11 @@
+gh run view 42514375367 (PR #53 at ff8bf31), jobs: name, conclusion, started, completed
+success
+nothreads (every public library is refused on a Chez without threads)	success	2026-11-08T19:18:39Z	2026-11-08T19:19:11Z
+memory-1 (the Valgrind gate, shard 1 of 2)	success	2026-11-08T19:18:39Z	2026-11-08T19:36:40Z
+memory-2 (the Valgrind gate, shard 2 of 2)	success	2026-11-08T19:18:38Z	2026-11-08T19:36:15Z
+floor-disabled-api (header API disabled, make build must refuse it)	success	2026-11-08T19:18:38Z	2026-11-08T19:19:50Z
+current (the suites against the current libcurl, built from source)	success	2026-11-08T19:18:39Z	2026-11-08T19:31:03Z
+gnutls (the suites against the runner's GnuTLS libcurl)	success	2026-11-08T19:18:39Z	2026-11-08T19:29:23Z
+main (checks and suites, Chez built from source)	success	2026-11-08T19:18:39Z	2026-11-08T19:31:14Z
+floor (the suites against libcurl at its floor)	success	2026-11-08T19:18:39Z	2026-11-08T19:28:48Z
+floor-disabled-api (options API disabled, make build must refuse it)	success	2026-11-08T19:18:39Z	2026-11-08T19:19:57Z

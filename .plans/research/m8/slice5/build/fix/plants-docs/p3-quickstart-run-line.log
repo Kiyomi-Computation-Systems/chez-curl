@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a run line naming another library path than its example's head, as (page where line name libdirs head):
+  ("docs/quickstart.md" block 81 "quick-start" "src:build/scheme-libs" "src")
+FAIL every run line of an example a page writes, in a block or a code span, names the library path that example's head comment names; the scan finds one of each
+  expected: (block code ())
+  actual:   (block code (("docs/quickstart.md" block 81 "quick-start" "src:build/scheme-libs" "src")))
+# of expected passes      45
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 45, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

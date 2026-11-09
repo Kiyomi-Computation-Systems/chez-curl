@@ -1,0 +1,7 @@
+%%%% Starting test origin
+FAIL http /json, a GET with Accept and Content-Type: text/plain, which a GET's answer never reads: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 61\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}" eof)
+  actual:   ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 62\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"text/plain\"}" eof)
+# of expected passes      437
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 437, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

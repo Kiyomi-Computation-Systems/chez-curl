@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a reason table's first-column code that no -reasons list holds, as (page code):
+  ("docs/headers-and-json.md" "framing-headers")
+FAIL every code span in the first column of a table headed Reason or Reasons is a reason a -reasons list of the code's holds; the scan finds some
+  expected: (checked ())
+  actual:   (checked (("docs/headers-and-json.md" "framing-headers")))
+# of expected passes      45
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 45, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

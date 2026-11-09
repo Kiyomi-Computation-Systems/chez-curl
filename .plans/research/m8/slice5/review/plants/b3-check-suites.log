@@ -1,0 +1,3 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse/src/jsonparse/easy.sls not found, so a submodule is empty or missing. Run 'git submodule update --init --recursive vendor/jsonparse' on the host: make deps never fetches, and the container has no network.
+make: *** [Makefile:234: deps] Error 1

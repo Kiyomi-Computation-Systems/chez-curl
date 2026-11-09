@@ -1,0 +1,6 @@
+%%%% Starting test docs
+# of expected passes      42
+exit 0
+%%%% Starting test reference
+# of expected passes      21
+exit 0

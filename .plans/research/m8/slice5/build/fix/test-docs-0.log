@@ -1,0 +1,8 @@
+%%%% Starting test docs
+FAIL every run line of an example a page writes, in a block or a code span, names the library path that example's head comment names; the scan finds one of each
+  expected: (block code ())
+  actual:   (block no-code ())
+# of expected passes      45
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 45, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

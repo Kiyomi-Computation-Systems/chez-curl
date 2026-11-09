@@ -8,20 +8,29 @@ close-out under **Close-outs**, newest first.
 
 - **M8, multipart, the header cap, the docs and v0.1.0:** in progress. The
   [M8 plan](2026-11-06-m8-plan.md) merged as PR #49 (`74d7aca`), CI passing all eight jobs on it.
-  Five slices: the memory job in two; the header cap; multipart; the docs; the release. Slices 1
-  to 3 are merged: the memory job in two as PR #50 (`9fdb9f3`), the header cap as PR #51
-  (`bd54721`), multipart as PR #52 (`fb62a0b`); their close-outs are below. Slice 4, the docs (the
-  plan, §3.5 and §7), is in progress on `feat/m8-docs`: measured first, the docs survey's tables
-  again on the merged surface ([research](research/m8/slice4/)), 194 exports, 45 promises and
-  M8's 23 more; then built by two builders on disjoint files, README.org, 14 pages, the reference,
-  ten examples and three suites; reviewed (Opus, read-only), no blocker and seven majors, each
-  reproduced and fixed, and thirteen minors. The suites now fail on 9 of the review's 13 planted
-  faults; a wrong type, a wrong "Raises", a wrong page and a fragment's wrong answer only a reading
-  of the code catches. The CI main chain passed in the container, 46 of 46, and the Mac's `make
-  test` at `ad0cfb0`, 46 of 46, the examples' 45 tests among them
-  ([log](research/m8/slice4/mac/mac-8.7.1-make-test.log)). The measurement's nine questions were the plan's design or the
-  records', each taken as recommended (ADR-0038, amended 2026-11-08; the plan's §3.5 and §3.8
-  corrected).
+  Six slices now: the memory job in two; the header cap; multipart; the docs; headers and JSON;
+  the release. Slices 1 to 4 are merged: the memory job in two as PR #50 (`9fdb9f3`), the header
+  cap as PR #51 (`bd54721`), multipart as PR #52 (`fb62a0b`), the docs as PR #53 (`9d2f573`);
+  their close-outs are below. Slice 5, headers and JSON, is in progress on
+  `feat/m8-headers-json`. The Mac needs `git submodule update --init --recursive` once there
+  before `make test`: `make deps` now links jsonparse too (ADR-0041). Built: jsonparse at
+  `2e3ae12b` and its links and pins; the origin's `/json` route; `examples/json-api.sps`;
+  `docs/headers-and-json.md`; `test-examples` holding imports and run lines by example, each
+  child run with its run line's path; `test-docs` holding every run line a page writes, and
+  every reason a Reason table names. Reviewed (Opus, read-only): no blocker; one major, eight of
+  its nine route mutants passing `test-origin`, reproduced and fixed; six wrong or partial page
+  claims, read against the code and fixed; the records corrected. The CI main chain passed in
+  the container, 46 of 46, `check-memory-gate`'s 45 cases, and three suites under the gate; the
+  two changed suites on the four Docker libcurls under Node 20.10.0 and 22.23.4
+  ([research](research/m8/slice5/)). The example's media-type helper's parameter rule is held
+  by no test: the route sends the bare type. The Mac's `make test` at `8779295`: 44 of 46 in a
+  run the laptop slept through, a raw-face exchange and an h2c probe each past its 10 s or 30 s
+  deadline ([log](research/m8/slice5/mac/mac-8.7.1-make-test-slept.log)); then, kept awake by
+  `caffeinate -i`, 46 of 46, `test-examples` 49 and `test-origin` 437
+  ([log](research/m8/slice5/mac/mac-8.7.1-make-test-2.log)).
+  - **Decided by the maintainer, 2026-11-08,** each the recommended option: a slice before the
+    release, headers and a JSON API, so 0.1.0's docs hold it; jsonparse as one pinned submodule,
+    byte-machine nested in it, a dependency of one example alone; one page, Headers and JSON.
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
@@ -259,6 +268,55 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-08 — M8 slice 4: the user docs (PR #53, `9d2f573`)
+
+- **Measured first** ([`research/m8/slice4/`](research/m8/slice4/)): the docs survey's tables
+  again, on the merged surface. 194 exports, each with a signature comment, 3 of which disagreed
+  with their code and 12 in part; the records' 45 promises that a thing is documented, and M8's 23
+  more, of which README.org kept 24 and none; 312 of README.org's claims read against the code, one
+  wrong; 104 per-version rows a caller can meet.
+- **Decided,** each the measurement's recommended option, the plan's design or the records': an
+  example's native counts come from a wrapper, so an example imports public libraries alone; a
+  record's "documented in README.org" is kept by the docs (ADR-0038, amended 2026-11-08); the
+  plan's §3.5 and §3.8 corrected.
+- **Built** (the plan, §3.5), by two builders on disjoint files from one brief: README.org, cut to
+  about 100 lines; 14 pages and `docs/reference.md`, an entry for each export; ten examples and
+  their expected output; `tests/test-examples.sps`, 45 tests, each example run twice against one
+  origin through `tests/example-runner.sps`, with a leaking control; `tests/test-reference.sps`,
+  21 tests, the entries held to `library-exports` and each key table to the code's lists;
+  `tests/test-docs.sps`, 42 tests, every block's language, example and output blocks as runs of
+  their files, names, links and anchors, the index, history words; six signature comments.
+- **Watched failing:** four mutants of mine, two of which survived the build: a runner that printed
+  its counts too early, and a Scheme block without its info string. Both are caught now.
+- **Reviewed** (Opus, read-only): no blocker; seven majors, each reproduced and fixed, among them a
+  failure's class moving with the libcurl, a file part read again on each retry, an example that
+  printed differently when run again against one origin, and 13 planted faults that passed the
+  suites. The suites now fail on 9 of them; a wrong type, a wrong "Raises", a wrong page and a
+  fragment's wrong answer only a reading of the code catches. Thirteen minors, answered.
+- **Checked:** CI's main chain in the container, 46 of 46, `check-test-fails`, `check-variadic` and
+  `check-memory-gate`, the three suites under the gate; the examples on the Docker lanes under Node
+  20.10.0 and 22.23.4; the Mac's `make test` at `ad0cfb0`, 46 of 46
+  ([log](research/m8/slice4/mac/mac-8.7.1-make-test.log)).
+- **CI:** at `ff8bf31`, all nine passed ([jobs](research/m8/slice4/ci/pr53-run-42514375367-jobs.txt)):
+  `memory-1` 18 min 1 s, `memory-2` 17 min 37 s. `main`'s push run for `9d2f573` (42516364435)
+  passed all nine ([jobs](research/m8/slice4/ci/main-run-42516364435-jobs.txt)): `memory-1`
+  21 min 16 s, `memory-2` 21 min 29 s.
+- **Subagents,** each Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | measure | 638k, and 2.1M across five agents it launched unasked | 33 min |
+  | builder A, the pages and examples | 515k | 37 min |
+  | builder B, the reference and checks | 493k | 41 min |
+  | adversarial review | 482k | 27 min |
+  | fix round, A and B | 614k and 631k | 14 and 38 min |
+- **Learned:**
+  - a structural check of docs passes wrong prose: the review's reading against the code found the
+    majors, and plants that asked what wrong docs pass found 13 holes my mutants did not;
+  - a flaw in a shared brief reaches every builder: it left output blocks unchecked;
+  - run a test as a reader runs it: one run per fresh origin hid an example's rerun;
+  - every brief says "launch no agents of your own".
 
 ### 2026-11-08 — M8 slice 3: multipart bodies of fields and files (PR #52, `fb62a0b`)
 

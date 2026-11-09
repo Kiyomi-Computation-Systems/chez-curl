@@ -1,0 +1,17 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-seam-exit=0
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+check-suites: every suite ends with (exit (suite-exit-status runner)) (2 checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-examples.sps
+%%%% Starting test examples
+# of expected passes      49
+test: pass tests/test-examples.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      429
+test: pass tests/test-origin.sps
+test: ran 2, passed 2, failed 0, hung 0

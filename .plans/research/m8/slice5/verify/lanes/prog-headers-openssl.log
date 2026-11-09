@@ -1,0 +1,230 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+== get, nothing named
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+
+
+== head is not shown: no body
+GET /echo?as=get HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+
+
+== post, a bytevector body
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Length: 2
+
+{}
+== post, a string body
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Length: 2
+
+{}
+== post, no body
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Length: 0
+
+
+== put, a body
+PUT /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Length: 1
+
+x
+== delete, no body
+DELETE /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+
+
+== post, a form
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 3
+
+a=b
+== get, Accept empty
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: 
+
+
+== get, X-Empty empty
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+X-Empty: 
+
+
+== get, user-agent probe/1
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+User-Agent: probe/1
+Accept: */*
+
+
+== get, User-Agent header hdr/1
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+User-Agent: hdr/1
+
+
+== get, Host header
+GET /echo HTTP/1.1
+Host: example.test
+Accept: */*
+
+
+== get, accept lower case
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+accept: text/plain
+
+
+== post, Content-Type empty
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Type: 
+Content-Length: 2
+
+{}
+== post, Expect empty
+
+== post, a producer, no body-length
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Transfer-Encoding: chunked
+
+abc
+== post, a producer, body-length 3
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Length: 3
+
+abc
+== h2c get, prior knowledge, nothing named
+:method: GET
+:scheme: http
+:authority: 127.0.0.1:37633
+:path: /echo
+accept: */*
+
+
+== h2c post, a body
+:method: POST
+:scheme: http
+:authority: 127.0.0.1:37633
+:path: /echo
+accept: */*
+content-length: 2
+
+{}
+== session X-A, Accept, User-Agent; call nothing
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+X-A: 1
+Accept: application/json
+User-Agent: sess/1
+
+
+== session's; call x-a 2
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: application/json
+User-Agent: sess/1
+x-a: 2
+
+
+== session's; call user-agent call/1
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+User-Agent: call/1
+X-A: 1
+Accept: application/json
+
+
+== session's; call Accept empty
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+X-A: 1
+User-Agent: sess/1
+Accept: 
+
+
+== session user-agent; call nothing
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+User-Agent: sess-agent/1
+Accept: */*
+
+
+== session user-agent; call User-Agent header
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+User-Agent: hdr/2
+
+
+== low level get, X-Low
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+X-Low: 1
+
+
+== low level post, no body
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Length: 0
+
+
+== low level post, bytes
+POST /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: */*
+Content-Length: 2
+
+{}
+== low level get, two Accept
+GET /echo HTTP/1.1
+Host: 127.0.0.1:39043
+Accept: a
+Accept: b
+
+
+== refusals
+("name with a space" (refused header-name not-a-token))
+("empty name" (refused header-name not-a-token))
+("value CR" (refused header-value line-break))
+("value NUL" (refused header-value embedded-nul))
+("value above U+00FF" (refused header-value not-latin-1))
+("value leading space" (refused header-value surrounding-whitespace))
+("value trailing tab" (refused header-value surrounding-whitespace))
+("value inner space" accepted)
+("value Latin-1 e acute" accepted)
+("User-Agent beside user-agent" (refused header-name duplicates-field))
+("two Host" (refused header-name duplicates-field))
+("Content-Length" (refused header-name framing-header))
+("Transfer-Encoding" (refused header-name framing-header))
+("Proxy-Authorization" (refused header-name proxy-authorization-header))
+("user-agent empty" (raised "Exception in make-curl-request: a user agent is a non-empty string or #f with irritant (kind string)"))
+("user-agent leading space" (refused user-agent surrounding-whitespace))
+("high level: name with a space" (refused header-name not-a-token))
+("session: Content-Length" (refused header-name framing-header))
+("two Accept, allowed?" accepted)

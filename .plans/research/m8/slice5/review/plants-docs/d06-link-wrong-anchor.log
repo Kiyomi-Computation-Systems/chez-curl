@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a link whose anchor names no heading of its page, as (page target):
+  ("docs/headers-and-json.md" "high-level.md#timeouts-and-limit")
+FAIL every link's anchor names a heading of the page it links, by GitHub's rule
+  expected: ()
+  actual:   (("docs/headers-and-json.md" "high-level.md#timeouts-and-limit"))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

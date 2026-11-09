@@ -1,0 +1,25 @@
+== control: test-docs exit 0 (0 FAIL lines)
+== d01-wrong-reason: test-docs exit 0
+== d02-wrong-merge-order: test-docs exit 0
+== d03-wrong-output-line: test-docs exit 1
+FAIL every output block is a run of its expected file's whole, consecutive lines, byte for byte
+== d04-link-no-file: test-docs exit 1
+FAIL every relative link in README.org and docs/ names a file or directory of the checkout
+== d05-link-wrong-page: test-docs exit 0
+== d06-link-wrong-anchor: test-docs exit 1
+FAIL every link's anchor names a heading of the page it links, by GitHub's rule
+== d07-wrong-run-line: test-docs exit 0
+== d08-wrong-field: test-docs exit 0
+== d09-wrong-export: test-docs exit 1
+FAIL every name written as chez-curl's, in a fragment or a prose code span, is an export, a key, a reason, a library's, or the fragment's own
+== d10-wrong-cap: test-docs exit 0
+== d11-wrong-json-reason: test-docs exit 0
+== d12-wrong-fragment: test-docs exit 0
+== d13-no-recursive: test-docs exit 0
+== d14-index-run-line: test-docs exit 0
+== d15-wrong-repo: test-docs exit 0
+== d16-wrong-reason-row: test-docs exit 0
+== d17-wrong-refusal-key: test-docs exit 0
+== d18-wrong-ua-rule: test-docs exit 0
+== d19-wrong-example-output-claim: test-docs exit 0
+== d20-wrong-api-name-prose: test-docs exit 0

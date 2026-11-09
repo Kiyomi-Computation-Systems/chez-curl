@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL http /json, a POST with two Content-Type lines, application/json then text/plain: 415, the two read joined: the whole answer, then eof
+  expected: ("HTTP/1.1 415 Unsupported Media Type\r\nContent-Type: application/json\r\nContent-Length: 80\r\nConnection: close\r\n\r\n{\"error\":\"unsupported-media-type\",\"content-type\":\"application/json, text/plain\"}" eof)
+  actual:   ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 88\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":2,\"json\":{}}" eof)
+# of expected passes      437
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 437, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

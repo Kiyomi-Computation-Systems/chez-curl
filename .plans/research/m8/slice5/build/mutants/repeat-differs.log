@@ -1,0 +1,8 @@
+%%%% Starting test origin
+FAIL http /json: the same POST twice gets the same bytes, as nothing is kept
+  expected: (("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof) ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof))
+  actual:   (("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 140\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]},\"again\":true}" eof) ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 140\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]},\"again\":true}" eof))
+# of expected passes      428
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 428, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

@@ -1,0 +1,13 @@
+%%%% Starting test examples
+FAIL examples/group.sps starts #!r6rs, and its one import form names these libraries alone: ((rnrs) (curl) (curl unsupported) (http-client))
+  expected: ("#!r6rs" ())
+  actual:   ("#!r6rs" ((jsonparse easy)))
+FAIL examples/group.sps, run 1 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/group.out byte for byte, and on stderr one counts line, every count zero
+  expected: (0 "(200 201 404)\n(202 203)\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+  actual:   (255 "" "Exception: library (jsonparse easy) not found\n")
+FAIL examples/group.sps, run 2 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/group.out byte for byte, and on stderr one counts line, every count zero
+  expected: (0 "(200 201 404)\n(202 203)\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+  actual:   (255 "" "Exception: library (jsonparse easy) not found\n")
+# of expected passes      46
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 46, fail 3, xpass 0): a suite needs a pass, and no fail or xpass

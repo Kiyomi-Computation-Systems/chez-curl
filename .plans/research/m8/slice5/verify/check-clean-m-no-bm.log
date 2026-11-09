@@ -1,0 +1,4 @@
+check-clean: make deps linked no build/scheme-libs/byte-machine/runtime.sls after make clean
+  | deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+  | deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+make: *** [Makefile:765: check-clean] Error 1

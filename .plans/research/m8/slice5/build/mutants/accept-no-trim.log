@@ -1,0 +1,11 @@
+%%%% Starting test origin
+FAIL http /json, a GET with several ranges, application/json the second: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 79\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"text/html,  application/json\\t,*/*\"}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 72\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"text/html,  application/json\\t,*/*\"}" eof)
+FAIL http /json, a GET with two Accept lines, application/json the second's, joined by a comma: 200, the Accept it got: the whole answer, then eof
+  expected: ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 72\r\nConnection: close\r\n\r\n{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"text/html, application/json\"}" eof)
+  actual:   ("HTTP/1.1 406 Not Acceptable\r\nContent-Type: application/json\r\nContent-Length: 65\r\nConnection: close\r\n\r\n{\"error\":\"not-acceptable\",\"accept\":\"text/html, application/json\"}" eof)
+# of expected passes      427
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 427, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

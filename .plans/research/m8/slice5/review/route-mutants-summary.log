@@ -1,0 +1,17 @@
+== control.test-examples: exit 0
+== control.test-origin: exit 0
+== r01-ct-any-method.test-examples: exit 0
+== r01-ct-any-method.test-origin: exit 0
+== r02-answer-latin1.test-examples: exit 0
+== r02-answer-latin1.test-origin: exit 0
+== r03-repeat-differs-get.test-examples: exit 0
+== r03-repeat-differs-get.test-origin: exit 1
+FAIL h2c /json, through Node's client: a GET with Accept 200, a POST 201, a GET without Accept 406, each content-type application/json and its content-length
+== r04-head-405.test-origin: exit 0
+== r05-get-target-no-query.test-examples: exit 0
+== r05-get-target-no-query.test-origin: exit 0
+== r06-put-no-parse.test-origin: exit 0
+== r07-ct-first-only.test-origin: exit 0
+== r08-h2-path-no-query.test-origin: exit 0
+== r09-accept-q0.test-origin: exit 0
+rc=0

@@ -1,0 +1,23 @@
+%%%% Starting test origin
+FAIL http /json, a POST with both headers and a JSON body: 201, the body parsed, its byte count, and what came with it: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof)
+FAIL http /json: the same POST twice gets the same bytes, as nothing is kept
+  expected: (("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof) ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof))
+  actual:   (("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof) ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 127\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json?x=1\",\"content-type\":\"application/json\",\"bytes\":44,\"json\":{\"name\":\"Ada\",\"n\":[1,2.5,null,true]}}" eof))
+FAIL http /json, a POST with Content-Type: application/json; charset=utf-8: 201, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 103\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json; charset=utf-8\",\"bytes\":2,\"json\":[]}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 103\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json; charset=utf-8\",\"bytes\":2,\"json\":[]}" eof)
+FAIL http /json, a POST with Content-Type: Application/Json, in another case: 201, the Content-Type it got: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 88\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"Application/Json\",\"bytes\":2,\"json\":[]}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 88\r\nConnection: close\r\n\r\n{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"Application/Json\",\"bytes\":2,\"json\":[]}" eof)
+FAIL http /json, a PATCH with both headers: 201, as a POST is: the whole answer, then eof
+  expected: ("HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 89\r\nConnection: close\r\n\r\n{\"method\":\"PATCH\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":2,\"json\":{}}" eof)
+  actual:   ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 89\r\nConnection: close\r\n\r\n{\"method\":\"PATCH\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":2,\"json\":{}}" eof)
+FAIL h2c /json, through Node's client: a GET with Accept 200, a POST 201, a GET without Accept 406, each content-type application/json and its content-length
+  expected: ((200 "application/json" "61" "{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}") (201 "application/json" "91" "{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":6,\"json\":[1,2]}") (406 "application/json" "40" "{\"error\":\"not-acceptable\",\"accept\":null}"))
+  actual:   ((200 "application/json" "61" "{\"method\":\"GET\",\"target\":\"/json\",\"accept\":\"application/json\"}") (200 "application/json" "91" "{\"method\":\"POST\",\"target\":\"/json\",\"content-type\":\"application/json\",\"bytes\":6,\"json\":[1,2]}") (406 "application/json" "40" "{\"error\":\"not-acceptable\",\"accept\":null}"))
+# of expected passes      423
+# of unexpected failures  6
+suite-exit-status: exit 1 (pass 423, fail 6, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

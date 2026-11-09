@@ -1,0 +1,1 @@
+check-clean: ok: make clean removes build/, follows no link out of it, changes nothing else, passes again, and make deps works after it

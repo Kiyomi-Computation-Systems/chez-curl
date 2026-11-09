@@ -42,7 +42,9 @@ What engines do on some libcurls, a stalled name lookup's wait among it, is on
 
 `(make-curl-request URL KEY VALUE ...)` makes a request for an `http://` or
 `https://` URL. Each key is given once at most; each left out takes its
-default, libcurl's own. [Reference](reference.md) lists every key.
+default, libcurl's own. [Reference](reference.md) lists every key, and
+[Headers and JSON](headers-and-json.md) says what `headers` sends and
+refuses.
 
 - **It is checked as you make it:** a key it does not take, one given twice,
   or one with no value is refused by name, `unknown-key`, `repeated-key` or

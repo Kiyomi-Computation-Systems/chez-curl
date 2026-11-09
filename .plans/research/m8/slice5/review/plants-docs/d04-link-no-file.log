@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a link to nothing in the checkout, as (page target):
+  ("docs/headers-and-json.md" "stream.md")
+FAIL every relative link in README.org and docs/ names a file or directory of the checkout
+  expected: ()
+  actual:   (("docs/headers-and-json.md" "stream.md"))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

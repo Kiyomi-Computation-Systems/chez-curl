@@ -1,0 +1,10 @@
+%%%% Starting test docs
+an example block that is no run of its example's lines, as (page line path):
+  ("docs/headers-and-json.md" 119 "examples/json-api.sps")
+FAIL every example block is a run of its example's whole, consecutive lines, byte for byte
+  expected: ()
+  actual:   (("docs/headers-and-json.md" 119 "examples/json-api.sps"))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1
