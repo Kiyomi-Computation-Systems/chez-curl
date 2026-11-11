@@ -1,9 +1,7 @@
 #!r6rs
-;;; The suite for a streamed response at the low level (ADR-0030; the M6
-;;; plan, sections 3.2 to 3.5 and 4.2): a request's stream-buffer, the
-;;; token's head, pieces and port, the engine's resume and its paced poll.
-;;; Each check was watched failing on a mutant before it counted
-;;; (build/m6s1/mutants.md).
+;;; The suite for a streamed response at the low level (ADR-0030): a
+;;; request's stream-buffer, the token's head, pieces and port, the
+;;; engine's resume and its paced poll.
 ;;;
 ;;;   - every byte in order, by next-piece and by the port, over the http,
 ;;;     raw, https and h2 faces; a piece the caller owns; 64 MiB within 60 s;
@@ -14,15 +12,14 @@
 ;;;   - the resume at half the buffer; one resume per pause, and a resume
 ;;;     for a token taken out since, passed over;
 ;;;   - the pause state under stress: a stream-buffer of 1 byte over HTTP/2,
-;;;     a fast consumer; and the window the second review's model found: a
-;;;     take held, by a test seam, between its look and its removal while
-;;;     the write callable pauses, whose next look must queue the resume;
+;;;     a fast consumer; and a window: a take held, by a test seam, between
+;;;     its look and its removal while the write callable pauses, whose
+;;;     next look must queue the resume;
 ;;;   - follow beside stream-buffer, refused, stream-with-rounds, however
 ;;;     the two came together, and the hatch's HTTPAUTH refused as
-;;;     owned-option, the credentials field's since M7 slice 2, whose Digest
-;;;     is digest-with-stream (tests/test-auth.sps), and its PROXYAUTH, the
-;;;     proxy field's since M7 slice 3, whose credentials go by Basic alone;
-;;;     and an Expect
+;;;     owned-option, the credentials field's, whose Digest is
+;;;     digest-with-stream (tests/test-auth.sps), and its PROXYAUTH, the
+;;;     proxy field's, whose credentials go by Basic alone; and an Expect
 ;;;     whose value holds 100-continue, by every path, at submit too, its
 ;;;     rule written out, folding A to Z alone;
 ;;;   - pause-failed: an answer but 0, by a test seam; a refusal planted in
@@ -68,9 +65,9 @@
 ;;; whose scripts close their connections without saying so (ADR-0020).
 ;;;
 ;;; A suite cannot tell whether it runs under the memory gate's Valgrind, so
-;;; every bound holds there too (the plan's section 4.1, as measured). Every
-;;; expected value is one the code under test cannot produce by failing:
-;;; SRFI-64 makes #f of a raise in the actual expression, so none is #f.
+;;; every bound holds there too. Every expected value is one the code under
+;;; test cannot produce by failing: SRFI-64 makes #f of a raise in the
+;;; actual expression, so none is #f.
 (import (rnrs)
         (rnrs mutable-strings)
         (srfi :64)
@@ -305,8 +302,8 @@
 ;; on-engine-for : Symbol (Engine -> Any) -> Any
 ;; PROC's answer, given an engine of its own, as on-own-engine, for the raw
 ;; face, whose scripts close their connections without saying so: no
-;; other check's pool reaches it, nor its pool another check (ADR-0020;
-;; the M6 plan, section 3.8). The suite's engine for any other face.
+;; other check's pool reaches it, nor its pool another check (ADR-0020).
+;; The suite's engine for any other face.
 (define (on-engine-for face proc)
   (if (eq? face 'raw) (on-own-engine make-curl-engine proc) (proc engine)))
 
@@ -356,7 +353,7 @@
 ;; sh -c CHILD-SCRIPT sh COMMAND...: COMMAND, its stdin at its end, under
 ;; GNU timeout (gtimeout on macOS), killed with SIGKILL after 60 s, exit
 ;; 137. The shell's own stderr is /dev/null, so dash's "Killed" is not the
-;; command's (traps.md).
+;; command's.
 (define child-script
   (string-append
    "t=$(command -v timeout || command -v gtimeout) || { echo 'stream child: no timeout' >&2; exit 125; }\n"
@@ -440,7 +437,7 @@
                                                                                  'stream-buffer #f))))))
         (raised (lambda () (curl-request? (curl-request-with-fault (make-curl-request "http://a/" 'stream-buffer 10) 2))))))
 
-;; --- an Expect of 100-continue: a 417 is a second request (the review of slice 1) ----
+;; --- an Expect of 100-continue: a 417 is a second request ----------------------------
 
 ;; method-request : Symbol . (Listof Any) -> Request
 ;; A request of METHOD to http://a/, a body of three bytes where METHOD
@@ -525,7 +522,7 @@
         (ascii-folded "\x17F;\x212A;\x130;\xDF;")
         (expect-continue? '(("Expect" . "100-cont\x130;nue")))))
 
-;; --- no multiplexing on 8.7.0 and 8.7.1 (ADR-0030, amended 2026-10-29) ------------
+;; --- no multiplexing on 8.7.0 and 8.7.1 (ADR-0030) --------------------------------
 
 (test-equal "unmultiplexed-versions, written out here: 8.7.0 and 8.7.1"
   '("8.7.0" "8.7.1")
@@ -645,9 +642,8 @@
                   (if (= (stat t 'taken) 1000000) 'taken-counted (stat t 'taken))))))))
 
   ;; --- throughput: 64 MiB through the write callable and a consumer of
-  ;; pieces, within 60 s, the bound the memory gate's Valgrind needs; the
-  ;; plan measured up to 1.63 s natively and 9.48 s under Valgrind (section
-  ;; 4.1, as measured).
+  ;; pieces, within 60 s, the bound the memory gate's Valgrind needs;
+  ;; measured up to 1.63 s natively and 9.48 s under Valgrind.
   (for-each
    (lambda (face)
      (test-equal (string-append (symbol->string face) ": 64 MiB at a stream-buffer of 65,536 bytes, taken as they come, whole and in order within 60 s")
@@ -771,9 +767,9 @@
                           (if (= passed (curl-engine-passed-resumes engine)) 'none-passed
                               (list passed (curl-engine-passed-resumes engine)))))))))
 
-  ;; The seamed engines resume too (M6 slice 2's measurement, unpaced.sps):
-  ;; resume! read its pause-answer seam by assq, which raised on these
-  ;; engines' bare-symbol seams, failing each at its first resume.
+  ;; The seamed engines resume too: a resume! that read its pause-answer
+  ;; seam by assq would raise on these engines' bare-symbol seams, failing
+  ;; each at its first resume.
   (test-equal "each seamed engine resumes: 1 MiB at a stream-buffer of 1 byte, so every take that drains the buffer resumes it, on make-curl-engine-unpaced's engine and on make-curl-engine-unmultiplexed's, each whole and in order, a 200, resumed"
     '((1048576 in-order eof (response 200 http/1.1 #f) resumed)
       (1048576 in-order eof (response 200 http/1.1 #f) resumed))
@@ -847,12 +843,12 @@
                       'second-piece second)
                   (+ 2000 (car d)) (cadr d) (caddr d)))))))
 
-  ;; --- the resume step holds nothing across curl_easy_pause (the M6 plan,
-  ;; section 3.4): a replay stalled 2 s by a test seam, inside the call, and
-  ;; meanwhile the engine's mutex, the stream's, and a collection, each
-  ;; within 500 ms. A mutex held across the call blocks the first two; a
-  ;; critical section around it keeps the engine's thread active through
-  ;; the stall's sleep, and blocks the collection.
+  ;; --- the resume step holds nothing across curl_easy_pause: a replay
+  ;; stalled 2 s by a test seam, inside the call, and meanwhile the engine's
+  ;; mutex, the stream's, and a collection, each within 500 ms. A mutex held
+  ;; across the call blocks the first two; a critical section around it
+  ;; keeps the engine's thread active through the stall's sleep, and blocks
+  ;; the collection.
   (test-equal "the resume step holds nothing across curl_easy_pause, by behaviour: a replay stalled 2,000 ms by a test seam, inside the call, the resume not yet counted; meanwhile this thread reads the engine's state under its mutex, the stream's stats under its, and collects, each within 500 ms; then 3,000 bytes come whole and in order, on an engine of its own"
     '(stalled-inside-pause engine-free stream-free collects 3000 in-order eof)
     (on-own-engine make-curl-engine
@@ -881,7 +877,7 @@
                 (if (< (- t3 t2) 500000000) 'collects (- t3 t2))
                 (+ 1000 (car rest)) (cadr rest) (caddr rest))))))
 
-  ;; --- pause-failed (ADR-0012, amended 2026-10-29)
+  ;; --- pause-failed (ADR-0012)
   (test-equal "pause-failed: curl_easy_pause's answer but 0, given by a test seam as 43, fails the transfer as pause-failed, its code 43, of no class, its request size counted as one that ran; the piece taken stays the caller's, what the call's replay appended stays readable, in order, then the end"
     (list 'piece '(transfer-error pause-failed 43 none) 'request-size-read 'in-order 'eof running-counts)
     (on-own-engine (lambda () (make-curl-engine-answering-pause 43))
@@ -1094,7 +1090,7 @@
   ;; 50 ms on, so the engine's thread waits in its __collect_safe poll
   ;; between the header callable's calls, and the collector runs there.
   ;; Without lock-object a collection moves the callable's code, and libcurl
-  ;; calls where it was (the M2 plan, section 5.1.1).
+  ;; calls where it was.
   (test-equal "the header callable's lock: ten streamed heads, a 100 and a 103 then the 200, 50 ms apart, beside a thread that collects every 2 ms: each head the 200, each body early, ten collections or more while a transfer was live"
     (list (make-list 10 '(200 "early\n")) 'collected-while-live)
     (on-own-engine make-curl-engine
@@ -1387,7 +1383,7 @@
                 (if (and (> held 0) (= (car d) held) (eq? (cadr d) 'in-order)) 'held-readable (list held d))
                 (caddr d) port-end)))))
 
-  ;; --- the paced poll (ADR-0012, amended 2026-10-29)
+  ;; --- the paced poll (ADR-0012)
   (let ((pause-cpu
          (lambda (make)
            ;; The process's CPU over 2 s while a stream on its own engine is
@@ -1408,11 +1404,11 @@
         (if (and (list? r) (= (length r) 3))
             (list (car r) (cadr r) (if (< (caddr r) 500) 'under-500-ms (caddr r)))
             r)))
-    ;; The control: pacing off, by a test seam. The libcurls the plan
-    ;; measured, by version: 8.5.0 spins, at a core's whole time; the others
-    ;; poll a few times. A libcurl with no row fails, naming its version, and
-    ;; shows what it measured: the expected value names the row it lacks,
-    ;; which no measurement can give.
+    ;; The control: pacing off, by a test seam. The libcurls measured, by
+    ;; version: 8.5.0 spins, at a core's whole time; the others poll a few
+    ;; times. A libcurl with no row fails, naming its version, and shows what
+    ;; it measured: the expected value names the row it lacks, which no
+    ;; measurement can give.
     (let ((spin-rows '(("7.85.0" . quiet) ("8.5.0" . spins) ("8.7.1" . quiet) ("8.20.0" . quiet)
                        ("8.23.0" . quiet))))
       (test-equal (string-append "the paced poll's control: pacing off, by a test seam, the CPU through the same pause, on "
@@ -1586,7 +1582,7 @@
                 (if (for-all (lambda (r) (eq? r failure)) reads) 'raised-twice reads)
                 later (native-counts))))))
 
-  ;; --- the thread rule (§3.8; ADR-0012, decision 4)
+  ;; --- the thread rule (ADR-0012)
   (test-equal "the thread rule: the pieces' consumer, the port's reader and the mailbox's callback each run on this thread, never the engine's; the chunk log, the write callable's, gives each verdict's threads, the engine's alone, on an engine of its own"
     (list 'consumers-here 'callback-here 'log-engine-alone)
     (on-own-engine make-curl-engine
@@ -1650,7 +1646,7 @@
 (define (iota n) (let loop ((i (- n 1)) (acc '())) (if (< i 0) acc (loop (- i 1) (cons i acc)))))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))

@@ -115,7 +115,7 @@
   '(1 "suite-exit-status: exit 1 (pass 0, fail 0, xpass 0): a suite needs a pass, and no fail or xpass\n")
   (verdict (runner-after (lambda () 'no-tests))))
 
-;; --- the counters' rule (ADR-0014, decision 7, amended) ---
+;; --- the counters' rule (ADR-0014) ------------------------
 ;; Each raises counts on purpose, and lowers them again under dynamic-wind,
 ;; so this suite's own exit, which reads the same counts, sees zero.
 
@@ -238,7 +238,7 @@
 ;; sorted-names : String -> (Listof String)
 (define (sorted-names dir) (list-sort string<? (directory-list dir)))
 
-;; --- capture-command from many threads (M3 plan, section 4.2) -------------
+;; --- capture-command from many threads ------------------------------------
 ;; Each capture writes its two files into a directory of its own, which
 ;; Chez's mkdir makes with mode 700 and refuses to make over a name that is
 ;; taken. These rows hold that, and what the directory costs: none left
@@ -2112,9 +2112,9 @@
               '("localhost" "sni.example" #f #f) '("h2,http/1.1" #f "h2" #f)))))))
 
 ;; LibreSSL 3.3.6's s_client polls its stdin with poll(2), and macOS's poll
-;; does not support devices. On the maintainer's Mac, with stdin at /dev/null
-;; it printed "poll error" and exited 1 once connected; with an empty pipe it
-;; printed DONE and exited 0 (measured 2026-10-23).
+;; does not support devices. On macOS, with stdin at /dev/null it printed
+;; "poll error" and exited 1 once connected; with an empty pipe it printed DONE
+;; and exited 0 (measured).
 (test-equal "s-client gives openssl an empty pipe as its stdin, never a device such as /dev/null"
   '("pipe 0\n" "pipe 0\n")
   (guard (e (#t (list 'raised (describe e))))

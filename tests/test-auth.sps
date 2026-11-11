@@ -1,8 +1,7 @@
 #!r6rs
-;;; The suite for a request's server credentials (ADR-0036, amended twice;
-;;; the M7 plan, sections 3.1, 3.3, 3.6, 3.7 and 5.2), at both levels,
-;;; against the test origin's auth route on its http, https and h2 faces,
-;;; and its raw face's 417 loop.
+;;; The suite for a request's server credentials (ADR-0036), at both
+;;; levels, against the test origin's auth route on its http, https and h2
+;;; faces, and its raw face's 417 loop.
 ;;;
 ;;;   - the arithmetic this suite writes its expected headers with, (auth-
 ;;;     testing)'s MD5, SHA-256, base64 and Digest response, held to their
@@ -278,10 +277,9 @@
 ;; loaded libcurl's version and MEASURE's answer: the row's value and the
 ;; measurement; with no row, (a-row-for VERSION), which no measurement
 ;; gives, and (no-row-for VERSION measured M), so the failure names the
-;; version and prints the row it lacks (ADR-0017; AGENTS.md's by-version
-;; trap). TAG names the table, on stdout with the version and the
-;; measurement, as evidence of what ran, and on the error port with the row
-;; a libcurl with none would need.
+;; version and prints the row it lacks (ADR-0017). TAG names the table, on
+;; stdout with the version and the measurement, as evidence of what ran,
+;; and on the error port with the row a libcurl with none would need.
 (define (by-version rows tag measure)
   (let ((row (and (string? version) (assoc version rows)))
         (measured (measure)))
@@ -445,9 +443,9 @@
             (set-cdr! (cddr cycle) cycle)
             (make-curl-request nowhere 'credentials cycle)))))
 
-;; The record keeps a copy, checked, and the accessor answers a fresh copy
-;; (decision 2): a change to the caller's list, its strings, or the
-;; accessor's answer reaches no request.
+;; The record keeps a copy, checked, and the accessor answers a fresh
+;; copy: a change to the caller's list, its strings, or the accessor's
+;; answer reaches no request.
 (test-equal "the copies: the caller's list and strings changed after the request was made, and the accessor's answer changed, the request still answers (basic \"user\" \"pass\"), a fresh list each time"
   '((basic "user" "pass") (basic "user" "pass") (basic "user" "pass") fresh fresh)
   (guard (e (#t (list 'raised (describe e))))
@@ -554,8 +552,8 @@
        '((bearer "") (basic "" "") (digest "" "") (basic "" "p") (basic "u" "") (digest "" "p")
          (digest "u" "") (bearer "t"))))
 
-;; A to Z folded alone (traps.md): a header name is a token, so no char a
-;; wider fold reaches stands in one, and the cases are what differ.
+;; A to Z folded alone: a header name is a token, so no char a wider fold
+;; reaches stands in one, and the cases are what differ.
 (test-equal "credentials-beside-authorization: credentials of each scheme beside a header named Authorization, in four ASCII cases, refused, value the scheme; beside Authorization-X and X-Authorization they pass, and so does an Authorization header with no credentials"
   (append (map (lambda (scheme) (list 'refused 'credentials scheme 'credentials-beside-authorization 'make-curl-request))
                '(basic digest bearer basic basic basic))
@@ -615,8 +613,8 @@
                                             'credentials '(digest "u" "p"))))))
 
 ;; The checks a request's shape makes run again at submit on the submit's
-;; own copies (decision 4): a header name changed after the request was
-;; made to Authorization is refused there.
+;; own copies: a header name changed after the request was made to
+;; Authorization is refused there.
 (test-equal "credentials-beside-authorization is checked again at curl-request-check and at a submit, on their own copies: a header named Authorizatioz, changed to Authorization once the request was made, refused by each as its who, nothing started by the submit; the request as made checks clean"
   (list 'no-raise
         '(refused credentials basic credentials-beside-authorization curl-request-check)
@@ -759,7 +757,7 @@
         (leaked (lambda () (error 'w "a message holding s3cretPass")))
         (leaked (lambda () (error 'w "m" "s3cret")))))
 
-;; --- what a printed request, plan, token or engine shows (the review of M7 slice 2) -------
+;; --- what a printed request, plan, token or engine shows ----------------------------------
 
 ;; printed : Any -> String
 (define (printed x) (call-with-string-output-port (lambda (p) (quietly (lambda () (write x p))))))
@@ -970,7 +968,7 @@
     (list answer (log-of o key))))
 
 
-;; --- the tables of what varies by version (the M7 plan, section 3.7) ------------------
+;; --- the tables of what varies by version ---------------------------------------------
 
 ;; digest-algorithms : (Listof (Pairof String (Listof Cell)))
 ;; Each Digest variant's outcome, by version: the final status, and each
@@ -978,9 +976,8 @@
 ;; SHA-256, SHA-256-sess and SHA-512-256, with qop=auth, and the three
 ;; without -sess with no qop: SHA-512-256 verifies on 8.20.0 and 8.23.0
 ;; alone; 7.85.0 and 8.5.0 send SHA-256's response under
-;; algorithm=SHA-512-256 (the slice's measurement, item 1, two runs on
-;; each lane). 8.7.1's row is the Mac's auth probe's (research/m7/auth/
-;; results/mac-8.7.1-{1,2}.log, D:alg, two runs): every variant 200.
+;; algorithm=SHA-512-256 (measured, two runs on each lane). 8.7.1's row
+;; is from an auth probe on macOS, two runs: every variant 200.
 (define digest-variants
   '(("MD5" "auth") ("MD5" "none") ("MD5-sess" "auth") ("SHA-256" "auth") ("SHA-256" "none")
     ("SHA-256-sess" "auth") ("SHA-512-256" "auth") ("SHA-512-256" "none")))
@@ -1003,15 +1000,13 @@
 
 ;; utf8-digest-user : (Listof (Pairof String Any))
 ;; A Digest user name üser, by the credentials key, sent as UTF-8, with
-;; qop=auth: the final status, each request's verdict and status, and
-;; the username parameter as the origin received it, escaped. 8.23.0
+;; qop=auth: the final status, each request's verdict and status, and the
+;; username parameter as the origin received it, escaped. 8.23.0
 ;; percent-encodes it and hashes the raw bytes, so the origin refuses it;
-;; the rest send the bytes raw (the slice's measurement, bytes87, two
-;; runs on each lane). 8.7.1's row is the Mac's make test's, by the
-;; field's path (research/m7/slice2/results/mac-8.7.1-make-test.log, and
-;; mac-8.7.1-test-auth-2.log, two runs), not its auth probe's, which gave
-;; the name in the URL's userinfo (D:utf8:MD5), a path ADR-0036's Context
-;; has differ.
+;; the rest send the bytes raw (measured, two runs on each lane). 8.7.1's
+;; row is from this suite's run on macOS, by the field's path (two runs),
+;; not from an auth probe's, which gave the name in the URL's userinfo, a
+;; path ADR-0036 has differ.
 (define utf8-digest-user
   (let ((raw '(200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")))
     (list (cons "7.85.0" raw) (cons "8.5.0" raw) (cons "8.7.1" raw) (cons "8.20.0" raw)
@@ -1038,15 +1033,13 @@
 ;; where neither is reported, the request the origin received. 7.85.0
 ;; reports neither part for http://@h/ and http://:@h/, which pass there,
 ;; and send the field's credentials, as every libcurl sent them beside a
-;; URL's userinfo (the auth probe's C:curlu cases); it reports no user for
-;; http://:p@h/, and no password for http://u:@h/, each refused by its
-;; other part. 8.5.0, OpenSSL's and GnuTLS's alike, 8.20.0 and 8.23.0
-;; report "" for an empty part beside an @, so all five are refused there.
-;; Measured by this suite on M7 slice 2's build, two runs on each lane:
-;; Docker ubuntu:24.04 for 7.85.0, both 8.5.0s and 8.23.0, the Guix
-;; container for 8.20.0. 8.7.1's row is the Mac's make test's
-;; (research/m7/slice2/results/mac-8.7.1-make-test.log, and
-;; mac-8.7.1-test-auth-2.log, two runs): as 8.5.0's.
+;; URL's userinfo; it reports no user for http://:p@h/, and no password
+;; for http://u:@h/, each refused by its other part. 8.5.0, OpenSSL's and
+;; GnuTLS's alike, 8.20.0 and 8.23.0 report "" for an empty part beside an
+;; @, so all five are refused there. Measured by this suite, two runs on
+;; each lane: Docker ubuntu:24.04 for 7.85.0, both 8.5.0s and 8.23.0, the
+;; Guix container for 8.20.0. 8.7.1's row is from this suite's run on
+;; macOS, two runs: as 8.5.0's.
 (define empty-userinfo
   (let ((sent-alone '((response 200)
                       ("request 1 face=http conn=A method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz")))
@@ -1065,10 +1058,9 @@
 ;; mib-credentials : (Listof (Pairof String Any))
 ;; A 1 MiB Basic password and Bearer token: the failure, before anything
 ;; is sent, by version: 27 on 7.85.0 and 8.5.0, of no class; 100,
-;; too-large, on 8.20.0 and 8.23.0 (the slice's measurement, bytes96, two
-;; runs on each lane). 8.7.1's row is the Mac's make test's
-;; (research/m7/slice2/results/mac-8.7.1-make-test.log, and
-;; mac-8.7.1-test-auth-2.log, two runs): 100, as 8.20.0's.
+;; too-large, on 8.20.0 and 8.23.0 (measured, two runs on each lane).
+;; 8.7.1's row is from this suite's run on macOS, two runs: 100, as
+;; 8.20.0's.
 (define mib-credentials
   (let ((oom '(((failed perform-failed 27 none) 0) ((failed perform-failed 27 none) 0)))
         (large '(((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0))))
@@ -1162,9 +1154,9 @@
               (cell o 'http kt (string-append "/auth?key=" kt "&ch=bearer") 'credentials '(bearer "wrong"))
               (cell o 'http kd pd 'credentials '(digest "user" "wrong")))))
 
-    ;; ADR-0036, amended (schemes20): the bare probe goes with
-    ;; Content-Length: 0, is answered 200, and the post goes again, its body
-    ;; with it, answered 200. Documented, not refused.
+    ;; ADR-0036: the bare probe goes with Content-Length: 0, is answered
+    ;; 200, and the post goes again, its body with it, answered 200.
+    ;; Documented, not refused.
     (let ((key "digest-open"))
       (test-equal "a Digest post to a server that never challenges is sent twice: the bare probe, no body, answered 200, then the post again with its body, answered 200; a get is one bare request"
         (list (list '(response 200)
@@ -1247,7 +1239,7 @@
                  (response-cell face (face-key "response-bearer" face) bearer))))
        '(http h2)))
 
-    ;; --- a live token's assertion (the review of M7 slice 2) ---
+    ;; --- a live token's assertion ---
 
     ;; The raw face's stall-before-head never answers, so the token stays
     ;; live once its body has ended, where a put is an assertion violation.
@@ -1285,7 +1277,7 @@
                (set-car! (cdr answer) "other"))
              (list (fetched e r) (log-of o key)))))))
 
-    ;; --- MAXREDIRS 30, every transfer's (ADR-0036, decision 8) ---
+    ;; --- MAXREDIRS 30, every transfer's (ADR-0036) ---
 
     ;; The raw face's /raw/auth417 answers 417 to every request carrying
     ;; Expect: 100-continue, keeping the connection: libcurl resends each,
@@ -1324,7 +1316,7 @@
                                (iota-from 2 32)))))
         (cell o 'http key path 'credentials '(digest "user" "pass"))))
 
-    ;; --- what varies by version (the M7 plan, section 3.7) ---
+    ;; --- what varies by version ---
 
     (let ((pair (by-version digest-algorithms "digest-algorithms"
                             (lambda ()
@@ -1506,7 +1498,7 @@
 
         ;; A Location within the origin holding userinfo, beside credentials
         ;; kept: the hop's request is made, and its submit refuses it, as any
-        ;; submit does (ADR-0036, amended). The call fails with that refusal,
+        ;; submit does (ADR-0036). The call fails with that refusal,
         ;; compounded with its &http-exchange, the 302 in its history and one
         ;; transfer. Its neighbour, the same hop with no credentials, is
         ;; followed, and libcurl sends the URL's userinfo, u2:p2, by Basic.
@@ -1590,7 +1582,7 @@
              (native-counts)))))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))

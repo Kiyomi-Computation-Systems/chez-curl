@@ -1,6 +1,6 @@
 #!r6rs
 ;;; (curl private load-state): the load's first failure, kept for the life
-;;; of the process (ADR-0002, decision 3).
+;;; of the process (ADR-0002).
 ;;;
 ;;; (curl private native)'s body is the load. Chez runs a library body that
 ;;; raised a serious condition again at every later reference, so without
@@ -13,8 +13,7 @@
 ;;; After a raise of anything but a serious condition, Chez wedges the
 ;;; library instead: every later reference raises "cyclic dependency
 ;;; involving invocation of library". So load-step makes every raise
-;;; serious before it records it (.plans/traps.md; tests/test-load-state.sps
-;;; measures both).
+;;; serious before it records it (tests/test-load-state.sps measures both).
 ;;;
 ;;; This library's own body defines one variable and some procedures, so it
 ;;; cannot raise, and Chez runs it once. R6RS forbids assigning an exported

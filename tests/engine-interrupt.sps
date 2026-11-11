@@ -1,6 +1,6 @@
 #!r6rs
 ;;; A child of tests/test-engine.sps: Ctrl-C while this thread, the main
-;;; one, awaits a transfer (M3 plan, section 3.4).
+;;; one, awaits a transfer.
 ;;;
 ;;;   engine-interrupt.sps URL
 ;;;

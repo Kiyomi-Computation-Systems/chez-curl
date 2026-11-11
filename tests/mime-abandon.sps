@@ -9,10 +9,9 @@
 ;;; the control. It prints (OUTCOME COUNTS): the transfer's outcome, as
 ;;; data, and every count, once the engine's stop has returned. An abandoned
 ;;; handle keeps its mime, which a live handle could still read: both stay
-;;; counted, for good, so this runs in a process of its own (the M8 plan,
-;;; section 3.4). A transfer to port 9 on 127.0.0.1 never connects before
-;;; the fault, which the first perform raises, and its data part needs no
-;;; file.
+;;; counted, for good, so this runs in a process of its own. A transfer to port
+;;; 9 on 127.0.0.1 never connects before the fault, which the first perform
+;;; raises, and its data part needs no file.
 (import (rnrs)
         (curl)
         (curl private counters)

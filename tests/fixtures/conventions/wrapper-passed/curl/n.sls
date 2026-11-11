@@ -1,5 +1,5 @@
 #!r6rs
-;; The review's A3: apply-binder is handed bind-required as an argument and
+;; Case A3: apply-binder is handed bind-required as an argument and
 ;; puts it at the head, so curl-easy-setopt-long is bound plain, and so is a
 ;; curl_easy_perform with an unmarked u8*. An unused use of bind-variadic
 ;; keeps the count. Each argument is stray.

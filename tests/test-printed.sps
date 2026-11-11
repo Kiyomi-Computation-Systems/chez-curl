@@ -1,7 +1,6 @@
 #!r6rs
 ;;; tests/test-printed.sps: no printed text carries a misplaced value or a
-;;; refused URL (ADR-0036, amended 2026-11-03; ADR-0008, amended 2026-11-03;
-;;; M7 slice 3's review and its fix rounds).
+;;; refused URL (ADR-0036; ADR-0008).
 ;;;
 ;;;   - every export of (curl), (curl unsupported) and (http-client), a row
 ;;;     each, written out here: a condition type's name, syntax; a list of
@@ -11,11 +10,10 @@
 ;;;     exactly, so an export with no row fails; each procedure's answer is
 ;;;     its row's, an accessor's an assertion violation from the accessor
 ;;;     naming the string by its kind, (kind string); and no export, at any
-;;;     arity from 1 to 3, prints the password; nor, handed a cookie jar
-;;;     holding a cookie whose value was loaded and one a server set, a line
-;;;     holding the first, or a session keeping both, as every argument,
-;;;     either value (ADR-0035; the M7 plan, section 3.5: a cookie's value
-;;;     is a secret, as a password is);
+;;;     arity from 1 to 3, prints the password; nor, handed a cookie jar holding
+;;;     a cookie whose value was loaded and one a server set, a line holding the
+;;;     first, or a session keeping both, as every argument, either value
+;;;     (ADR-0035; a cookie's value is a secret, as a password is);
 ;;;   - (curl private libcurl-info)'s own copy of shown-value's rule, which it
 ;;;     cannot import, alike shown-value on each kind;
 ;;;   - every path that refuses a URL, given one holding a password: the
@@ -115,7 +113,7 @@
                (and (irritants-condition? e) (condition-irritants e))))
         (else (list 'other (and (who-condition? e) (condition-who e))))))
 
-;; --- every export, a row (ADR-0036, amended 2026-11-03) ---------------------------------
+;; --- every export, a row (ADR-0036) -----------------------------------------------------
 
 ;; export-rows : (Listof (Pairof Symbol List))
 ;; Written out, by library: (NAME syntax), (NAME value), (NAME none), or
@@ -360,7 +358,7 @@
                  (list (car row) 'none)))))))
 
 ;; in-order : (A -> B) (Listof A) -> (Listof B)
-;; PROC on each of XS, in order: map's order is no order (traps.md).
+;; PROC on each of XS, in order: map's order is no order.
 (define (in-order proc xs)
   (let loop ((rest xs) (found '()))
     (if (null? rest) (reverse found) (loop (cdr rest) (cons (proc (car rest)) found)))))
@@ -392,7 +390,7 @@
           (in-order (lambda (name) (cons name (prints-secret name)))
                     (map car (append curl-rows unsupported-rows http-client-rows)))))
 
-;; --- a cookie's value is never printed (ADR-0035; the M7 plan, section 3.5) ---------------
+;; --- a cookie's value is never printed (ADR-0035) -----------------------------------------
 
 ;; Two cookie values, each a secret: one loaded into the jar, one a server
 ;; set; and a line holding the first, as a load takes it.
@@ -496,7 +494,7 @@
                 (if (and (assertion-violation? e) (irritants-condition? e)) (condition-irritants e) (answer-of e))))
             kinds))
 
-;; --- a refused URL is never printed (ADR-0008, amended 2026-11-03) ----------------------
+;; --- a refused URL is never printed (ADR-0008) ------------------------------------------
 
 ;; url-refusal : (-> Any) -> Any
 ;; What THUNK raised, for a &curl-url-error: (refused IRRITANTS INPUT

@@ -1,9 +1,9 @@
 #!r6rs
-;;; tests/proxy-env.sps: one request through a named proxy, on an engine of
-;;; its own, run in a child Chez of tests/test-proxy.sps, which sets
-;;; no_proxy, NO_PROXY, http_proxy, https_proxy, all_proxy, SSL_CERT_FILE or
-;;; SSL_CERT_DIR for the child alone, through its command, never in its own
-;;; environment (ADR-0024; ADR-0037, decision 2; the M7 plan, section 6.2).
+;;; tests/proxy-env.sps: one request through a named proxy, on an engine of its
+;;; own, run in a child Chez of tests/test-proxy.sps, which sets no_proxy,
+;;; NO_PROXY, http_proxy, https_proxy, all_proxy, SSL_CERT_FILE or SSL_CERT_DIR
+;;; for the child alone, through its command, never in its own environment
+;;; (ADR-0024; ADR-0037).
 ;;;
 ;;;   proxy-env.sps URL PROXY PROXY-CA-FILE PROXY-VERIFY CA-FILE
 ;;;

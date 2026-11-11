@@ -1,6 +1,6 @@
-// tests/origin.mjs: chez-curl's test origin (ADR-0005, amended; M1 plan,
-// sections 3, 4 and 8). One ES module, Node's standard library only, for Node
-// 20 and later (measured on 20.10.0 and 24.18.0).
+// tests/origin.mjs: chez-curl's test origin (ADR-0005). One ES module, Node's
+// standard library only, for Node 20 and later (measured on 20.10.0 and
+// 24.18.0).
 //
 // The contract:
 //   - `node tests/origin.mjs [--pki DIR | --selftest [PLANT]]`. With no
@@ -294,7 +294,7 @@
 //         over TLS its close_notify, ends the connection at the next
 //         immediate, once Node has written what waited on a write it had in
 //         progress. Node's own end came at once, and over TLS lost an
-//         RST_STREAM queued behind the SETTINGS ACK (M7's carried races).
+//         RST_STREAM queued behind the SETTINGS ACK.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
 //         node:https, serving DIR's good, expired, wrong-host and untrusted
@@ -363,14 +363,14 @@
 // Anything else, /chunked, /connects and /close-after included, is 404,
 // "not found\n". No date, and no header beyond these.
 //
-// The parts route (M8 slice 3; the M8 plan, section 6), on http, the https faces, h2c and
-// h2 alike: ANY /parts?key=K[&hold=1][&lines=N][&fail=F], each name once at
-// most, K a key as retry takes it. It counts for K as its head arrives, as /sink does,
-// so /seen?key=K tells that the head came. A request whose Expect holds
+// The parts route, on http, the https faces, h2c and h2 alike: ANY
+// /parts?key=K[&hold=1][&lines=N][&fail=F], each name once at most, K a key as
+// retry takes it. It counts for K as its head arrives, as /sink does, so
+// /seen?key=K tells that the head came. A request whose Expect holds
 // 100-continue, in any ASCII case, gets a 100 at once; with hold=1, only once
 // /raw/release names K, and none once the request has gone. The body is read
-// whole, then the answer is 200 with its report, which a multipart body's
-// parts fill, by the first boundary= of its Content-Type:
+// whole, then the answer is 200 with its report, which a multipart body's parts
+// fill, by the first boundary= of its Content-Type:
 //   parts FACE method=M cl=CL te=TE expect=E ct=CT bytes=N sha256=HEX boundary=B preamble=P closed=C epilogue=Q count=K
 //   part I headers=ESC len=L sha256=H pattern=P data=ESC
 // CL, TE, E and CT as the sink's line; B the boundary, - for none; P the
@@ -387,13 +387,13 @@
 // while K's count, this request's own among it, is F or less, so a retry
 // policy's resends each show what they sent; 200 after.
 //
-// The JSON route (M8 slice 5; the M8 plan, section 3.10), on http, the https
-// faces, h2c and h2 alike: ANY /json, with any query or none, a stand-in for
-// a JSON API that insists on its headers. It counts and keeps nothing, so a
-// request gets the same bytes every time. A header's value is the values of
-// every header of its name, in any case, joined by ", ", each as Node read
-// it, Latin-1; a media type is a value's text before its first ;, spaces and
-// tabs trimmed, A to Z folded. The answer, the first rule that holds:
+// The JSON route, on http, the https faces, h2c and h2 alike: ANY /json, with
+// any query or none, a stand-in for a JSON API that insists on its headers. It
+// counts and keeps nothing, so a request gets the same bytes every time. A
+// header's value is the values of every header of its name, in any case, joined
+// by ", ", each as Node read it, Latin-1; a media type is a value's text before
+// its first ;, spaces and tabs trimmed, A to Z folded. The answer, the first
+// rule that holds:
 //   406 unless Accept, split at each comma, holds a range whose media type is
 //       application/json: */* alone is not enough, and a range's parameters,
 //       q among them, are ignored;
@@ -415,9 +415,8 @@
 //   200  {"method":M,"target":T,"accept":A}
 //   201  {"method":M,"target":T,"content-type":CT,"bytes":N,"json":V}
 //
-// The auth route (M7 slice 2; the M7 plan, section 5.2), on http, the https
-// faces, h2c and h2 alike: ANY /auth, its query NAME=VALUE pairs as /sink's are,
-// each name once at most:
+// The auth route, on http, the https faces, h2c and h2 alike: ANY /auth, its
+// query NAME=VALUE pairs as /sink's are, each name once at most:
 //   key=K    required, as /sink's: the log the request joins
 //   ch=CH    required: the scheme a request must pass, basic, digest or
 //            bearer; or none, a 401 with no challenge, always; or open, a
@@ -488,8 +487,8 @@
 // whose query names key=K counts once for K as its head arrives, and C is
 // K's count as the line is written. A query a route refuses counts nothing.
 //
-// The proxy (M7 slice 3; the M7 plan, section 6.2), on http and the https
-// faces alike. A CONNECT is answered by its target, HOST:PORT:
+// The proxy, on http and the https faces alike. A CONNECT is answered by its
+// target, HOST:PORT:
 //   127.0.0.1:PORT, PORT one of this origin's faces: "HTTP/1.1 200
 //            Connection Established", then both ways piped to that face,
 //            whatever Proxy-Authorization it carries;
@@ -529,10 +528,9 @@
 // open now, then lines N + 1 to L, each ending "\n". The log lives as long
 // as the origin.
 //
-// The cookie route (M7 slice 4; the M7 plan, section 6.4), on http and the
-// https faces alike: ANY /cookies, or any path below it, /cookies/a/b/page
-// say, the path a cookie's default path is made from, its query NAME=VALUE
-// pairs:
+// The cookie route, on http and the https faces alike: ANY /cookies, or any
+// path below it, /cookies/a/b/page say, the path a cookie's default path is
+// made from, its query NAME=VALUE pairs:
 //   key=K      required, once, as /sink's: the log the request joins
 //   status=S   at most once, 200 to 599; 200 when left out
 //   to=TARGET  at most once: a Location header, TARGET decoded as /redirect's
@@ -970,7 +968,7 @@ function summary(face, method, pairs, record, key, list) {
   return `${line.join(' ')}\n`;
 }
 
-// --- the parts route (M8 slice 3) -------------------------------------------
+// --- the parts route --------------------------------------------------------
 
 // partsEscaped: BYTES as the parts report shows them.
 function partsEscaped(bytes) {
@@ -1077,8 +1075,6 @@ function partsContinues(pairs) {
 }
 
 // --- the auth route: Digest's arithmetic, the verdicts, the log ----------
-// The arithmetic, its self-test and its parser are M7 slice 2's stand-in's
-// (.plans/research/m7/slice2/standin.mjs), unchanged but for the plants.
 
 const REALM = 'chez-curl-test';
 const OPAQUE = 'opq5ccb';
@@ -1491,7 +1487,7 @@ function headTracker(face) {
   };
 }
 
-// --- the JSON route (the M8 plan, section 3.10) ---------------------------
+// --- the JSON route -------------------------------------------------------
 
 // JSON_TYPE: the media type /json reads and writes.
 const JSON_TYPE = 'application/json';
@@ -1763,7 +1759,7 @@ httpServer.on('checkContinue', partsContinue(wellFormed('http')));
 httpServer.on('connection', track);
 httpServer.on('connection', headTracker('http'));
 
-// --- the proxy (the M7 plan, section 6.2) ---------------------------------
+// --- the proxy ------------------------------------------------------------
 
 // The proxy's log, its lines in order; its connections, numbered as each
 // becomes the proxy's, and those open now; and each tunnel's live socket
@@ -1954,11 +1950,10 @@ function httpsServer(name, leafOf) {
   return server;
 }
 
-// --- the head routes (M8 slice 2; ADR-0040) ------------------------------
+// --- the head routes (ADR-0040) ------------------------------------------
 //
 // A head's spec, read from a query's pairs, each name once at most, and no
-// other; the same on the raw face and the HTTP/2 faces, as the M8 caps
-// probe's stand-in reads it, so its measured sizes carry over:
+// other; the same on the raw face and the HTTP/2 faces:
 //   n=N      the head's header lines, its framing line among them, 1 to
 //            100000; 1 when left out
 //   line=L   each generated line's bytes as libcurl hands it, CR LF in, 13 to
@@ -2425,7 +2420,7 @@ function h2Stream(face) {
 // the session's write of what waited for it, an RST_STREAM among them. Node's
 // own end, at once, came first: a refusal whose request came in one read with
 // the client's close_notify lost its RST_STREAM, the SETTINGS ACK written
-// before it still in progress (M7's carried races, research/m7/carried/races).
+// before it still in progress.
 // A write the kernel holds, to a client that has stopped reading, can still
 // be in progress then; and so can any write chained on drains, which a
 // client's half-close can still cut: a stream body over 16 KiB, written one
@@ -2460,9 +2455,9 @@ function h2Face(server, name) {
 // Both HTTP/2 faces raise Node's send limit, maxSendHeaderBlockLength, from
 // 64 KiB to 64 MiB, so a head or a trailer block past 64 KiB is sent whole:
 // at the default, a head past it is never sent, and a trailer block past it
-// is dropped, the stream ended cleanly on Node 24.18.0 and reset on 20.10.0
-// (M8 slice 2; traps.md). Node's two receive limits stay their defaults: the
-// SETTINGS frame each face sends first stays empty, as tests hold it.
+// is dropped, the stream ended cleanly on Node 24.18.0 and reset on 20.10.0.
+// Node's two receive limits stay their defaults: the SETTINGS frame each
+// face sends first stays empty, as tests hold it.
 const H2_SEND_LIMIT = 64 << 20;
 const h2cServer = h2Face(http2.createServer({ allowHalfOpen: true, maxSendHeaderBlockLength: H2_SEND_LIMIT }), 'h2c');
 
@@ -2598,8 +2593,7 @@ const scripts = {
   },
   // One header whose value holds every byte from 0x01 to 0xFF but CR and LF,
   // in order, between an a and a z: where Latin-1 and UTF-8 part, and the
-  // control bytes. libcurl hands each back as sent (ADR-0001, amended
-  // 2026-10-23).
+  // control bytes. libcurl hands each back as sent (ADR-0001).
   'header-bytes': {
     play: () => {
       const bytes = [];
@@ -2734,8 +2728,8 @@ const scripts = {
       return [{ step: 'auth417', conn, head, key, number: auth417Connections[conn.face] }, END];
     },
   },
-  // The head routes (M8 slice 2): a head of a chosen size and shape; a
-  // Digest round's two responses; a 417 and its resend's.
+  // The head routes: a head of a chosen size and shape; a Digest round's two
+  // responses; a 417 and its resend's.
   'head': {
     query: headQuery,
     play: (spec) => [write(h1Response(200, spec, [])), END],
@@ -3018,10 +3012,10 @@ function earlyAnswer(status, to, close) {
 // write began, or null.
 const stalls = new Map();
 
-// sunk: each raw sink's body record, by its key, the latest for a key, for
-// as long as the origin runs: its bytes grow as they are read, so a client
-// that goes first leaves the bytes that had come (the slice's fourth
-// review: what reached the server of a body refused past its length).
+// sunk: each raw sink's body record, by its key, the latest for a key, for as
+// long as the origin runs: its bytes grow as they are read, so a client that
+// goes first leaves the bytes that had come: what reached the server of a body
+// refused past its length.
 const sunk = new Map();
 
 // releases: for each key /raw/release has named, or an answer-at's hold
@@ -3514,9 +3508,9 @@ async function play(socket, reset, state, steps) {
           // connection or another, gets a 100 Continue when its Expect holds
           // 100-continue, has its body read by its Content-Length, and gets a
           // 200 by spec b.; so does a first request without that Expect.
-          // Then the script ends. The key, not the connection, holds the
-          // 417: libcurl may resend on a new connection (M8 slice 2's build:
-          // under Valgrind, 8.20.0 did).
+          // Then the script ends. The key, not the connection, holds the 417:
+          // libcurl may resend on a new connection (under Valgrind, 8.20.0
+          // did).
           let buffer = Buffer.alloc(0);
           const more = async () => {
             const item = await nextItem(s.conn.input);

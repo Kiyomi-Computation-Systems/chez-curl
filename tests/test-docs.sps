@@ -39,10 +39,10 @@
 ;;;   list whose name ends -reasons that (curl private conditions) or
 ;;;   (http-client private conditions) exports.
 ;;;
-;;; Out of its reach, with no oracle but a reader's reading of the code,
-;;; which the slice's review makes: a fragment whose comment gives a wrong
-;;; answer, and prose that says something wrong, a reason table's account of
-;;; what a reason means among it. A wrong claim in prose stays the review's.
+;;; Out of its reach, with no oracle but a reader's reading of the code: a
+;;; fragment whose comment gives a wrong answer, and prose that says
+;;; something wrong, a reason table's account of what a reason means among
+;;; it. A wrong claim in prose stays a reader's to catch.
 ;;;
 ;;; The oracles: the checkout's files, read as bytes; Chez's own read; the
 ;;; names the three public libraries export, as Chez's library-exports lists

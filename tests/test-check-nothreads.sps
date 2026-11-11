@@ -1,14 +1,14 @@
 #!r6rs
 ;;; The suite for tests/check-nothreads.sps, the program behind `make
-;;; check-nothreads` (harness plan, section 4; ADR-0001). On a --nothreads Chez
-;;; every public library must be refused at import, by name; the program
-;;; imports each and requires (curl private require-threaded)'s refusal. CI runs
-;;; it on a Chez built with --nothreads, the one place the refusal meets a real
-;;; non-threaded Chez. Everything else is held here, on the Chez that runs the
-;;; suites, which is threaded, so the real src/ must FAIL the program, naming
-;;; each public library it could import. That failure is the program's red run.
-;;; Without this suite, deleting a rule would leave `make test` green: nothing
-;;; else runs the program.
+;;; check-nothreads` (ADR-0001). On a --nothreads Chez every public library must
+;;; be refused at import, by name; the program imports each and requires (curl
+;;; private require-threaded)'s refusal. CI runs it on a Chez built with
+;;; --nothreads, the one place the refusal meets a real non-threaded Chez.
+;;; Everything else is held here, on the Chez that runs the suites, which is
+;;; threaded, so the real src/ must FAIL the program, naming each public library
+;;; it could import. That failure is the program's red run. Without this suite,
+;;; deleting a rule would leave `make test` green: nothing else runs the
+;;; program.
 ;;;
 ;;; Every rule has a fixture tree under tests/fixtures/nothreads/<case>/, whose
 ;;; require-threaded behaves as the case says whatever Chez runs it. This suite
@@ -220,9 +220,9 @@
 
 ;; --- the real tree --------------------------------------------------------------------------
 ;; This Chez is threaded, so nothing refuses (curl) here: the program must fail
-;; on src/, naming every public library it finds. The expected names come from
-;; a scan written out in this suite, so that a library a later slice adds is
-;; named without editing the row, and a scan of the wrong directory finds no
+;; on src/, naming every public library it finds. The expected names come from a
+;; scan written out in this suite, so that a library added later is named
+;; without editing the row, and a scan of the wrong directory finds no
 ;; (curl) and fails the row below it.
 
 ;; sls-files : String -> (Listof String)

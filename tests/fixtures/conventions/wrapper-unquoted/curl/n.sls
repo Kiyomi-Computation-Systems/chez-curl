@@ -1,5 +1,5 @@
 #!r6rs
-;; The review's A1: the use that binds curl-easy-setopt-long sits under an
+;; Case A1: the use that binds curl-easy-setopt-long sits under an
 ;; unquote, in a quasiquote, which the reader reads as data. An unused use
 ;; of bind-variadic keeps the count. The quasiquoted name is stray.
 (library (curl n)

@@ -1,8 +1,7 @@
 #!r6rs
 ;;; A child of tests/test-stream-call.sps: keyboard interrupts that escape
-;;; inside the port's read, at the ends of critical sections, where a
-;;; pending one runs (traps.md), with PROC catching each escape and reading
-;;; on (the M6 plan, section 3.5; the slice's review, build/m6s3r/).
+;;; inside the port's read, at the ends of critical sections, where a pending
+;;; one runs, with PROC catching each escape and reading on.
 ;;;
 ;;;   stream-call-escape.sps RAW RUNS [LETTER ...]
 ;;;
@@ -29,7 +28,7 @@
 ;;;      more after the escape, so the port's next read has fed by then.
 ;;;      With the byte written at once, that read often found the transfer
 ;;;      done, fed nothing, and a producer called after its eof showed in
-;;;      14 runs of 20 (the slice's fourth review).
+;;;      14 runs of 20.
 ;;;   C  a refusal: the engine's mutex held, by call-with-engine-held, from
 ;;;      the producer's call that answers a string, so the refusal's cancel
 ;;;      blocks inside its section. A chunked echo.
@@ -139,8 +138,8 @@
 ;; it inside the section. The holder waits on nothing this thread does: a
 ;; holder that waited inside its section for this thread to go on
 ;; deadlocked whenever a collection came between, this thread stopped at
-;; the collection's rendezvous and the rendezvous waiting for the holder
-;; (traps.md); case E's long window hung 1 run in 8.
+;; the collection's rendezvous and the rendezvous waiting for the holder;
+;; case E's long window hung 1 run in 8.
 (define (plant! hold . after)
   (let ((mx (make-mutex)) (held #f) (count 0))
     (fork-thread
@@ -158,7 +157,7 @@
 ;; For a gate, run inside the drive's own critical section: SIGINT sent by
 ;; this thread to its process, which Linux gives the sender, before kill
 ;; returns; Chez holds the keyboard interrupt until the section ends,
-;; where it runs (traps.md). No second thread, so nothing to deadlock.
+;; where it runs. No second thread, so nothing to deadlock.
 (define (self-signal!) (kill (getpid) 2))
 
 ;; release-after-two! : String -> (Natural -> Void)
@@ -166,7 +165,7 @@
 ;; until the response side has waited twice more, so a feed! has run
 ;; between, then lets KEY's held byte go by /raw/release, on a session of
 ;; its own. A raise is dropped: a forked thread that raises dies naming
-;; no case (traps.md), and the case then shows the byte never came.
+;; no case, and the case then shows the byte never came.
 (define (release-after-two! key)
   (lambda (count)
     (let wait ((left 10000))
@@ -231,8 +230,8 @@
       (http-session-close s)
       (show (list 'case letter run handler drained call calls after-eof)))))
 
-;; The seam records the call's token only while armed (the slice's fourth
-;; review): B holds that token's request stream.
+;; The seam records the call's token only while armed: B holds that token's
+;; request stream.
 (drive-last-token-arm! #t)
 
 (do ((run 1 (+ run 1))) ((> run runs))

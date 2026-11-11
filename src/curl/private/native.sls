@@ -44,19 +44,19 @@
 ;;; wrapper's call and count share a critical-section, and each extent is a
 ;;; dynamic-wind whose critical? argument is #t, which runs its before thunk,
 ;;; and its after thunk, in one critical section with the record that the
-;;; extent was entered, or left (M2 fix round 2).
+;;; extent was entered, or left.
 ;;;
 ;;; Every native object it makes is counted, in (curl private counters):
 ;;; each foreign block, through (curl private memory), each easy handle,
-;;; each CURLU handle, each string curl_url_get hands back, each string
-;;; list curl_slist_append starts, and each mime curl_mime_init makes
-;;; (M8 slice 3), its parts the mime's own. The load's own, the header
-;;; probe's handle and its slot, and the mime probe's slots and strings, are
-;;; freed before it returns, and the form post and the mime that probe makes
-;;; are never counted, so every count is zero after it.
+;;; each CURLU handle, each string curl_url_get hands back, each string list
+;;; curl_slist_append starts, and each mime curl_mime_init makes, its parts
+;;; the mime's own. The load's own, the header probe's handle and its slot,
+;;; and the mime probe's slots and strings, are freed before it returns, and
+;;; the form post and the mime that probe makes are never counted, so every
+;;; count is zero after it.
 ;;;
 ;;; Two copies own every move of bytes between a bytevector and foreign
-;;; memory (ADR-0001, amended 2026-10-16): copy-foreign->bytevector! and
+;;; memory (ADR-0001): copy-foreign->bytevector! and
 ;;; copy-bytevector->foreign!. Each asserts its span fits the bytevector
 ;;; before any C runs, since Valgrind cannot see an overrun into Chez's
 ;;; heap. memcpy's two bindings are theirs alone, and not exported. Chez's
@@ -64,70 +64,65 @@
 ;;; starts past the first byte goes through a fresh bytevector of its own
 ;;; length, and bytevector-copy!.
 ;;;
-;;; C strings go through them too (M2 plan, section 3.3): call-with-c-string
-;;; hands C a counted, NUL-terminated UTF-8 copy, refusing a string that
-;;; holds U+0000, which C would read as its end; c-string->bytevector reads
-;;; one back as bytes. Header strings and the user agent are the one
-;;; exception (ADR-0001, amended 2026-10-23): call-with-latin-1-c-string
-;;; hands C one byte per char, refusing U+0000 and any char above U+00FF.
-;;; A blob the hatch sets goes through call-with-curl-blob: a counted copy
-;;; of its bytes, and a counted struct curl_blob, filled with ftype-set!,
-;;; which check-seam lets this library alone import, flagged
-;;; CURL_BLOB_COPY, so libcurl copies the bytes as setopt runs and both
-;;; blocks are freed once it returns (ADR-0009, decision 4; the M4 plan,
-;;; section 3.7).
+;;; C strings go through them too: call-with-c-string hands C a counted,
+;;; NUL-terminated UTF-8 copy, refusing a string that holds U+0000, which C
+;;; would read as its end; c-string->bytevector reads one back as bytes.
+;;; Header strings and the user agent are the one exception (ADR-0001):
+;;; call-with-latin-1-c-string hands C one byte per char, refusing U+0000
+;;; and any char above U+00FF. A blob the hatch sets goes through
+;;; call-with-curl-blob: a counted copy of its bytes, and a counted struct
+;;; curl_blob, filled with ftype-set!, which check-seam lets this library
+;;; alone import, flagged CURL_BLOB_COPY, so libcurl copies the bytes as
+;;; setopt runs and both blocks are freed once it returns (ADR-0009).
 ;;;
-;;; The transfer's bindings (M2 plan, section 5.2) are step 6's:
-;;; curl_easy_strerror, curl_easy_nextheader, curl_slist_append and
-;;; curl_slist_free_all, plain. Their counted wrappers count a string list
-;;; as slist while it is not NULL. So are the engine's, the multi interface
-;;; (M3 plan, section 3.2): curl_multi_poll, curl_multi_perform,
-;;; curl_multi_remove_handle and curl_multi_cleanup, which can block, through
-;;; bind-blocking, whose template carries __collect_safe (ADR-0013, accepted
-;;; 2026-10-24); the rest plain. A multi handle is counted as multi.
-;;; curl_multi_setopt is bound once, for a long, through bind-variadic,
-;;; last, with the easy setopts (ADR-0019; ADR-0001, amended 2026-10-25).
-;;; curl_easy_pause, the engine's resume (the M6 plan, section 3.4), is
-;;; bound through bind-blocking too: it never waits on the network, but it
-;;; hands what it held to the callables before it returns, decoding it on
-;;; the way, and its replay of a gzip body ran 21.647 ms, holding another
-;;; thread's collection while it ran, when the call was plain (the plan's
-;;; section 4.1, as measured).
+;;; The transfer's bindings are step 6's: curl_easy_strerror,
+;;; curl_easy_nextheader, curl_slist_append and curl_slist_free_all, plain.
+;;; Their counted wrappers count a string list as slist while it is not NULL.
+;;; So are the engine's, the multi interface: curl_multi_poll,
+;;; curl_multi_perform, curl_multi_remove_handle and curl_multi_cleanup,
+;;; which can block, through bind-blocking, whose template carries
+;;; __collect_safe (ADR-0013); the rest plain. A multi handle is counted as
+;;; multi. curl_multi_setopt is bound once, for a long, through
+;;; bind-variadic, last, with the easy setopts (ADR-0019; ADR-0001).
+;;; curl_easy_pause, the engine's resume, is bound through bind-blocking too:
+;;; it never waits on the network, but it hands what it held to the callables
+;;; before it returns, decoding it on the way, and its replay of a gzip body
+;;; ran 21.647 ms, holding another thread's collection while it ran, when the
+;;; call was plain.
 ;;;
-;;; A multipart body's (ADR-0039, amended; the M8 plan, section 3.4), step 6's
-;;; too: curl_mime_init, curl_mime_free, curl_mime_addpart, curl_mime_name,
-;;; curl_mime_data, curl_mime_filename, curl_mime_type and curl_formfree,
-;;; plain; curl_mime_filedata, which stats its path, and on 7.85.0 and 8.5.0
-;;; accesses it, through bind-blocking; and curl_formadd, variadic, bound
-;;; once, last, for the load's probe and tests/test-variadic.sps alone. Every
-;;; string they take is a counted copy, call-with-c-string's, and the data a
-;;; counted copy, call-with-foreign-bytes': libcurl copies both as the call
-;;; runs. A mime is counted as mime and owned by its maker's thread, in the
-;;; critical section that makes it; curl-mime-add-part! adds a whole part to
-;;; one, checking its owner, so no part's address leaves this library.
+;;; A multipart body's (ADR-0039), step 6's too: curl_mime_init,
+;;; curl_mime_free, curl_mime_addpart, curl_mime_name, curl_mime_data,
+;;; curl_mime_filename, curl_mime_type and curl_formfree, plain;
+;;; curl_mime_filedata, which stats its path, and on 7.85.0 and 8.5.0 accesses
+;;; it, through bind-blocking; and curl_formadd, variadic, bound once, last,
+;;; for the load's probe and tests/test-variadic.sps alone. Every string they
+;;; take is a counted copy, call-with-c-string's, and the data a counted copy,
+;;; call-with-foreign-bytes': libcurl copies both as the call runs. A mime is
+;;; counted as mime and owned by its maker's thread, in the critical section
+;;; that makes it; curl-mime-add-part! adds a whole part to one, checking its
+;;; owner, so no part's address leaves this library.
 ;;;
-;;; The cookie jar's (ADR-0035; the M7 plan, section 3.5): curl_share_init
-;;; and curl_share_cleanup, plain, a share counted as share; and
-;;; curl_share_setopt, variadic, bound once, for an int, through
-;;; bind-variadic, last, with the other variadics: libcurl reads its value
-;;; for SHARE and UNSHARE with va_arg(param, int), 7.85.0 lib/share.c:74 and
-;;; :127, 8.20.0 lib/curl_share.c:215 and :283, 8.23.0 :218 and :286, Apple's
-;;; 8.7.1 lib/share.c:76 and :141 (read in source). CURLINFO_COOKIELIST's
-;;; answer, a struct curl_slist libcurl made, is counted as slist and owned
-;;; by the thread that read it, in the critical section of the call, and
-;;; walked by (curl private layouts)' curl-slist.
+;;; The cookie jar's (ADR-0035): curl_share_init and curl_share_cleanup,
+;;; plain, a share counted as share; and curl_share_setopt, variadic, bound
+;;; once, for an int, through bind-variadic, last, with the other variadics:
+;;; libcurl reads its value for SHARE and UNSHARE with va_arg(param, int),
+;;; 7.85.0 lib/share.c:74 and :127, 8.20.0 lib/curl_share.c:215 and :283,
+;;; 8.23.0 :218 and :286, Apple's 8.7.1 lib/share.c:76 and :141 (read in
+;;; source). CURLINFO_COOKIELIST's answer, a struct curl_slist libcurl made,
+;;; is counted as slist and owned by the thread that read it, in the critical
+;;; section of the call, and walked by (curl private layouts)' curl-slist.
 ;;;
-;;; Each handle's thread (ADR-0012, decision 3; M3 plan, section 3.3). Each
-;;; easy, multi, share, mime and CURLU handle and each string list native makes is
-;;; recorded with its kind and the thread that made it, in the critical
-;;; section that counts it, and forgotten in the one that frees it. Every
-;;; exported procedure that takes one checks it first, by check-owner: a
-;;; handle another thread made raises &curl-wrong-thread, carrying who, the
-;;; maker's get-thread-id and the caller's, and an address that holds no
-;;; live handle of that kind, an assertion violation, each before C sees it.
-;;; curl_multi_wakeup alone may be called from any thread, on a live multi
-;;; handle; the engine that owns the handle keeps it alive while a caller
-;;; may wake it. The header probe's handle is checked as every other is.
+;;; Each handle's thread (ADR-0012). Each easy, multi, share, mime and CURLU
+;;; handle and each string list native makes is recorded with its kind and the
+;;; thread that made it, in the critical section that counts it, and forgotten
+;;; in the one that frees it. Every exported procedure that takes one checks
+;;; it first, by check-owner: a handle another thread made raises
+;;; &curl-wrong-thread, carrying who, the maker's get-thread-id and the
+;;; caller's, and an address that holds no live handle of that kind, an
+;;; assertion violation, each before C sees it. curl_multi_wakeup alone may be
+;;; called from any thread, on a live multi handle; the engine that owns the
+;;; handle keeps it alive while a caller may wake it. The header probe's
+;;; handle is checked as every other is.
 ;;;
 ;;; The load runs once per process, whatever it decides. Chez runs a
 ;;; library body that raised again at every later reference, so each step
@@ -135,7 +130,7 @@
 ;;; records the first failure there and raises it, made serious. Step 0
 ;;; raises that recorded failure at every later reference: nothing is
 ;;; loaded, initialised or probed twice, and a CHEZ_CURL_LIBCURL changed in
-;;; between is never read (ADR-0002, decision 3).
+;;; between is never read (ADR-0002).
 ;;;
 ;;; foreign-procedure resolves its entry point when it is evaluated, so a
 ;;; binding must follow the load, and an entry point the library lacks
@@ -245,7 +240,7 @@
         (apply format (condition-message e) (condition-irritants e))
         (call-with-string-output-port (lambda (p) (display-condition e p)))))
 
-  ;; --- each handle's thread (ADR-0012, decision 3) --------------------------------
+  ;; --- each handle's thread (ADR-0012) --------------------------------------------
 
   ;; locked : Mutex (-> Any) -> Any
   ;; THUNK's value, run holding LOCK, in a critical section. Chez's
@@ -323,10 +318,10 @@
   ;; (bind-variadic ENTRY (ARG-TYPE ...) RESULT-TYPE LIBRARY): ENTRY, a C
   ;; function whose arguments after the first two are variadic, bound with
   ;; foreign-procedure and (__varargs_after 2), after required-entry has
-  ;; found it. One binding per value type (ADR-0001, decision 1). The
-  ;; convention is the template's own, never a use's: Apple arm64 passes
-  ;; variadic arguments on the stack, and a binding without it hands C
-  ;; garbage there, while x86-64 and Linux arm64 work either way.
+  ;; found it. One binding per value type (ADR-0001). The convention is
+  ;; the template's own, never a use's: Apple arm64 passes variadic
+  ;; arguments on the stack, and a binding without it hands C garbage
+  ;; there, while x86-64 and Linux arm64 work either way.
   ;; tests/foreign-conventions.sls holds every use to its row, and make
   ;; check-variadic removes the convention here, in a copy, to watch that
   ;; fail.
@@ -339,11 +334,11 @@
 
   ;; (bind-blocking ENTRY (ARG-TYPE ...) RESULT-TYPE LIBRARY): ENTRY, a C
   ;; function that can block, bound with foreign-procedure and
-  ;; __collect_safe, after required-entry has found it (ADR-0013, decision
-  ;; 1). The convention is the template's own, never a use's: a thread
-  ;; blocked in a plain call stays active, and every other thread's
-  ;; collection waits for it. tests/foreign-conventions.sls holds the rows
-  ;; of the multi calls that can block to this binder.
+  ;; __collect_safe, after required-entry has found it (ADR-0013). The
+  ;; convention is the template's own, never a use's: a thread blocked in
+  ;; a plain call stays active, and every other thread's collection waits
+  ;; for it. tests/foreign-conventions.sls holds the rows of the multi
+  ;; calls that can block to this binder.
   (define-syntax bind-blocking
     (syntax-rules ()
       ((_ entry (arg ...) result library)
@@ -351,7 +346,7 @@
          (required-entry entry library)
          (foreign-procedure __collect_safe entry (arg ...) result)))))
 
-  ;; --- the checked copies (ADR-0001, amended 2026-10-16) -------------------------
+  ;; --- the checked copies (ADR-0001) ---------------------------------------------
   ;; Their memcpy bindings, memcpy->bytevector and memcpy->foreign, are bound
   ;; in step 3, and referenced nowhere but here.
 
@@ -404,7 +399,7 @@
              (bytevector-copy! bytevector offset bounce 0 n)
              (memcpy->foreign address bounce n)))))
 
-  ;; --- C strings (M2 plan, section 3.3) ---------------------------------------------
+  ;; --- C strings --------------------------------------------------------------------
 
   ;; c-string->bytevector : Natural -> (U Bytevector #f)
   ;; The bytes of the NUL-terminated string at ADDRESS, up to the NUL,
@@ -460,10 +455,10 @@
   ;; call-with-foreign-bytes : Bytevector (Positive-Integer -> Any) -> Any
   ;; PROC's answer, PROC given the address of a counted block holding
   ;; BYTES, freed once PROC returns, raises or escapes, as call-with-c-bytes
-  ;; frees it: for a body libcurl copies when it is set (the M4 plan,
-  ;; section 3.2). The address is never NULL: an empty BYTES gets a block
-  ;; of one byte, 0, which libcurl copies none of. BYTES is read once, by
-  ;; the checked copy, so no check comes between a read and a use.
+  ;; frees it: for a body libcurl copies when it is set. The address is never
+  ;; NULL: an empty BYTES gets a block of one byte, 0, which libcurl copies
+  ;; none of. BYTES is read once, by the checked copy, so no check comes
+  ;; between a read and a use.
   (define (call-with-foreign-bytes bytes proc)
     (unless (bytevector? bytes)
       (assertion-violation 'call-with-foreign-bytes "not a bytevector" bytes))
@@ -478,10 +473,9 @@
   ;; counted block: its data the address of a counted copy of BYTES, which
   ;; call-with-foreign-bytes makes, never NULL; its len BYTES' length; its
   ;; flags CURL_BLOB_COPY. libcurl copies the bytes when a blob option is
-  ;; set (ADR-0009; measured on five Linux libcurls, the M4 plan, section
-  ;; 7.1), so both blocks are freed once PROC returns, raises or escapes,
-  ;; as call-with-c-bytes frees its block, and PROC is never re-entered
-  ;; after.
+  ;; set (ADR-0009; measured on five Linux libcurls), so both blocks are
+  ;; freed once PROC returns, raises or escapes, as call-with-c-bytes
+  ;; frees its block, and PROC is never re-entered after.
   (define (call-with-curl-blob bytes proc)
     (unless (bytevector? bytes)
       (assertion-violation 'call-with-curl-blob "not a bytevector" bytes))
@@ -524,16 +518,16 @@
 
   ;; call-with-latin-1-c-string : String (Positive-Integer -> Any) -> Any
   ;; call-with-c-string's twin for header strings and the user agent
-  ;; (ADR-0001, amended 2026-10-23): PROC given the address of STRING as one
-  ;; byte per char, U+00nn as the byte nn, and a NUL, in a counted block
-  ;; freed once PROC returns, raises or escapes. STRING is scanned left to
-  ;; right, before anything is allocated, and its first offending char
-  ;; decides: U+0000 raises &curl-embedded-nul, and a char above U+00FF,
-  ;; which has no byte, an assertion violation. A request's validation
-  ;; refuses both before this is reached; this is the backstop. As
-  ;; call-with-c-string does, it copies STRING first, and checks and
-  ;; encodes the copy alone. Re-entering PROC through a continuation, once
-  ;; the block is freed, raises an assertion violation.
+  ;; (ADR-0001): PROC given the address of STRING as one byte per char,
+  ;; U+00nn as the byte nn, and a NUL, in a counted block freed once PROC
+  ;; returns, raises or escapes. STRING is scanned left to right, before
+  ;; anything is allocated, and its first offending char decides: U+0000
+  ;; raises &curl-embedded-nul, and a char above U+00FF, which has no byte,
+  ;; an assertion violation. A request's validation refuses both before this
+  ;; is reached; this is the backstop. As call-with-c-string does, it copies
+  ;; STRING first, and checks and encodes the copy alone. Re-entering PROC
+  ;; through a continuation, once the block is freed, raises an assertion
+  ;; violation.
   (define (call-with-latin-1-c-string string proc)
     (unless (string? string)
       (assertion-violation 'call-with-latin-1-c-string "not a string" string))
@@ -590,7 +584,7 @@
        (make-ftype-pointer curl-version-info-data address))))
 
   ;; libc's, not libcurl's: present once libcurl is loaded, and not before
-  ;; (ADR-0001, decision 5), so bound here, after it. They read
+  ;; (ADR-0001), so bound here, after it. They read
   ;; curl_version_info_data's strings, below, before the floor is checked,
   ;; and they refuse nothing a later check would name. Plain calls: a call
   ;; that is not __collect_safe keeps the thread active, so no collection
@@ -629,12 +623,11 @@
         (c-text (ftype-ref curl-version-info-data (host) version-data))))))
 
   ;; The protocols the library supports, from curl_version_info_data's
-  ;; protocols: an array of C strings that ends at NULL, or NULL itself.
-  ;; Not a libcurl-info field: (curl) adds nothing public in M2. tests/test-url.sps
+  ;; protocols: an array of C strings that ends at NULL, or NULL itself. Not
+  ;; a libcurl-info field: (curl) adds nothing public. tests/test-url.sps
   ;; holds the scheme check against every one of them. Its place in step 3
-  ;; is no rule: it reads data curl_version_info has already answered,
-  ;; makes no call, and refuses nothing, so reading it later would change
-  ;; nothing.
+  ;; is no rule: it reads data curl_version_info has already answered, makes
+  ;; no call, and refuses nothing, so reading it later would change nothing.
   (define protocol-list
     (load-step
      (let ((array (ftype-ref curl-version-info-data (protocols) version-data))
@@ -653,19 +646,17 @@
   ;; or when the maps cannot be read. foreign-entry answers the address
   ;; native's own binding calls, the most recently loaded object's. Whether
   ;; a libcurl is Guix's is read from this file, not from ADR-0002's world,
-  ;; which is libc's: spike E1's Chez, built on Ubuntu, loads Guix's 8.20.0,
-  ;; which still writes SSL_CERT_FILE over a CA file (ADR-0024, amended
-  ;; 2026-10-26).
+  ;; which is libc's: loaded by a Chez built on Ubuntu, Guix's 8.20.0 still
+  ;; writes SSL_CERT_FILE over a CA file (ADR-0024).
   (define libcurl-file
     (load-step (mapped-file (maps-text) (foreign-entry "curl_version_info"))))
 
   ;; Whether the libcurl's file, the mapped one, or the path as loaded where
   ;; none was read, holds the literal SSL_CERT_FILE: Guix's patch's own
   ;; string, which Guix's 8.20.0 and 8.6.0 hold once each and none of six
-  ;; stock builds holds (ADR-0024, amended 2026-10-26: the key). So a Guix
-  ;; libcurl copied out of the store is still Guix's. Read once, whole; a
-  ;; file that cannot be read, Apple's in the dyld cache among them, holds
-  ;; nothing.
+  ;; stock builds holds (ADR-0024). So a Guix libcurl copied out of the
+  ;; store is still Guix's. Read once, whole; a file that cannot be read,
+  ;; Apple's in the dyld cache among them, holds nothing.
   (define libcurl-patched
     (load-step
      (let ((bytes (guard (e (#t #f))
@@ -689,10 +680,10 @@
   ;; unset or empty, read immediately before curl_global_init below: Guix's
   ;; patch reads both there, through curl_getenv, which answers an empty
   ;; value as NULL, and never again, so a variable set after the load
-  ;; changes no transfer, and one unset after it still does (ADR-0024,
-  ;; amended 2026-10-26). Another library's earlier curl_global_init in
-  ;; this process would have read them first, and libcurl's source makes
-  ;; this one a count alone: the record could then differ, unseen.
+  ;; changes no transfer, and one unset after it still does (ADR-0024).
+  ;; Another library's earlier curl_global_init in this process would have
+  ;; read them first, and libcurl's source makes this one a count alone:
+  ;; the record could then differ, unseen.
   (define ca-variables
     (load-step
      (map (lambda (name)
@@ -713,9 +704,9 @@
   ;; through discovery's backend-in-use: before it, a MultiSSL libcurl
   ;; names its first backend whatever the init picks, so the record step 3
   ;; built, info, says SecureTransport on Apple's 8.7.1, where the init
-  ;; puts LibreSSL in use (ADR-0024, amended 2026-10-27). curl_version_info
-  ;; writes the names into a buffer of its own, so it is called again; #f
-  ;; when it answers NULL or no one backend is bare.
+  ;; puts LibreSSL in use (ADR-0024). curl_version_info writes the names
+  ;; into a buffer of its own, so it is called again; #f when it answers
+  ;; NULL or no one backend is bare.
   ;;
   ;; The same call answers the features word, after-init's cdr: a MultiSSL
   ;; libcurl computes the word at each call from the backend in use, and
@@ -723,8 +714,8 @@
   ;; bits a backend sets read clear in info: CURL_VERSION_HTTPS_PROXY among
   ;; them, on Apple's 8.7.1, whose init puts a backend that supports it in
   ;; use (8.7.1 lib/version.c:424-428 and 671-680, lib/vtls/vtls.c:1306-1308;
-  ;; the Mac's run of M7 slice 3). info keeps the word it read; step 3's
-  ;; word stands where the call answers NULL.
+  ;; run on macOS). info keeps the word it read; step 3's word stands where
+  ;; the call answers NULL.
   (define after-init
     (load-step
      (let ((address (curl-version-info curlversion-tenth)))
@@ -789,8 +780,8 @@
   ;; void curl_free(void *p)
   (define raw-curl-free (load-step (bind-required "curl_free" (uptr) void info)))
 
-  ;; The transfer's (M2 plan, section 5.2). curl_easy_nextheader is
-  ;; 7.83.0, below the floor; the rest are older still. All required.
+  ;; The transfer's bindings. curl_easy_nextheader is 7.83.0, below
+  ;; the floor; the rest are older still. All required.
 
   ;; const char *curl_easy_strerror(CURLcode error)
   (define raw-curl-easy-strerror
@@ -809,10 +800,9 @@
   (define raw-curl-slist-free-all
     (load-step (bind-required "curl_slist_free_all" (uptr) void info)))
 
-  ;; The engine's (M3 plan, section 3.2): the multi interface, all below the
-  ;; floor, curl_multi_poll 7.66.0 and curl_multi_wakeup 7.68.0, and all
-  ;; required. The four that can block are __collect_safe, through
-  ;; bind-blocking (ADR-0013, accepted 2026-10-24).
+  ;; The engine's: the multi interface, all below the floor, curl_multi_poll
+  ;; 7.66.0 and curl_multi_wakeup 7.68.0, and all required. The four that
+  ;; can block are __collect_safe, through bind-blocking (ADR-0013).
 
   ;; CURLM *curl_multi_init(void)
   (define raw-curl-multi-init (load-step (bind-required "curl_multi_init" () uptr info)))
@@ -851,8 +841,7 @@
     (load-step (bind-required "curl_multi_strerror" (int) uptr info)))
 
   ;; CURLcode curl_easy_pause(CURL *handle, int action), 7.18.0: the
-  ;; engine's resume, __collect_safe, since the callables run inside it
-  ;; (the M6 plan, section 3.4).
+  ;; engine's resume, __collect_safe, since the callables run inside it.
   (define raw-curl-easy-pause
     (load-step (bind-blocking "curl_easy_pause" (uptr int) int info)))
 
@@ -866,12 +855,12 @@
   (define raw-curl-share-cleanup
     (load-step (bind-required "curl_share_cleanup" (uptr) int info)))
 
-  ;; A multipart body's (ADR-0039; the M8 plan, section 3.4): the mime API,
-  ;; 7.56.0, and curl_formfree, below the floor, and required. Plain, but
+  ;; A multipart body's (ADR-0039): the mime API, 7.56.0, and
+  ;; curl_formfree, below the floor, and required. Plain, but
   ;; curl_mime_filedata, which stats its path, and on 7.85.0 and 8.5.0
   ;; accesses it: a stat of a hung network mount waits, so it is
   ;; __collect_safe, through bind-blocking. None takes a Scheme string:
-  ;; each is handed a counted foreign copy (ADR-0013, amended 2026-10-23).
+  ;; each is handed a counted foreign copy (ADR-0013).
 
   ;; curl_mime *curl_mime_init(CURL *easy)
   (define raw-curl-mime-init (load-step (bind-required "curl_mime_init" (uptr) uptr info)))
@@ -925,17 +914,15 @@
 
   ;; CURLMcode curl_multi_setopt(CURLM *multi_handle, CURLMoption option, ...),
   ;; variadic after option: bound once, for a long, the type of every option
-  ;; chez-curl sets, CURLMOPT_QUICK_EXIT (ADR-0019; ADR-0001, amended
-  ;; 2026-10-25).
+  ;; chez-curl sets, CURLMOPT_QUICK_EXIT (ADR-0019; ADR-0001).
   (define raw-curl-multi-setopt-long
     (load-step (bind-variadic "curl_multi_setopt" (uptr int long) int info)))
 
   ;; CURLSHcode curl_share_setopt(CURLSH *share, CURLSHoption option, ...),
   ;; variadic after option: bound once, for an int, the type libcurl reads
   ;; for SHARE and UNSHARE, va_arg(param, int) (above), the one option
-  ;; chez-curl sets, CURLSHOPT_SHARE at CURL_LOCK_DATA_COOKIE (ADR-0035,
-  ;; decision 1). tests/test-variadic.sps watches the value arrive by
-  ;; behaviour.
+  ;; chez-curl sets, CURLSHOPT_SHARE at CURL_LOCK_DATA_COOKIE (ADR-0035).
+  ;; tests/test-variadic.sps watches the value arrive by behaviour.
   (define raw-curl-share-setopt-int
     (load-step (bind-variadic "curl_share_setopt" (uptr int int) int info)))
 
@@ -945,7 +932,7 @@
   ;; probe makes, and tests/test-variadic.sps through curl-formadd-code:
   ;; an option, a string, an option, a string, then CURLFORM_END, each
   ;; option an int, as libcurl's va_arg reads a CURLformoption, each string
-  ;; a char * (ADR-0039, amended 2026-11-06; the M8 plan, section 3.9).
+  ;; a char * (ADR-0039).
   (define raw-curl-formadd
     (load-step (bind-variadic "curl_formadd" (uptr uptr int uptr int uptr int) int info)))
 
@@ -1130,9 +1117,8 @@
   ;; curl-header-bytes : Positive-Integer -> (Pairof Bytevector Bytevector)
   ;; The name's bytes and the value's, copied, of the struct curl_header at
   ;; ADDRESS, as curl-easy-nextheader answered it. curl_easy_nextheader
-  ;; never hands back a NUL inside either (ADR-0001, amended 2026-10-23), so
-  ;; each string's strlen is the whole of it. Whoever reads them decodes
-  ;; them.
+  ;; never hands back a NUL inside either (ADR-0001), so each string's
+  ;; strlen is the whole of it. Whoever reads them decodes them.
   (define (curl-header-bytes address)
     (let ((header (make-ftype-pointer curl-header address)))
       (cons (or (c-string->bytevector (ftype-ref curl-header (name) header)) (make-bytevector 0))
@@ -1168,7 +1154,7 @@
      (disown! list)
      (raw-curl-slist-free-all list)))
 
-  ;; --- the multi interface's wrappers (M3 plan, section 3.2) --------------------------
+  ;; --- the multi interface's wrappers -------------------------------------------------
 
   ;; curl-multi-init : -> Natural
   ;; A fresh multi handle's address, counted as multi and owned by this
@@ -1273,7 +1259,7 @@
   (define (curl-multi-strerror code)
     (c-text (raw-curl-multi-strerror code)))
 
-  ;; --- the share interface's wrappers (ADR-0035; the M7 plan, section 3.5) ----
+  ;; --- the share interface's wrappers (ADR-0035) ------------------------------
 
   ;; curl-share-init : -> Natural
   ;; A fresh share's address, counted as share and owned by this thread, in
@@ -1352,19 +1338,19 @@
   ;; mask from (curl private constants): the CURLcode. Resuming, libcurl
   ;; hands the bytes it held to the transfer's callables before it returns,
   ;; on this thread. It takes the whole state: CURLPAUSE_CONT unpauses both
-  ;; directions (ADR-0012, amended 2026-10-29).
+  ;; directions (ADR-0012).
   (define (curl-easy-pause easy action)
     (check-owner 'curl-easy-pause easy 'easy)
     (raw-curl-easy-pause easy action))
 
 
-  ;; --- a multipart body's wrappers (ADR-0039; the M8 plan, section 3.4) ----------------
+  ;; --- a multipart body's wrappers (ADR-0039) ------------------------------------------
 
   ;; curl-mime-init : Positive-Integer -> Natural
   ;; A fresh mime of EASY's, this thread's: counted as mime and owned by
   ;; this thread, in one critical section; 0, counted as nothing, when
   ;; libcurl made none. A mime belongs to the easy handle it was made with:
-  ;; 7.85.0 refuses one made with another (the M8 plan, section 2).
+  ;; 7.85.0 refuses one made with another.
   (define (curl-mime-init easy)
     (check-owner 'curl-mime-init easy 'easy)
     (critical-section
@@ -1489,8 +1475,7 @@
     (load-step
      (check-apis option-found? header-code libcurl-path libcurl-source info)))
 
-  ;; The mime probe (ADR-0039, amended 2026-11-06, decision 4 made exact;
-  ;; the M8 plan, section 3.4), after the APIs are checked, in one critical
+  ;; The mime probe (ADR-0039), after the APIs are checked, in one critical
   ;; section, through the raw bindings: curl_formadd with CURLFORM_COPYNAME,
   ;; CURLFORM_COPYCONTENTS and CURLFORM_END, then curl_formfree of the post
   ;; it made, NULL when none; then curl_mime_init with NULL, then
@@ -1499,7 +1484,7 @@
   ;; answer is data, ((formadd . CODE) (mime-init . made)), or (mime-init .
   ;; null), the code named by its key whatever it is. 7.85.0 built without
   ;; mime answers curl_formadd 7 and makes a mime that sends nothing; 8.23.0
-  ;; built so answers 7 and NULL (the M8 plan, section 2).
+  ;; built so answers 7 and NULL.
   (define mime-probe
     (load-step
      (critical-section
@@ -1520,8 +1505,8 @@
   ;; loaded-mime? : -> Boolean
   ;; Whether a multipart body can go on the loaded libcurl: curl_formadd
   ;; answered CURL_FORMADD_OK and curl_mime_init made a mime. Any other code,
-  ;; CURL_FORMADD_DISABLED or one no build answers, counts as no (ADR-0039,
-  ;; amended 2026-11-06). Private.
+  ;; CURL_FORMADD_DISABLED or one no build answers, counts as no (ADR-0039).
+  ;; Private.
   (define (loaded-mime?)
     (and (eqv? (cdr (assq 'formadd mime-probe)) curl-formadd-ok)
          (eq? (cdr (assq 'mime-init mime-probe)) 'made)))
@@ -1580,10 +1565,10 @@
   ;; curl_easy_option_by_name answers; #f when that is NULL, a name this
   ;; libcurl does not know. Raw codes: (curl private constants)'s
   ;; curlot-types names them. Ids come from here alone, never from Scheme
-  ;; (ADR-0001, decision 2). NAME is copied, the copy checked, and the copy
-  ;; passed: Chez's string type would cut a name at U+0000, so "URL" then
-  ;; anything would find URL, and a caller's string could change between a
-  ;; check and the call. A NAME holding U+0000 is an assertion violation.
+  ;; (ADR-0001). NAME is copied, the copy checked, and the copy passed:
+  ;; Chez's string type would cut a name at U+0000, so "URL" then anything
+  ;; would find URL, and a caller's string could change between a check and
+  ;; the call. A NAME holding U+0000 is an assertion violation.
   (define (curl-easy-option name)
     (unless (string? name)
       (assertion-violation 'curl-easy-option "an option's name is a string" name))

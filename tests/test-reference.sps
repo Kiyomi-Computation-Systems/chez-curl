@@ -38,11 +38,10 @@
 ;;; does not fails, by its line. The reader is held to all of it on pages of
 ;;; the suite's own before it reads docs/reference.md.
 ;;;
-;;; Out of its reach, with no oracle but a reader's reading of the code,
-;;; which the slice's review makes: a type that is wrong, so long as a
-;;; procedure's holds -> and a value's does not; a Raises sentence that
-;;; names the wrong refusals; and a link to the wrong page, under that
-;;; page's title.
+;;; Out of its reach, with no oracle but a reader's reading of the code: a type
+;;; that is wrong, so long as a procedure's holds -> and a value's does not; a
+;;; Raises sentence that names the wrong refusals; and a link to the wrong page,
+;;; under that page's title.
 ;;;
 ;;; make test runs every suite from the repository root. Each computation
 ;;; that can raise runs under a guard that answers what was raised, since

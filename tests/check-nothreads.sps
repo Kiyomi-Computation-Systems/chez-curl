@@ -2,16 +2,16 @@
 ;;; make check-nothreads: imports every public library under the directory named
 ;;; on the command line (make passes src) and requires each import to be refused
 ;;; by name, as (curl private require-threaded) refuses a Chez that is not
-;;; threaded (ADR-0001, harness plan section 4). It is run by CI on a Chez built
-;;; with --nothreads, the one place a refusal meets a real non-threaded Chez.
-;;; On a threaded Chez every import loads, so it FAILS there, naming each
-;;; library: that failure is its red run, and it is why make test does not run
-;;; it. tests/test-check-nothreads.sps holds each rule on a fixture tree.
+;;; threaded (ADR-0001). It is run by CI on a Chez built with --nothreads, the
+;;; one place a refusal meets a real non-threaded Chez. On a threaded Chez every
+;;; import loads, so it FAILS there, naming each library: that failure is its
+;;; red run, and it is why make test does not run it.
+;;; tests/test-check-nothreads.sps holds each rule on a fixture tree.
 ;;;
 ;;; A public library is any library form, in any .sls file under the directory,
 ;;; whose name has no private part: (curl) and (http-client) are, (curl private
 ;;; native) is not. The program finds them by reading the files as data, so a
-;;; library a later slice adds is imported with no edit here. It puts the
+;;; library added later is imported with no edit here. It puts the
 ;;; directory on Chez's library path itself, so one argument says both where to
 ;;; look and where Chez finds the libraries.
 ;;;

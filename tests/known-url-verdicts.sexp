@@ -1,8 +1,7 @@
-;; curl's URL verdicts that vary by version (ADR-0008, amended 2026-10-19).
-;; tests/test-url.sps holds the answer every recorded libcurl agrees on for
-;; each other case. These are the cases on which they do not agree: one row
-;; per libcurl version a lane runs, each with that version's answer to every
-;; one of them.
+;; curl's URL verdicts that vary by version (ADR-0008). tests/test-url.sps holds
+;; the answer every recorded libcurl agrees on for each other case. These are
+;; the cases on which they do not agree: one row per libcurl version a lane
+;; runs, each with that version's answer to every one of them.
 ;;
 ;; A libcurl whose version has no row fails make test, wherever it runs, and
 ;; test-url prints the row it would need on the error port, naming this file.

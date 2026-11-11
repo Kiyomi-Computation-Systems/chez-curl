@@ -1,10 +1,9 @@
 #!r6rs
 ;;; (http-client private exchange): the functional core of a call, its
-;;; exchange (the M5 plan, sections 3.4 and 3.6). It makes no transfer,
-;;; reads no clock and draws no number: the shell hands it the time, and it
-;;; answers what to do next, as data, so the suite drives it by tables. Only
-;;; (curl)'s URL functions, whose answers depend on the loaded libcurl
-;;; alone, and its condition types reach out.
+;;; exchange. It makes no transfer, reads no clock and draws no number: the
+;;; shell hands it the time, and it answers what to do next, as data, so the
+;;; suite drives it by tables. Only (curl)'s URL functions, whose answers
+;;; depend on the loaded libcurl alone, and its condition types reach out.
 ;;;
 ;;; An exchange is one call: its method and URL as the caller gave them,
 ;;; the request of its step, the first and then each redirect's, its bound,
@@ -49,8 +48,8 @@
 ;;;   (exchange-steps-past? STATE HEAD NOW-NS UTC-S DRAW), a streamed
 ;;;   transfer's head, its body and timings #f: whether exchange-step
 ;;;   answers next for it, so the call steps past it, by exchange-step
-;;;   itself (the M6 plan, section 3.6). exchange-raised is what a call
-;;;   raises for a failure no rule steps, once its head was handed on.
+;;;   itself. exchange-raised is what a call raises for a failure no rule
+;;;   steps, once its head was handed on.
 ;;;
 ;;; Every fail is (condition [HTTP-TIMEOUT] C EXCHANGE), built here: C what
 ;;; the transfer or the submit raised, when there is one, and EXCHANGE the
@@ -58,9 +57,9 @@
 ;;; and either the transfer's connect-timeout-ms is not shorter than its
 ;;; timeout-ms, the time left, or NOW-NS is at or past the deadline; it then
 ;;; carries &http-timeout too, unless it ends a retry that sent nothing,
-;;; which answers what it repeated (below). Otherwise a 28 is the transfer's own connect
-;;; timeout's (the M5 plan, section 3.5). A redirect the rules refuse fails
-;;; with (condition REDIRECT-ERROR WHO MESSAGE [URL-ERROR] EXCHANGE).
+;;; which answers what it repeated (below). Otherwise a 28 is the transfer's
+;;; own connect timeout's. A redirect the rules refuse fails with (condition
+;;; REDIRECT-ERROR WHO MESSAGE [URL-ERROR] EXCHANGE).
 ;;;
 ;;; A transfer with no connect-timeout-ms still has one: libcurl applies
 ;;; DEFAULT_CONNECT_TIMEOUT, 300000 ms, during the connect, and uses the
@@ -76,15 +75,14 @@
 ;;;
 ;;; The rule's clock is NOW-NS, which the shell reads after the await
 ;;; returns, and the await notices a done token up to about 10 ms late: its
-;;; polling sleeps reach 10 ms (the slice's second review measured a median
-;;; of 8.8 ms and a maximum of 10.0, over 30 runs). So a transfer's own
-;;; connect timeout that fires within that much of the deadline can be read
-;;; at or past it, and reported as &http-timeout: 1 of 9 calls did, at a
-;;; connect timeout of 393 ms and a bound of 400. (curl) gives no completion
-;;; time to read instead, so the window stays, documented.
+;;; polling sleeps reach 10 ms (a median of 8.8 ms and a maximum of 10.0,
+;;; measured over 30 runs). So a transfer's own connect timeout that fires
+;;; within that much of the deadline can be read at or past it, and reported
+;;; as &http-timeout: 1 of 9 calls did, at a connect timeout of 393 ms and a
+;;; bound of 400. (curl) gives no completion time to read instead, so the
+;;; window stays, documented.
 ;;;
-;;; The redirect rules (the M5 plan, section 3.4; ADR-0008, amended
-;;; 2026-10-27 and 2026-10-28; ADR-0027; ADR-0029), for a response:
+;;; The redirect rules (ADR-0008; ADR-0027; ADR-0029), for a response:
 ;;;
 ;;;   - a 301, 302, 303, 307 or 308 whose first header named Location, A
 ;;;     to Z folded, is neither empty nor blank, of SP, HTAB and CR alone,
@@ -97,17 +95,15 @@
 ;;;     byte is # keeps the URL requested, its fragment set by
 ;;;     curl-url-with-fragment from the bytes after it; any other is
 ;;;     resolved by curl-url-resolve against the URL requested, its bytes
-;;;     encoded first as a fragment's are (ADR-0029, amended), and one
-;;;     whose bytes hold no # takes that URL's own fragment, as curl-url-part
-;;;     gives it, by curl-url-with-fragment (RFC 9110, section 10.2.2). A
-;;;     refusal of either, or a scheme other than http or https, fails as
-;;;     bad-location;
+;;;     encoded first as a fragment's are (ADR-0029), and one whose bytes
+;;;     hold no # takes that URL's own fragment, as curl-url-part gives it,
+;;;     by curl-url-with-fragment (RFC 9110, section 10.2.2). A refusal of
+;;;     either, or a scheme other than http or https, fails as bad-location;
 ;;;   - from https to http fails as insecure-redirect, unless the call
 ;;;     allows a downgrade;
 ;;;   - a step that streams its body from a producer counted as called, by
 ;;;     exchange-called?, fails a redirect that keeps the body as
-;;;     body-not-replayable, before any other refusal (ADR-0032, decision 3,
-;;;     amended);
+;;;     body-not-replayable, before any other refusal (ADR-0032);
 ;;;   - a 301 or a 302 makes a post a get, without its body; a 303 makes
 ;;;     every method but head a get, without its body; every other method,
 ;;;     and a 307 and a 308, keep the method and the body, a streamed
@@ -120,8 +116,8 @@
 ;;;     host, A to Z folded, or another zone ID, drops Host too: libcurl
 ;;;     gives an IPv6 host without its zone, so two zones of one address are
 ;;;     told apart by the zone alone. No request holds a Proxy-Authorization
-;;;     header: the low level refuses one (ADR-0037, decision 4), and a
-;;;     proxy's credentials, its URL's, go to every hop with it;
+;;;     header: the low level refuses one (ADR-0037), and a proxy's
+;;;     credentials, its URL's, go to every hop with it;
 ;;;   - the next request is made by make-curl-request from the new URL,
 ;;;     every other key read from the step's request, whose timeout-ms is
 ;;;     the call's bound: exchange-submission gives it the time left;
@@ -129,15 +125,13 @@
 ;;;     its own of (); the answer, and a redirect error's response, carry
 ;;;     the history before them.
 ;;;
-;;; The retry rules (the M5 plan, section 3.5; ADR-0026, amended
-;;; 2026-10-28; ADR-0022, amended 2026-10-28), with a policy. A policy's
-;;; statuses are 400 to 599, so no status both retries and redirects. A
-;;; step is one URL: its attempts count the transfers
-;;; it has made, and a redirect starts them again, so a call makes at most
-;;; attempts x (redirects + 1) transfers of its own. While the step has made
-;;; fewer than the policy's attempts, and the wait would end before the
-;;; deadline, strictly, these are retried, by (next STATE REQUEST WAIT-MS),
-;;; REQUEST the step's again:
+;;; The retry rules (ADR-0026; ADR-0022), with a policy. A policy's statuses
+;;; are 400 to 599, so no status both retries and redirects. A step is one
+;;; URL: its attempts count the transfers it has made, and a redirect starts
+;;; them again, so a call makes at most attempts x (redirects + 1) transfers
+;;; of its own. While the step has made fewer than the policy's attempts,
+;;; and the wait would end before the deadline, strictly, these are retried,
+;;; by (next STATE REQUEST WAIT-MS), REQUEST the step's again:
 ;;;
 ;;;   - a failure from the await, perform-failed, that carries a CONNECT's
 ;;;     status, curl-transfer-error-connect-code, a proxy's refusal of the
@@ -145,8 +139,8 @@
 ;;;     statuses hold it, for a method in its methods, whatever its code and
 ;;;     request size, which move with the version: 56 on 7.85.0 and 8.5.0,
 ;;;     7 later, and the CONNECT's bytes on 7.85.0 alone (ADR-0026 and
-;;;     ADR-0037, amended 2026-11-03). Its wait is the backoff's: a proxy's
-;;;     headers are not the response's;
+;;;     ADR-0037). Its wait is the backoff's: a proxy's headers are not the
+;;;     response's;
 ;;;   - any other failure from the await, perform-failed, of the connect,
 ;;;     send-receive or timeout class, that is not the bound's 28, with a
 ;;;     request size of 0, nothing sent, for any method; above 0, or #f,
@@ -168,34 +162,30 @@
 ;;; jitter: the step's attempts bound how often such a retry repeats.
 ;;;
 ;;; A retry that runs out of time having sent nothing answers what it
-;;; retried (decided by the maintainer, 2026-10-28, and narrowed after the
-;;; slice's second review): the state keeps the step's last retried
-;;; outcome, and when the bound passes before the retry sends anything,
-;;; either exchange-submission finding no time left for the retried
-;;; request or that request's transfer failing with the bound's 28 and a
-;;; request size of 0, the call answers the last response the retry
-;;; repeated, or raises the last failure with its &http-exchange, and no
-;;; &http-timeout. But a streamed call whose retry runs out so after its
-;;; hop was cancelled at its head, the retried response's body #f, at its
-;;; submission or at the bound's 28 with nothing sent, fails with
-;;; &http-timeout, as with no time left for any request (decided by the
-;;; maintainer, 2026-11-01). A bound's 28 whose request size is above 0,
-;;; or #f, unknown, means the retry may have reached the server: it raises
-;;; with &http-timeout, so the last transfer's own "nothing sent" is never
-;;; claimed for it. A raised failure's size speaks for its own transfer
-;;; alone: an earlier transfer of the step, retried for a method in the
-;;; policy's methods, may have sent its request, which &http-exchange's
-;;; transfer count above 1 says may be so (the slice's third review). A
-;;; redirect clears the kept outcome, so a later transfer's bound is the
-;;; plain &http-timeout; a retried transfer that ends any other way goes
+;;; retried: the state keeps the step's last retried outcome, and when the
+;;; bound passes before the retry sends anything, either exchange-submission
+;;; finding no time left for the retried request or that request's transfer
+;;; failing with the bound's 28 and a request size of 0, the call answers
+;;; the last response the retry repeated, or raises the last failure with
+;;; its &http-exchange, and no &http-timeout. But a streamed call whose
+;;; retry runs out so after its hop was cancelled at its head, the retried
+;;; response's body #f, at its submission or at the bound's 28 with nothing
+;;; sent, fails with &http-timeout, as with no time left for any request. A
+;;; bound's 28 whose request size is above 0, or #f, unknown, means the
+;;; retry may have reached the server: it raises with &http-timeout, so the
+;;; last transfer's own "nothing sent" is never claimed for it. A raised
+;;; failure's size speaks for its own transfer alone: an earlier transfer of
+;;; the step, retried for a method in the policy's methods, may have sent
+;;; its request, which &http-exchange's transfer count above 1 says may be
+;;; so. A redirect clears the kept outcome, so a later transfer's bound is
+;;; the plain &http-timeout; a retried transfer that ends any other way goes
 ;;; through the rules. Not retried: a step that streams its body from a
-;;; producer counted as called (ADR-0032, decision 3, amended); any
-;;; other class, a code no class names, any reason but perform-failed, a
-;;; refused submit, the engine's stop among them, a redirect the rules
-;;; refuse, and the bound's 28. What is not retried is as with no policy: a
-;;; failure fails, and a response is done or redirects. A retried response,
-;;; or failure, joins no history, and the call's context counts its
-;;; transfer.
+;;; producer counted as called (ADR-0032); any other class, a code no class
+;;; names, any reason but perform-failed, a refused submit, the engine's
+;;; stop among them, a redirect the rules refuse, and the bound's 28. What
+;;; is not retried is as with no policy: a failure fails, and a response is
+;;; done or redirects. A retried response, or failure, joins no history, and
+;;; the call's context counts its transfer.
 (library (http-client private exchange)
   (export make-exchange exchange? exchange-method exchange-url exchange-request
           exchange-bound exchange-start-ns exchange-transfers exchange-history
@@ -240,14 +230,13 @@
             (immutable history unchecked-http-response-history))
     (sealed #t)
     ;; Opaque, as (curl)'s response is: its headers can hold a Set-Cookie,
-    ;; whose value is a secret, and its URL a password (the M7 plan,
-    ;; section 3.5). A response prints as #<http-response>.
+    ;; whose value is a secret, and its URL a password. A response prints as
+    ;; #<http-response>.
     (opaque #t))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define http-response-status
     (checked-accessor 'http-response-status http-response? "a response" unchecked-http-response-status))
   (define http-response-http-version
@@ -280,8 +269,7 @@
   ;; RESPONSE's body decoded as UTF-8 by utf8->string: a malformed sequence
   ;; read as U+FFFD, and a leading byte-order mark dropped. It reads no
   ;; charset. A response whose body is #f, a head's, is an assertion
-  ;; violation: its body streamed, or was never read (the M6 plan, section
-  ;; 3.1).
+  ;; violation: its body streamed, or was never read.
   (define (http-response-text response)
     (unless (http-response? response)
       (assertion-violation 'http-response-text "not a response" (shown-value response)))
@@ -341,10 +329,10 @@
   ;; exchange-called? : State -> Boolean
   ;;   whether the call's producer counts as called: the drive called it,
   ;;   or libcurl had asked for the body by a head, by the head's bit
-  ;;   (ADR-0032, decision 3, amended). A step whose request streams its
-  ;;   body from that producer is then never sent again: no retry takes it,
-  ;;   and a redirect that keeps the body raises body-not-replayable. It
-  ;;   stays set for the call: the producer is the call's one
+  ;;   (ADR-0032). A step whose request streams its body from that producer
+  ;;   is then never sent again: no retry takes it, and a redirect that
+  ;;   keeps the body raises body-not-replayable. It stays set for the call:
+  ;;   the producer is the call's one
   (define-record-type (exchange make-exchange-state exchange?)
     (fields (immutable method exchange-method)
             (immutable url exchange-url)
@@ -362,9 +350,8 @@
             (immutable retried exchange-retried)
             (immutable called exchange-called?))
     (sealed #t)
-    ;; Opaque: a call's state holds its requests, and the drive hands a
-    ;; core step that holds one to an assertion as its irritant (the review
-    ;; of M7 slice 2).
+    ;; Opaque: a call's state holds its requests, and the drive hands a core
+    ;; step that holds one to an assertion as its irritant.
     (opaque #t))
 
   ;; ns? : Any -> Boolean
@@ -413,10 +400,10 @@
                          (exchange-called? state)))
 
   ;; exchange-mark-called : State -> State
-  ;; STATE, its producer counted as called (ADR-0032, decision 3, amended):
-  ;; the shell marks it once it has called the producer, or a head said
-  ;; libcurl had asked for the body. A state whose producer counts as
-  ;; called already is answered as it is.
+  ;; STATE, its producer counted as called (ADR-0032): the shell marks it
+  ;; once it has called the producer, or a head said libcurl had asked for
+  ;; the body. A state whose producer counts as called already is answered
+  ;; as it is.
   (define (exchange-mark-called state)
     (check-state 'exchange-mark-called state)
     (if (exchange-called? state)
@@ -430,9 +417,9 @@
                              (exchange-retried state) #t)))
 
   ;; spent? : State -> Boolean
-  ;; Whether STATE's step request streams its body from the call's
-  ;; producer, and that producer counts as called: a step that must never
-  ;; be sent again (ADR-0032, decision 3, amended).
+  ;; Whether STATE's step request streams its body from the call's producer,
+  ;; and that producer counts as called: a step that must never be sent
+  ;; again (ADR-0032).
   (define (spent? state)
     (and (exchange-called? state) (eq? (curl-request-body (exchange-request state)) 'stream)))
 
@@ -486,8 +473,7 @@
   ;; compounded with STATE's &http-exchange, which counts every transfer,
   ;; and no &http-timeout. A response whose body is #f, a streamed call's
   ;; hop cancelled at its head, is no answer: the call fails with its
-  ;; &http-timeout instead, as with no time left for any request (decided
-  ;; by the maintainer, 2026-11-01).
+  ;; &http-timeout instead, as with no time left for any request.
   (define (ran-out state)
     (let ((last (exchange-retried state)))
       (cond ((and (eq? (car last) 'response) (not (http-response-body (cadr last))))
@@ -557,7 +543,7 @@
   ;; call-with-response-port's procedure, so no rule steps it and no retry
   ;; takes it: C compounded with STATE's context, that transfer counted,
   ;; and with &http-timeout first when C is a 28 that is the call's bound's,
-  ;; by bound-timeout?'s rule (the M6 plan, section 3.6).
+  ;; by bound-timeout?'s rule.
   (define (exchange-raised state c now-ns)
     (check-state 'exchange-raised state)
     (check-ns 'exchange-raised now-ns)
@@ -654,10 +640,9 @@
   ;; own resolution of a lone # drops the last segment and the query on
   ;; 7.85.0, 8.5.0 and 8.7.1, and moves its hex case on 8.20.0 and 8.23.0
   ;; (ADR-0029). Any others are resolved by curl-url-resolve, which encodes
-  ;; them first, as it encodes a fragment (ADR-0029, amended); then, when
-  ;; they hold no #, the answer takes REQUESTED's own fragment, as a string,
-  ;; which comes back as REQUESTED holds it. A refusal raises
-  ;; &curl-url-error.
+  ;; them first, as it encodes a fragment (ADR-0029); then, when they hold
+  ;; no #, the answer takes REQUESTED's own fragment, as a string, which
+  ;; comes back as REQUESTED holds it. A refusal raises &curl-url-error.
   (define (redirect-url requested bytes)
     (if (and (> (bytevector-length bytes) 0) (= (bytevector-u8-ref bytes 0) hash-byte))
         (curl-url-with-fragment requested (bytes-from bytes 1))
@@ -695,8 +680,8 @@
   ;; credential-header? : String -> Boolean
   ;; Whether a header named NAME is one another origin never gets:
   ;; Authorization and Cookie, A to Z folded. A Proxy-Authorization header
-  ;; was one too, until the low level refused every one (ADR-0037, decision
-  ;; 4): no request this reads holds one.
+  ;; is not listed: the low level refuses every one (ADR-0037), so no
+  ;; request this reads holds one.
   (define (credential-header? name)
     (exists (lambda (credential) (ascii-ci=? name credential))
             '("Authorization" "Cookie")))
@@ -730,30 +715,27 @@
   ;; method, its body and its body's headers kept or dropped by
   ;; body-dropped?, a streamed body's body-length with it; its credential
   ;; headers dropped when ACROSS, to another origin; its Host when
-  ;; ANOTHER-HOST; every other key LAST's, its stream-buffer among them (the
-  ;; M6 plan, section 3.6), and its http-version (the M7 plan, section
-  ;; 3.1): a hop to https:// by prior knowledge is refused as it is
-  ;; submitted, prior-knowledge-over-https; and its credentials within one
-  ;; origin, dropped when ACROSS, as the credential headers are (ADR-0036;
-  ;; the M7 plan, section 3.1): a hop within the origin whose URL holds a
-  ;; user or a password is refused as it is submitted,
-  ;; credentials-beside-userinfo; and its proxy, its proxy CA file and its
-  ;; proxy verification, to every hop, another origin's too: a proxy's
-  ;; credentials are the proxy's, not the origin's (ADR-0037, amended
-  ;; 2026-11-03). A hop to https:// through an https:// proxy where TLS
-  ;; inside TLS stalls is refused as it is submitted, proxy-tls-in-tls; and
-  ;; its cookie jar, the session's, to every hop, another origin's too:
-  ;; libcurl matches each cookie to a host, so a jar needs no drop; a jar
-  ;; closed since is refused as the hop is submitted, cookie-jar-closed.
-  ;; It is LAST through curl-request-with, its url, method and headers
-  ;; given, the body and body-length #f when dropped, the credentials #f
-  ;; when ACROSS, every other field kept as LAST holds it: a multipart body
-  ;; kept is LAST's own, its files not stat'd here, so the core makes no
-  ;; file system call, and a file lost mid-call is refused at the hop's
-  ;; submit, as at a retry's (ADR-0023, after slice 3's review). LAST's
-  ;; hatch options, fault and follow are kept too, where make-curl-request
-  ;; made them (), #f and #f: the high level sets none of them, so they are
-  ;; those already.
+  ;; ANOTHER-HOST; every other key LAST's, its stream-buffer among them, and
+  ;; its http-version: a hop to https:// by prior knowledge is refused as it
+  ;; is submitted, prior-knowledge-over-https; and its credentials within
+  ;; one origin, dropped when ACROSS, as the credential headers are
+  ;; (ADR-0036): a hop within the origin whose URL holds a user or a
+  ;; password is refused as it is submitted, credentials-beside-userinfo;
+  ;; and its proxy, its proxy CA file and its proxy verification, to every
+  ;; hop, another origin's too: a proxy's credentials are the proxy's, not
+  ;; the origin's (ADR-0037). A hop to https:// through an https:// proxy
+  ;; where TLS inside TLS stalls is refused as it is submitted,
+  ;; proxy-tls-in-tls; and its cookie jar, the session's, to every hop,
+  ;; another origin's too: libcurl matches each cookie to a host, so a jar
+  ;; needs no drop; a jar closed since is refused as the hop is submitted,
+  ;; cookie-jar-closed. It is LAST through curl-request-with, its url,
+  ;; method and headers given, the body and body-length #f when dropped, the
+  ;; credentials #f when ACROSS, every other field kept as LAST holds it: a
+  ;; multipart body kept is LAST's own, its files not stat'd here, so the
+  ;; core makes no file system call, and a file lost mid-call is refused at
+  ;; the hop's submit, as at a retry's (ADR-0023). LAST's hatch options,
+  ;; fault and follow are kept too, where make-curl-request made them (), #f
+  ;; and #f: the high level sets none of them, so they are those already.
   (define (next-request last url status across another-host)
     (let* ((method (curl-request-method last))
            (dropped (body-dropped? status method))
@@ -821,8 +803,8 @@
   ;; bound; then, first, body-not-replayable, when the step streams its body
   ;; from a producer that counts as called and the redirect keeps the body,
   ;; by body-dropped?: a 307 or 308, and a 301 or 302 of every method but
-  ;; post (ADR-0032, decision 3, amended); then too-many-redirects once the
-  ;; bound's are followed; else follow's answer.
+  ;; post (ADR-0032); then too-many-redirects once the bound's are followed;
+  ;; else follow's answer.
   (define (redirected state response)
     (let ((status (http-response-status response))
           (location (location-of (http-response-headers response)))
@@ -836,7 +818,7 @@
              (refuse-redirect state 'too-many-redirects response location #f))
             (else (follow state response status location)))))
 
-  ;; --- retries (ADR-0026; the M5 plan, section 3.5) ---------------------------------
+  ;; --- retries (ADR-0026) -----------------------------------------------------------
 
   ;; backoff-wait : Retry Positive-Integer Real -> Natural
   ;; The wait, in ms, before the retry that follows the ATTEMPTS-th transfer
@@ -1054,8 +1036,8 @@
   ;; attempts-left? : State -> Boolean
   ;; Whether STATE has a policy, its step has made fewer transfers than the
   ;; policy's attempts, and its step may be sent again: no step that
-  ;; streams its body from a producer counted as called is (ADR-0032,
-  ;; decision 3, amended), whatever the policy says.
+  ;; streams its body from a producer counted as called is (ADR-0032),
+  ;; whatever the policy says.
   (define (attempts-left? state)
     (let ((policy (exchange-policy state)))
       (and policy (< (exchange-attempts state) (http-retry-attempts policy))
@@ -1085,10 +1067,10 @@
   ;; retry may repeat for METHOD: perform-failed, and then, first, one that
   ;; carries a CONNECT's status, a proxy's refusal of the tunnel, as a
   ;; response with that status, when POLICY's statuses hold it and its
-  ;; methods METHOD, alike on every version (ADR-0026, amended 2026-11-03);
-  ;; else of the connect, send-receive or timeout class, with a request
-  ;; size of 0, nothing sent, for any method; above 0, or #f, unknown, for
-  ;; a method in POLICY's methods alone.
+  ;; methods METHOD, alike on every version (ADR-0026); else of the connect,
+  ;; send-receive or timeout class, with a request size of 0, nothing sent,
+  ;; for any method; above 0, or #f, unknown, for a method in POLICY's
+  ;; methods alone.
   (define (retried-failure? c method policy)
     (and (curl-transfer-error? c)
          (eq? (curl-transfer-error-reason c) 'perform-failed)
@@ -1168,8 +1150,7 @@
   ;; raises. A pure predicate, by exchange-step's own rules: the shell
   ;; reads the clocks, the draw and the head's bit once, at the head, and
   ;; steps a hop by exchange-step with the same values, so the two cannot
-  ;; disagree (the M6 plan, section 3.6). STATE is the step's state before
-  ;; the head, its producer marked called when the head says libcurl had
-  ;; asked for the body.
+  ;; disagree. STATE is the step's state before the head, its producer
+  ;; marked called when the head says libcurl had asked for the body.
   (define (exchange-steps-past? state response now-ns utc-s draw)
     (eq? (car (exchange-step state (list 'response response) now-ns utc-s draw)) 'next)))

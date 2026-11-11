@@ -15,8 +15,7 @@
 ;;;   seeded-bytes       a payload that is the same on every run
 ;;;   describe           a raised object as text, for evidence
 ;;;
-;;; The test origin and the byte probe (M1 plan, section 6; ADR-0005,
-;;; amended):
+;;; The test origin and the byte probe (ADR-0005):
 ;;;
 ;;;   call-with-origin   run tests/origin.mjs for the length of a call
 ;;;   origin-node, origin-pid, origin-face
@@ -38,7 +37,7 @@
 ;;;                      what a Probe holds
 ;;;   bounded            capture-command under GNU timeout's 10 s
 ;;;
-;;; The TLS material and its checker, openssl (M1 plan, section 8):
+;;; The TLS material and its checker, openssl:
 ;;;
 ;;;   origin-pki         #f, or the PKI directory call-with-origin hands the
 ;;;                      origin as --pki, a parameter
@@ -98,15 +97,15 @@
   (define suite-exit-form '(exit (suite-exit-status runner)))
 
   ;; suite-exit-status : Test-Runner -> (U 0 1)
-  ;; 0 when RUNNER saw a pass, and no failure and no unexpected pass, and
-  ;; every count of (curl private counters) is zero. Otherwise 1, after a
-  ;; line on the error port for each rule broken: the runner's counts, then
-  ;; each native count that is not zero, in native-kinds order (ADR-0014,
-  ;; decision 7, amended: a native object a suite made and never freed is a
-  ;; leak, which Valgrind sees as still reachable when a Chez object held
-  ;; its address). Expected failures and skips count neither way. SRFI-64
-  ;; sets no exit status of its own. The answer is 0 or 1, never a count:
-  ;; exit statuses wrap at 256, so 256 failures would exit 0.
+  ;; 0 when RUNNER saw a pass, and no failure and no unexpected pass, and every
+  ;; count of (curl private counters) is zero. Otherwise 1, after a line on the
+  ;; error port for each rule broken: the runner's counts, then each native
+  ;; count that is not zero, in native-kinds order (ADR-0014: a native object a
+  ;; suite made and never freed is a leak, which Valgrind sees as still
+  ;; reachable when a Chez object held its address). Expected failures and skips
+  ;; count neither way. SRFI-64 sets no exit status of its own. The answer is 0
+  ;; or 1, never a count: exit statuses wrap at 256, so 256 failures would exit
+  ;; 0.
   (define (suite-exit-status runner)
     (unless (test-runner? runner)
       (assertion-violation 'suite-exit-status "not a SRFI-64 test runner" runner))
@@ -149,17 +148,16 @@
   ;; an answer, not a raise, so a test compares the whole list with what it
   ;; expects.
   ;;
-  ;; A NUL is refused: `system` takes a C string, which would end there and
-  ;; run whatever came before it. The two streams go through two files in a
+  ;; A NUL is refused: `system` takes a C string, which would end there and run
+  ;; whatever came before it. The two streams go through two files in a
   ;; directory of the call's own (make-capture-directory), removed after,
-  ;; however the call ends. Any thread may call it, and calls on several at
-  ;; once share no file; but on macOS they run one after the other, since
-  ;; its system(3) waits for any other thread's (measured, the M6 plan's
-  ;; section 7): a check that needs two commands at once starts the long
-  ;; one through open-process-ports. `system` lets other threads collect while the
-  ;; command runs, except inside a critical section, where it holds them
-  ;; all until the command ends (Chez 10.4.0's c/prim5.c; measured in spike
-  ;; E1, .plans/research/e1/findings.md).
+  ;; however the call ends. Any thread may call it, and calls on several at once
+  ;; share no file; but on macOS they run one after the other, since its
+  ;; system(3) waits for any other thread's (measured): a check that needs two
+  ;; commands at once starts the long one through open-process-ports. `system`
+  ;; lets other threads collect while the command runs, except inside a critical
+  ;; section, where it holds them all until the command ends (Chez 10.4.0's
+  ;; c/prim5.c; measured).
   (define (capture-command argv)
     (check-command argv)
     (let ((dir #f))
@@ -207,8 +205,8 @@
 
   ;; next-capture : -> Positive-Integer
   ;; How many captures this process has begun, this one included. The
-  ;; mutex is held through critical-section around with-mutex, so no
-  ;; escape can leave it held (traps.md).
+  ;; mutex is held through critical-section around with-mutex, which takes
+  ;; its mutex before its own dynamic-wind, so no escape can leave it held.
   (define (next-capture)
     (critical-section
      (with-mutex capture-mutex
@@ -1346,14 +1344,14 @@
   ;; 3.0.11 and LibreSSL 3.3.6 all sent none, by a face's log. It
   ;; requires exit status 0, and answers parse-s-client of its stdout and
   ;; stderr. Otherwise it raises, with the status, stdout and stderr. It
-  ;; asks for no hostname check: LibreSSL 3.3.6 has none (ADR-0005, amended).
+  ;; asks for no hostname check: LibreSSL 3.3.6 has none (ADR-0005).
   ;; Stdin's end does not stop OpenSSL 3 reading the server's TLS 1.3
   ;; session tickets first: by timing, it sometimes prints a block for each,
   ;; with a Verify return code of its own, which parse-s-client reads.
   ;; The pipe is no /dev/null: LibreSSL 3.3.6's s_client polls stdin with
   ;; poll(2), and macOS's poll does not support devices. There, with stdin at
   ;; /dev/null, it printed "poll error" and exited 1 once connected; with an
-  ;; empty pipe, DONE and 0 (measured on the maintainer's Mac, 2026-10-23).
+  ;; empty pipe, DONE and 0 (measured on macOS).
   (define (s-client origin face servername ca alpn)
     (let ((address (origin-face origin face)))
       (unless (or (not servername) (and (string? servername) (positive? (string-length servername))))

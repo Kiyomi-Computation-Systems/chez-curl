@@ -2,11 +2,10 @@
 ;;; The suite for (curl)'s two URL functions, curl-url-part and
 ;;; curl-url-append-query, and for the rule every URL function keeps: an
 ;;; answer whose bytes are not UTF-8 is refused as not-utf-8, never decoded
-;;; with U+FFFD (the M5 plan, sections 3.1 and 4.1; ADR-0028).
+;;; with U+FFFD (ADR-0028).
 ;;;
-;;; Its cases are M5 slice 1's measurement's (.plans/research/m5/url-parts/),
-;;; through C on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's
-;;; 8.20.0 and 8.23.0, written once, in all-cases:
+;;; Its cases are measured through C on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and
+;;; with GnuTLS, Guix's 8.20.0 and 8.23.0, and written once, in all-cases:
 ;;;
 ;;;   - (append URL PART): curl-url-append-query, eight URLs with and without
 ;;;     a query, an empty one, one ending in &, and a fragment, each with
@@ -150,8 +149,8 @@
 
 ;; shared-answers : (Listof (List Case Answer))
 ;; The cases every recorded libcurl answers alike: 7.85.0, 8.5.0 (OpenSSL
-;; and GnuTLS), 8.20.0 and 8.23.0, through this suite, on 2026-10-27. The
-;; parts answers agree with the C probe's curl_url_get on each.
+;; and GnuTLS), 8.20.0 and 8.23.0, through this suite. The parts answers
+;; agree with the C probe's curl_url_get on each.
 (define shared-answers
   `(
     ((append "http://h.example/p" "b=2") "http://h.example/p?b=2")
@@ -727,13 +726,11 @@
         (refusal (lambda () (curl-url-append-query #f "b=2")))
         (refusal (lambda () (curl-url-append-query "http://a/" 42)))))
 
-;; The zone ID, read for the origin rule (the M5 plan, section 3.4): an IPv6
-;; host comes back without it, on every libcurl measured, so two zones of
-;; one address would read as one host. These answers are alike on the five
-;; Linux libcurls (.plans/research/m5/location/results/zoneid-*.log); an
-;; empty zone, %25 inside one and %30 vary on 8.23.0, and are left out. The
-;; host of [FE80::1%25ETH0] keeps its case on 7.85.0 and 8.5.0 alone, so
-;; its zone ID alone is asserted.
+;; The zone ID, read for the origin rule: an IPv6 host comes back without it, on
+;; every libcurl measured, so two zones of one address would read as one host.
+;; These answers are alike on the five Linux libcurls; an empty zone, %25 inside
+;; one and %30 vary on 8.23.0, and are left out. The host of [FE80::1%25ETH0]
+;; keeps its case on 7.85.0 and 8.5.0 alone, so its zone ID alone is asserted.
 (test-equal "curl-url-part's zoneid: an IPv6 host's zone ID as written, which the host leaves out, with a port, from a raw %, and in its own case; absent for an IPv6 host with none, a name and an IPv4 address"
   (list '(("eth0" "[fe80::1]") ("eth1" "[fe80::1]") ((absent) "[fe80::1]") ("eth0" "[fe80::1]")
           ("eth0" "[fe80::1]") ("lo" "[::1]") ((absent) "h.example") ((absent) "127.0.0.1"))

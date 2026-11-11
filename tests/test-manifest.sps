@@ -11,7 +11,7 @@
 ;;;     pinned version;
 ;;;   - Akku.lock's chez-srfi url holds that version;
 ;;;   - the package is chez-curl, and its version is CHANGELOG.md's latest
-;;;     release, so a release that bumps one alone fails (the M8 plan, 3.6).
+;;;     release, so a release that bumps one alone fails.
 ;;;
 ;;; CHANGELOG.md is read as Keep a Changelog writes it: `## [Unreleased]`
 ;;; first, then each release's `## [X.Y.Z] - YYYY-MM-DD`, the newest first,

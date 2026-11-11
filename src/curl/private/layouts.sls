@@ -1,6 +1,6 @@
 #!r6rs
 ;;; (curl private layouts): the C structs Scheme reads, each a define-ftype
-;;; written from libcurl's headers (ADR-0001, decision 4). C's padding and
+;;; written from libcurl's headers (ADR-0001). C's padding and
 ;;; alignment apply, as in a C struct.
 ;;;
 ;;; tests/test-constants.sps reads this file as data and checks every
@@ -109,7 +109,7 @@
   ;; struct curl_blob, curl/easy.h (7.71.0), every field: what a blob
   ;; option's setopt takes the address of. data is the bytes' address, len
   ;; their count, and flags CURL_BLOB_COPY or CURL_BLOB_NOCOPY; native fills
-  ;; one for each blob the hatch sets (ADR-0009, decision 4). The suite
+  ;; one for each blob the hatch sets (ADR-0009). The suite
   ;; checks every field and the struct's size.
   (define-ftype curl-blob
     (struct
@@ -119,11 +119,10 @@
 
   ;; curl-slist : Ftype
   ;; struct curl_slist, curl/curl.h, every field: what CURLINFO_COOKIELIST
-  ;; answers a pointer to, a cookie jar's lines (ADR-0035; the M7 plan,
-  ;; section 3.5). data is a line's NUL-terminated bytes, next the next
-  ;; node, NULL at the last. native walks it, then frees the list with
-  ;; curl_slist_free_all. The suite checks every field and the struct's
-  ;; size.
+  ;; answers a pointer to, a cookie jar's lines (ADR-0035). data is a
+  ;; line's NUL-terminated bytes, next the next node, NULL at the last.
+  ;; native walks it, then frees the list with curl_slist_free_all. The
+  ;; suite checks every field and the struct's size.
   (define-ftype curl-slist
     (struct
       (data uptr)

@@ -1,7 +1,6 @@
 #!r6rs
 ;;; A child of tests/test-mailbox.sps: an interrupt handler that escapes
-;;; from a take as its critical section ends (ADR-0021, amended; M4 plan,
-;;; section 3.5).
+;;; from a take as its critical section ends (ADR-0021).
 ;;;
 ;;;   mailbox-escape.sps WAIT URL
 ;;;
@@ -14,22 +13,19 @@
 ;;; This thread prints (ready PID) and runs WAIT, bounded at 5 s, which
 ;;; blocks inside its critical section on that mutex. The suite sends
 ;;; SIGINT to PID about 500 ms later: a keyboard interrupt made pending
-;;; inside a critical section runs as the section ends
-;;; (.plans/research/m4/slice2/keyboard.ss), so the handler, which escapes,
-;;; runs once WAIT has taken the token out, before it returns.
+;;; inside a critical section runs as the section ends, so the handler, which
+;;; escapes, runs once WAIT has taken the token out, before it returns.
 ;;;
-;;; A collection asked for while the holder sleeps in its critical section
-;;; waits for the hold to end, and so does every thread that reaches an
-;;; event check meanwhile (M7's carried races, research/m7/carried/races).
-;;; With one planted at ready, under the 1 s hold this child had, 9 runs of
-;;; 20 failed: before 5 times, this thread stopped short of WAIT and its
-;;; handler run there once the hold ended; returned 4, this thread stopped
-;;; short of its ready line, so that WAIT took the token before the signal
-;;; came. M5's floor lane read before once, under load. So the collection
-;;; comes first, by collect-rendezvous (collect refuses while the engine's
-;;; thread is alive), which leaves none due in the hold, about 87 KiB
-;;; allocated there of the 8 MiB trip; and the hold ends only once the
-;;; signal is sent.
+;;; A collection asked for while the holder sleeps in its critical section waits
+;;; for the hold to end, and so does every thread that reaches an event check
+;;; meanwhile. With one planted at ready, under the 1 s hold this child had, 9
+;;; runs of 20 failed: before 5 times, this thread stopped short of WAIT and its
+;;; handler run there once the hold ended; returned 4, this thread stopped short
+;;; of its ready line, so that WAIT took the token before the signal came. The
+;;; floor lane read before once, under load. So the collection comes first, by
+;;; collect-rendezvous (collect refuses while the engine's thread is alive),
+;;; which leaves none due in the hold, about 87 KiB allocated there of the 8 MiB
+;;; trip; and the hold ends only once the signal is sent.
 ;;;
 ;;; Prints (escape CLASS QUIET CALLED DONE AWAITED): CLASS is returned,
 ;;; when WAIT returned the token; caller, when the handler escaped after it
@@ -55,7 +51,7 @@
 ;; Every hold of LOCK is in a critical section, as (curl private engine)'s
 ;; locked holds its mutexes: a holder with interrupts on could join a
 ;; collection while a thread blocked on LOCK with interrupts off stayed
-;; active, a deadlock (traps.md).
+;; active, a deadlock.
 (define lock (make-mutex))
 (define holding #f)
 (define released #f)

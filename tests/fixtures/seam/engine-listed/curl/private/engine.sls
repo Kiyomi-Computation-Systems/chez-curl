@@ -1,10 +1,9 @@
 #!r6rs
-;;; Fixture for tests/test-check-seam.sps: fork-thread, disable-interrupts
-;;; and enable-interrupts in (curl private engine), the one library
-;;; library-only-chez-names lists for each (M3 plan, section 3.9), with
-;;; make-mutex, with-mutex, critical-section, sleep and
-;;; make-time beside it, which are allowed everywhere: a wait polls, holding
-;;; no mutex while it sleeps (ADR-0013, amended 2026-10-25).
+;;; Fixture for tests/test-check-seam.sps: fork-thread, disable-interrupts and
+;;; enable-interrupts in (curl private engine), the one library
+;;; library-only-chez-names lists for each, with make-mutex, with-mutex,
+;;; critical-section, sleep and make-time beside it, which are allowed
+;;; everywhere: a wait polls, holding no mutex while it sleeps (ADR-0013).
 (library (curl private engine)
   (export start await)
   (import (curl private require-threaded)

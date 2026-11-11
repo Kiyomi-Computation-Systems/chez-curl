@@ -275,8 +275,7 @@
 ;; arguments are the header's values: CURLVERSION_TENTH is 9,
 ;; CURL_GLOBAL_DEFAULT is 3, CURLH_HEADER is 1. backend-call is
 ;; curl_version_info again, once the init has run: a MultiSSL libcurl
-;; names the backend the init put in use only then (ADR-0024, amended
-;; 2026-10-27).
+;; names the backend the init put in use only then (ADR-0024).
 (define version-call "curl_version_info(9)")
 (define init-call "curl_global_init(3)")
 (define backend-call "curl_version_info(9)")
@@ -291,10 +290,10 @@
 (define api-calls
   (list version-call init-call backend-call option-call easy-init-call header-call cleanup-call))
 
-;; The mime probe's calls, after check-apis (ADR-0039, amended 2026-11-06):
-;; curl_formadd, its options as the decoy was handed them, CURLFORM_COPYNAME
-;; 1 with chez-curl, CURLFORM_COPYCONTENTS 4 with probe, then CURLFORM_END
-;; 17; curl_formfree of the post it made, NULL when it made none; then
+;; The mime probe's calls, after check-apis (ADR-0039): curl_formadd, its
+;; options as the decoy was handed them, CURLFORM_COPYNAME 1 with
+;; chez-curl, CURLFORM_COPYCONTENTS 4 with probe, then CURLFORM_END 17;
+;; curl_formfree of the post it made, NULL when it made none; then
 ;; curl_mime_init with NULL, and curl_mime_free of the mime it made.
 (define formadd-call "curl_formadd(post,last,1:chez-curl,4:probe,17)")
 (define formfree-call "curl_formfree(post)")
@@ -350,12 +349,12 @@
 ;; 8.7.1 names SecureTransport before it and LibreSSL after. The decoy built
 ;; with DECOY_MULTISSL names DecoyFirst before the init and DecoyTLS after.
 ;; The report keeps the text read before; loaded-tls-backend must be the
-;; backend after, read by curl_version_info again (ADR-0024, amended
-;; 2026-10-27). The control decoy names one backend throughout. The same
-;; second call answers loaded-features: the decoy's selector, as Apple's
-;; 8.7.1's, lacks CURL_VERSION_HTTPS_PROXY until the init, which the report,
-;; read before it, keeps, so a check of a backend's support reads the word
-;; after (the Mac's run of M7 slice 3): curl/curl.h's 1<<21, #x200000.
+;; backend after, read by curl_version_info again (ADR-0024). The control
+;; decoy names one backend throughout. The same second call answers
+;; loaded-features: the decoy's selector, as Apple's 8.7.1's, lacks
+;; CURL_VERSION_HTTPS_PROXY until the init, which the report, read before it,
+;; keeps, so a check of a backend's support reads the word after (measured on
+;; macOS): curl/curl.h's 1<<21, #x200000.
 (let ((so (in-scratch "multissl.so")))
   (test-equal "decoy multissl: the report keeps ssl_version as curl_version_info named it before the init, and loaded-tls-backend is the backend in use after it, DecoyTLS, read by a second call"
     (list 0 (list 0
@@ -385,7 +384,7 @@
                         #f (list version-call))))
 
 ;; The report travels with every refusal made after the version was read
-;; (ADR-0002, decision 4).
+;; (ADR-0002).
 (decoy-case "below-floor" '("-DDECOY_BELOW_FLOOR")
   "7.84.0 is below-floor, and nothing runs after curl_version_info"
   (lambda (so) (refused 'below-floor so 'override "7.84.0" '()
@@ -436,7 +435,7 @@
 ;; with a marker, and the probe references loaded-libcurl twice more. Both
 ;; raise the first refusal again: nothing is loaded, initialised or probed
 ;; a second time, and the second library never enters the process
-;; (ADR-0002, decision 3).
+;; (ADR-0002).
 (let ((first (in-scratch "sticks.so"))
       (second (in-scratch "sticks-then.so")))
   (test-equal "a refusal sticks: CHEZ_CURL_LIBCURL changed between references loads nothing new"
@@ -517,7 +516,7 @@
        (cons "curl_formfree" (list version-call init-call backend-call))
        (cons "curl_formadd" (list version-call init-call backend-call))))
 
-;; --- the mime probe's no (ADR-0039, amended 2026-11-06; the M8 plan, section 3.9) ---
+;; --- the mime probe's no (ADR-0039) -------------------------------------------------
 ;; Each switch makes one of the probe's two calls say no, as a libcurl built
 ;; without mime does: curl_formadd's 7, a code no build answers the form,
 ;; and curl_mime_init's NULL. Each load still loads, every other request
@@ -807,7 +806,7 @@
 
         ;; GUIX_ENVIRONMENT's candidate exists, so it is chosen, but it is
         ;; a text file. GUIX_PROFILE's, next in line, is a real libcurl,
-        ;; and must never be tried (ADR-0002, decision 3).
+        ;; and must never be tried (ADR-0002).
         (let* ((broken-profile (in-scratch "broken-profile"))
                (broken-libcurl (string-append broken-profile "/lib/libcurl.so.4")))
           (capture-command (list "mkdir" "-p" (string-append broken-profile "/lib")))

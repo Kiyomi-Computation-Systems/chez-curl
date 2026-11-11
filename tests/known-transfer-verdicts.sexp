@@ -1,8 +1,7 @@
-;; The transfer's verdicts that vary by version (M2 plan, sections 5.1.1 and
-;; 5.3). tests/test-transfer.sps holds the answer every recorded
-;; libcurl agrees on for each other scenario. These are the scenarios on
-;; which they do not agree: one row per libcurl version a lane runs, each
-;; with that version's answer to every one of them.
+;; The transfer's verdicts that vary by version. tests/test-transfer.sps holds
+;; the answer every recorded libcurl agrees on for each other scenario. These
+;; are the scenarios on which they do not agree: one row per libcurl version a
+;; lane runs, each with that version's answer to every one of them.
 ;;
 ;; A libcurl whose version has no row fails make test, wherever it runs, and
 ;; test-transfer prints the row it would need on the error port, naming this
@@ -13,20 +12,20 @@
 ;;
 ;; The file is data: rows only, nothing else. Each is exactly
 ;;   (libcurl (where STRING) (version STRING) (answers (CASE ANSWER) ...))
-;; A CASE is (get FACE PATH), a GET of PATH on the origin's FACE, http or
-;; raw, submitted to an engine and awaited, with no body limit; or
-;; (error-text FACE PATH), the same GET, which raises a &curl-transfer-error,
-;; and whose ANSWER is (error-text TEXT), its error buffer's text: a text
-;; that varies by version (ADR-0020, amended 2026-10-26). A get's ANSWER is (refused REASON
-;; CODE), the &curl-transfer-error's reason and CURLcode, a number; or
-;; (response STATUS VERSION HEADERS BODY): the status, the HTTP version's
-;; symbol, every header as (NAME VALUE), in libcurl's order, and the body
-;; read as Latin-1. HEADERS may instead be (numbered PREFIX COUNT VALUE):
-;; COUNT headers, PREFIX1 to PREFIXCOUNT, each VALUE, in that order. A row's
-;; cases are exactly test-transfer's varying cases, each once, and each case
-;; has different answers in two rows at least: one every row answers alike
-;; belongs to the shared answers. `where` is a note for the reader and is
-;; not compared. Two rows may not share a version.
+;; A CASE is (get FACE PATH), a GET of PATH on the origin's FACE, http or raw,
+;; submitted to an engine and awaited, with no body limit; or (error-text FACE
+;; PATH), the same GET, which raises a &curl-transfer-error, and whose ANSWER is
+;; (error-text TEXT), its error buffer's text: a text that varies by version
+;; (ADR-0020). A get's ANSWER is (refused REASON CODE), the
+;; &curl-transfer-error's reason and CURLcode, a number; or (response STATUS
+;; VERSION HEADERS BODY): the status, the HTTP version's symbol, every header as
+;; (NAME VALUE), in libcurl's order, and the body read as Latin-1. HEADERS may
+;; instead be (numbered PREFIX COUNT VALUE): COUNT headers, PREFIX1 to
+;; PREFIXCOUNT, each VALUE, in that order. A row's cases are exactly
+;; test-transfer's varying cases, each once, and each case has different answers
+;; in two rows at least: one every row answers alike belongs to the shared
+;; answers. `where` is a note for the reader and is not compared. Two rows may
+;; not share a version.
 
 (libcurl
  (where "The floor, curl 7.85.0 built by scripts/ci/build-curl.sh on Ubuntu 24.04 with OpenSSL 3.0.13: the library the floor lanes load. Measured through C in Docker ubuntu:24.04, Node 20.10.0, on 2026-10-23 (M2 plan, section 5.1.1). many-headers at 50,000 left the rows in M8 slice 2: the cap on response headers refuses it, header-limit, on every libcurl (tests/test-transfer.sps's cap test).")

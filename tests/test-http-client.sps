@@ -1,10 +1,8 @@
 #!r6rs
-;;; The suite for (http-client), the high level's first slice (ADR-0025; the
-;;; M5 plan, sections 3.1 to 3.3, 3.6 and 4): sessions, the verbs, the keys
+;;; The suite for (http-client) (ADR-0025): sessions, the verbs, the keys
 ;;; and their merge, the encodings, the response, the conditions, the
-;;; call's bound, the functional core and the shell for one call. Redirects,
-;;; slice 2's, are tests/test-redirect.sps', and retries, slice 3's,
-;;; tests/test-retry.sps'.
+;;; call's bound, the functional core and the shell for one call. Redirects
+;;; are tests/test-redirect.sps', and retries tests/test-retry.sps'.
 ;;;
 ;;;   - (http-client)'s exports, written out;
 ;;;   - sessions: their keys refused by name, a bad value refused with no
@@ -41,10 +39,10 @@
 ;;;     submit's critical section, by SIGINT, which still cancels it.
 ;;;
 ;;; Every check on the origin's raw face makes its own session: the raw face
-;;; closes after each script without saying so, and curl 8.23.0 then resends
-;;; on each dead pooled connection (traps.md). Every expected value is one
-;;; the code under test cannot produce by failing: SRFI-64 makes #f of a
-;;; raise in the actual expression, so none is #f, and an absent header is
+;;; closes after each script without saying so, and curl 8.23.0 then
+;;; resends on each dead pooled connection. Every expected value is one the
+;;; code under test cannot produce by failing: SRFI-64 makes #f of a raise
+;;; in the actual expression, so none is #f, and an absent header is
 ;;; (absent).
 (import (rnrs)
         (srfi :64)
@@ -205,8 +203,7 @@
 
 ;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
 ;; PROC of each of ITEMS, called first to last: map calls its procedure in
-;; no fixed order (traps.md), and each call here has effects a later read
-;; must follow.
+;; no fixed order, and each call here has effects a later read must follow.
 (define (in-order proc items)
   (let loop ((rest items) (answers '()))
     (if (null? rest)
@@ -224,10 +221,8 @@
 
 ;; --- the exports ----------------------------------------------------------------------
 
-;; Written out: the M5 plan's slices 1 to 4, section 3.1, the brief's
-;; names, the M6 plan's slice 3, section 3.1: call-with-response-port, and
-;; the M7 plan's slice 4, section 3.1: a session's cookies, read out and
-;; loaded.
+;; Written out: (http-client)'s names, among them call-with-response-port,
+;; and a session's cookies, read out and loaded.
 (define http-client-exports
   '(make-http-session http-session? http-session-close call-with-http-session
     http-session-cookies http-session-load-cookies!
@@ -850,8 +845,7 @@
 
 ;; child-hold : (Listof Datum)
 ;; The forms each SIGINT child below splices in after its import, for its
-;; hold (M7's carried races, research/m7/carried/races), as
-;; tests/test-group.sps's children have them:
+;; hold, as tests/test-group.sps's children have them:
 ;;   - (until-sent), which the holder sleeps in, holding the engine's
 ;;     mutex, until the suite has sent the SIGINT: interrupt-script makes
 ;;     the file HTTP_CLIENT_CHILD_SENT names once its kill has returned,
@@ -893,8 +887,8 @@
 ;; URL, its first argument, a 10 s drip, whose submit blocks on that mutex
 ;; inside the drive's critical section. The suite sends SIGINT about 500 ms
 ;; after ready: a keyboard interrupt made pending inside a critical section
-;; runs as it ends (traps.md), so the handler, which escapes, runs once the
-;; submit has returned.
+;; runs as it ends, so the handler, which escapes, runs once the submit has
+;; returned.
 ;;
 ;; The handler records whether the holder had begun to let go, a flag it
 ;; sets just before it does: after-release shows the escape came once the
@@ -902,13 +896,12 @@
 ;; submit blocked. The engine is not asked. Its queue and its live table
 ;; are read in two holds, and it moves the token between them, or holds it
 ;; in neither between taking it from the queue and entering it in the
-;; table: the first version of this child read the sum there, and under 24
-;; busy loops it read 0 four times and 2 once in 40 runs, where 1 was
-;; right. This witness passed 40 of 40 runs so loaded and 40 of 40 idle,
-;; and the record-after-section mutant failed 30 of 30
-;; (.plans/research/m5/http-client/witness/). For the same reason the
-;; settle waits 500 ms past the release, when the engine has set up
-;; anything it took, then up to 3 s for it to hold nothing, queued or live.
+;; table: a child that read the sum there, under 24 busy loops, read 0 four
+;; times and 2 once in 40 runs, where 1 was right. This witness passed 40
+;; of 40 runs so loaded and 40 of 40 idle, and the record-after-section
+;; mutant failed 30 of 30. For the same reason the settle waits 500 ms past
+;; the release, when the engine has set up anything it took, then up to 3 s
+;; for it to hold nothing, queued or live.
 ;;
 ;; Prints (escape HOW WHEN QUIET SETTLED), QUIET quiet when no collection
 ;; ran in the hold (child-hold), then (counts COUNTS), once the session is
@@ -1431,9 +1424,9 @@
    ;; Each on its own session: the raw face closes after every script.
    ;; Measured in the container, on 8.20.0, 10 runs natively: each call
    ;; ended 405 to 407 ms after it started; 3 runs under Valgrind with
-   ;; ADR-0014's four flags: 411 to 480, the call's own bound the slowest
-   ;; (.plans/research/m5/http-client/timing/). The bound below allows that,
-   ;; and fails a 28 that arrived after the drip, 3 s, or a bound doubled.
+   ;; ADR-0014's four flags: 411 to 480, the call's own bound the slowest.
+   ;; The bound below allows that, and fails a 28 that arrived after the
+   ;; drip, 3 s, or a bound doubled.
    (for-each
     (lambda (where)
       (test-equal (string-append "a call's timeout-ms of 400, " (car where)
@@ -1540,12 +1533,11 @@
    ;; fuel of 50000 ticks, which run out in its await: a call's setup spends
    ;; about 6700 of them and its await about 100 every 10 ms, so the expiry
    ;; lands about 440 ms into the await of a 10 s drip, its transfer live
-   ;; (measured, .plans/research/m5/http-client/engine/). Slices of 1000
-   ;; ticks raced the engine's thread: an expiry just after the submit
-   ;; cancelled the token still queued, before the engine started its
-   ;; transfer, so no expiry found it live, in 10 of 10 runs under 24 busy
-   ;; loops and none of 10 idle; the suite with them failed 2 of 10 runs
-   ;; idle and 10 of 10 loaded.
+   ;; (measured). Slices of 1000 ticks raced the engine's thread: an expiry
+   ;; just after the submit cancelled the token still queued, before the
+   ;; engine started its transfer, so no expiry found it live, in 10 of 10
+   ;; runs under 24 busy loops and none of 10 idle; the suite with them
+   ;; failed 2 of 10 runs idle and 10 of 10 loaded.
    (test-equal "a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer"
      (list '(expired live ended)
            (list 'raised '(curl-transfer-error none cancelled #f) (list 'exchange 'get long-drip '() 1))
@@ -1571,14 +1563,12 @@
    ;; A second escape, landing as the first one unwinds: swept over its
    ;; ticks, 1 to 24, so that some land in the drive's after thunk. With
    ;; that thunk's interrupts on, a plain dynamic-wind, it was cut short
-   ;; before its cancel, and the transfer stayed live at ticks 5 to 9, as
-   ;; the slice's review found (.plans/research/m5/http-client/
-   ;; double-escape/). The critical wind holds the second escape off past
-   ;; the unwind, so from the tick that would land in the after thunk on,
-   ;; it never comes: ticks 1 to 4 escape twice, before the after thunk,
-   ;; and 5 on once. Both kinds seen, in that order, are the sweep's
-   ;; evidence that it reached the after thunk; with the plain wind, 1 to 9
-   ;; escaped twice.
+   ;; before its cancel, and the transfer stayed live at ticks 5 to 9. The
+   ;; critical wind holds the second escape off past the unwind, so from
+   ;; the tick that would land in the after thunk on, it never comes:
+   ;; ticks 1 to 4 escape twice, before the after thunk, and 5 on once.
+   ;; Both kinds seen, in that order, are the sweep's evidence that it
+   ;; reached the after thunk; with the plain wind, 1 to 9 escaped twice.
    (test-equal "a second escape that lands as the first unwinds, at each of ticks 1 to 24, still leaves no transfer live within 3 s; the early ticks escape twice, then the rest once"
      (list (map (lambda (ticks) (list ticks 'ended)) (iota-from 1 24)) 'twice-then-once)
      (let ((rows (in-order (lambda (ticks) (escape-twice long-drip ticks)) (iota-from 1 24))))
@@ -1605,7 +1595,7 @@
   zero-counts
   (native-counts))
 
-;; --- a caller's value, as a refusal names it (M7 slice 3's review), the high level's own copy ---
+;; --- a caller's value, as a refusal names it, the high level's own copy -------------------------
 
 ;; circular : List
 ;; A list whose last pair points back at its first.

@@ -1,24 +1,24 @@
 #!r6rs
 ;;; The suite for a call's checks and steps, their critical sections
-;;; (ADR-0025, amended 2026-11-05, and after the branch's review):
-;;; (http-client)'s call-state, which every entry reaches, http-request,
-;;; call-with-response-port, a group's go and http-parallel, runs its
-;;; checks in one critical section, its guard inside it, each raise there
-;;; answered as data and raised once the section has ended. At each entry:
+;;; (ADR-0025): (http-client)'s call-state, which every entry reaches,
+;;; http-request, call-with-response-port, a group's go and http-parallel,
+;;; runs its checks in one critical section, its guard inside it, each raise
+;;; there answered as data and raised once the section has ended. At each
+;;; entry:
 ;;;
 ;;;   - Ctrl-C, in a child: the checks blocked at their start, through the
 ;;;     private gate, on a mutex another thread holds until the suite has
 ;;;     sent SIGINT, so the keyboard interrupt is made pending inside the
-;;;     section (traps.md). A handler's own &curl-error leaves as raised,
-;;;     that very object, not compounded with &http-exchange, the handler
-;;;     run after the checks' end, nothing submitted; a continuable
-;;;     &warning the caller's handler returns from resumes the call, which
-;;;     answers 200. The guard around the checks with interrupts on
-;;;     compounded the first and turned the second &non-continuable;
+;;;     section. A handler's own &curl-error leaves as raised, that very
+;;;     object, not compounded with &http-exchange, the handler run after
+;;;     the checks' end, nothing submitted; a continuable &warning the
+;;;     caller's handler returns from resumes the call, which answers 200.
+;;;     A guard around the checks with interrupts on would compound the
+;;;     first and turn the second &non-continuable;
 ;;;   - a timer, set to 1 tick at the checks' start: the same two, in
 ;;;     process. A timer cannot show where a guard sits relative to the
-;;;     section, whose end a timer never meets (traps.md): the Ctrl-C
-;;;     children hold that;
+;;;     section, whose end a timer never meets: the Ctrl-C children hold
+;;;     that;
 ;;;   - a Chez engine's expiry, swept a tick at a time from fuel 1 until
 ;;;     the first expiry seen after the checks' end: none lands between the
 ;;;     checks' start and end, no resumed call raises (curl)'s refusal to
@@ -29,23 +29,20 @@
 ;;;     &http-exchange, raised once the section has ended, so the caller's
 ;;;     handler runs with interrupts on.
 ;;;
-;;; A redirect's step, whose follow parses URLs through (curl)'s critical
-;;; winds, runs in a critical section of its own too, at every entry (as
-;;; amended after the branch's review, research/m7/carried/review, M1):
-;;; the same Ctrl-C children and timers at the first step's start, through
-;;; the step gate; an engine's expiry swept a tick at a time across the
-;;; first step, none landing inside a step and no resumed call raising
-;;; (curl)'s refusal to re-enter a parse; a timer set 1 to 300 ticks past
-;;; the step's start whose handler raises continuably, every call resuming;
-;;; and a raise made inside the step, through the gate, leaving with
-;;; interrupts on. A group's step ran in its turn's section before, and
-;;; passes as it did. A direct caller's curl-submit through a proxy URL
-;;; parses its URLs in sections of their own (m1): swept by an engine and
-;;; by a timer, a tick at a time, no submit raises a re-entry refusal. And
-;;; a URL past libcurl's 8,000,000-byte cap is refused at the checks'
-;;; start (M2): as libcurl refuses it, malformed-input, before the keys,
-;;; and in under a tenth of the time a URL at the cap takes to reach
-;;; libcurl's own refusal.
+;;; A redirect's step, whose follow parses URLs through (curl)'s critical winds,
+;;; runs in a critical section of its own too, at every entry: the same Ctrl-C
+;;; children and timers at the first step's start, through the step gate; an
+;;; engine's expiry swept a tick at a time across the first step, none landing
+;;; inside a step and no resumed call raising (curl)'s refusal to re-enter a
+;;; parse; a timer set 1 to 300 ticks past the step's start whose handler raises
+;;; continuably, every call resuming; and a raise made inside the step, through
+;;; the gate, leaving with interrupts on. A group's step runs inside its
+;;; turn's section, and passes alike. A direct caller's curl-submit through
+;;; a proxy URL parses its URLs in sections of their own: swept by an engine and
+;;; by a timer, a tick at a time, no submit raises a re-entry refusal. And a URL
+;;; past libcurl's 8,000,000-byte cap is refused at the checks' start: as
+;;; libcurl refuses it, malformed-input, before the keys, and in under a tenth
+;;; of the time a URL at the cap takes to reach libcurl's own refusal.
 ;;;
 ;;; Every wait here is bounded: a child by its script's 60 s, the suite's
 ;;; calls by their sessions' timeout-ms. Every expected value is one the
@@ -105,8 +102,8 @@
 (define entries '(request port go parallel))
 
 ;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
-;; PROC of each of ITEMS, first to last: map calls its procedure in no
-;; fixed order (traps.md).
+;; PROC of each of ITEMS, first to last: map calls its procedure in no fixed
+;; order.
 (define (in-order proc items)
   (let loop ((rest items) (answers '()))
     (if (null? rest)
@@ -194,8 +191,7 @@
 
 ;; child-hold : (Listof Datum)
 ;; The forms the child splices in after its import, for its hold, as
-;; test-group's children hold theirs (M7 slice 4's races,
-;; research/m7/slice4/races):
+;; test-group's children hold theirs:
 ;;   - (until-sent), which the holder sleeps in, holding its mutex, until
 ;;     the suite has sent the SIGINT: interrupt-script makes the file
 ;;     CHECKS_CHILD_SENT names once its kill has returned, polled every
@@ -237,7 +233,7 @@
 ;; raise, raises a &curl-engine-error of the child's own making; resume,
 ;; raises a &warning continuably, which the caller's with-exception-handler
 ;; returns from when the condition it is handed is a warning, as
-;; test-http-client's M5 timer test's does.
+;; test-http-client's timer test's does.
 ;;
 ;; Prints (checks ENTRY WHERE ACTION OUTCOME MARKS QUIET HOLDS STARTED RETURNED):
 ;; OUTCOME (returned STATUS), or (raised SAME COMPOUNDED), SAME whether it
@@ -843,8 +839,7 @@
    ;; handler made to sleep 100 ms before its raise, go and parallel started
    ;; 2 in 10 of 10 runs each, request and port 1 in 10 of 10; without the
    ;; sleep, every run started 1: 40 of each entry natively, and on that
-   ;; lane 40 each of request, port and go and 60 of parallel
-   ;; (research/m7/carried/guard/, the fix round's step-raise tallies). So a
+   ;; lane 40 each of request, port and go and 60 of parallel. So a
    ;; group's row reads 1 or 2 as one-or-two; a single call's, which
    ;; submits after its step's section, is 1.
    (let ((redirect (url-of-face o 'http "/redirect/302?to=/status/200"))

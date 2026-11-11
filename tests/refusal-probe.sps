@@ -54,9 +54,9 @@
 ;;; Last comes (calls . LOG) when the most recently loaded library has the
 ;;; entry point decoy_calls, as tests/decoy-libcurl.c does: its call log.
 ;;;
-;;; Why eval, and no import of (curl). Measured on Chez 10.4.0 (the
-;;; mutation log's native-layer part): Chez invokes the libraries a program
-;;; imports before the program's body starts, so a guard in the body never
+;;; Why eval, and no import of (curl). Measured on Chez 10.4.0: Chez
+;;; invokes the libraries a program imports before the program's body
+;;; starts, so a guard in the body never
 ;;; sees a raise from an imported library's body, and the program dies in
 ;;; Chez's default handler with exit 255. (curl)'s body loads libcurl. So
 ;;; this program evaluates (loaded-libcurl) in (environment '(rnrs) '(curl))

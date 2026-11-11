@@ -131,7 +131,7 @@
   ;; holds ADDRESS, or when the line that does names no file. A line whose
   ;; range does not read as two hex numbers is skipped. The native layer
   ;; asks it for curl_version_info's entry point, so the answer is the file
-  ;; of the libcurl it calls (ADR-0024, amended 2026-10-26).
+  ;; of the libcurl it calls (ADR-0024).
   (define (mapped-file maps-text address)
     (and maps-text
          (let loop ((rest (lines maps-text)))
@@ -143,7 +143,7 @@
   ;; Whether PATTERN, one byte or more, stands anywhere in BYTES. An empty
   ;; PATTERN is an assertion violation. The native layer asks it whether the
   ;; loaded libcurl's file holds Guix's patch's literal, SSL_CERT_FILE
-  ;; (ADR-0024, amended 2026-10-26: the key).
+  ;; (ADR-0024).
   (define (bytes-hold? bytes pattern)
     (let ((n (bytevector-length bytes)) (m (bytevector-length pattern)))
       (when (= m 0) (assertion-violation 'bytes-hold? "a pattern is one byte or more" pattern))
@@ -167,8 +167,7 @@
   ;; OpenSSL/1.1.1k FIPS. #f when TEXT is #f, or nothing is left. Before
   ;; curl_global_init a MultiSSL libcurl names its first backend so,
   ;; whatever the init will pick (lib/vtls/vtls.c, multissl_version): the
-  ;; native layer asks it of the text read after (ADR-0024, amended
-  ;; 2026-10-27).
+  ;; native layer asks it of the text read after (ADR-0024).
   (define (backend-in-use text)
     (and text
          (let* ((n (string-length text))

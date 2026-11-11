@@ -1,7 +1,7 @@
 #!r6rs
-;;; (http-client): chez-curl's high level (ADR-0007, ADR-0010, ADR-0025; the
-;;; M5 plan, sections 3.1 to 3.7). It reaches the low level through (curl)
-;;; alone, and holds no native object of its own.
+;;; (http-client): chez-curl's high level (ADR-0007, ADR-0010, ADR-0025). It
+;;; reaches the low level through (curl) alone, and holds no native object
+;;; of its own.
 ;;;
 ;;; A session owns one engine, and the defaults its calls share. Every call
 ;;; takes its session first; there is no default session, and nothing here
@@ -15,66 +15,64 @@
 ;;; (ADR-0026), and libcurl may still resend a request on its own: on a
 ;;; reused connection that died before any response byte, and on an HTTP/2
 ;;; stream refused with REFUSED_STREAM, five times more, a post's among them
-;;; (ADR-0026, amended 2026-10-28). With a policy, a step, one URL, makes
-;;; the policy's attempts at most, and a redirect starts the count again
-;;; (the M5 plan, section 3.5). A step retries a failure of the connect,
-;;; send-receive or timeout class, but the bound's own 28: for any method
-;;; when nothing was sent, by the failure's request size, 0; otherwise only
-;;; for a method in the policy's methods, and on libcurl 8.7.0 and 8.7.1,
-;;; whose request size is unknown, #f, a transfer that ran is read as sent.
-;;; It retries a status in the policy's statuses, 400 to 599, for a method
-;;; in its methods. Between, it waits the backoff, doubling, capped, a draw's share
-;;; of it with jitter, from the session's own generator; or a retried
-;;; status's Retry-After, delta-seconds or an HTTP-date, which one longer
-;;; than max-backoff-ms, or than the time left, makes no retry. What is not
-;;; retried is answered or raised as with no policy. A retried response
-;;; joins no history. A retry that runs out of time having sent nothing,
-;;; the bound passing before the retried request is submitted or while its
-;;; transfer has a request size of 0, answers the last response it
-;;; retried, or raises the last failure, with &http-exchange and no
-;;; &http-timeout; one whose request may have gone out raises the bound's
-;;; &http-timeout. A streamed call whose retry runs out so after its hop
-;;; was cancelled at its head, whose body it never read, fails with
-;;; &http-timeout, as with no time left for any request. A raised
-;;; failure's request size speaks for its own transfer alone: with more
-;;; than one transfer counted, an earlier one of the step may have sent
-;;; its request.
+;;; (ADR-0026). With a policy, a step, one URL, makes the policy's attempts
+;;; at most, and a redirect starts the count again. A step retries a failure
+;;; of the connect, send-receive or timeout class, but the bound's own 28:
+;;; for any method when nothing was sent, by the failure's request size, 0;
+;;; otherwise only for a method in the policy's methods, and on libcurl
+;;; 8.7.0 and 8.7.1, whose request size is unknown, #f, a transfer that ran
+;;; is read as sent. It retries a status in the policy's statuses, 400 to
+;;; 599, for a method in its methods. Between, it waits the backoff,
+;;; doubling, capped, a draw's share of it with jitter, from the session's
+;;; own generator; or a retried status's Retry-After, delta-seconds or an
+;;; HTTP-date, which one longer than max-backoff-ms, or than the time left,
+;;; makes no retry. What is not retried is answered or raised as with no
+;;; policy. A retried response joins no history. A retry that runs out of
+;;; time having sent nothing, the bound passing before the retried request
+;;; is submitted or while its transfer has a request size of 0, answers the
+;;; last response it retried, or raises the last failure, with
+;;; &http-exchange and no &http-timeout; one whose request may have gone out
+;;; raises the bound's &http-timeout. A streamed call whose retry runs out
+;;; so after its hop was cancelled at its head, whose body it never read,
+;;; fails with &http-timeout, as with no time left for any request. A raised
+;;; failure's request size speaks for its own transfer alone: with more than
+;;; one transfer counted, an earlier one of the step may have sent its
+;;; request.
 ;;;
 ;;; A call follows a redirect by chez-curl's rules, alike on every libcurl
-;;; (the M5 plan, section 3.4; ADR-0008, ADR-0023 and ADR-0027): a 301,
-;;; 302, 303, 307 or 308 whose first Location header is neither empty nor
-;;; blank. The Location's bytes are resolved by curl-url-resolve against
-;;; the URL the transfer requested; one that is # and a fragment keeps that
-;;; URL, its fragment set by curl-url-with-fragment, and one with no #
-;;; takes that URL's own fragment. A 301 or 302 makes a post a get, and a
-;;; 303 every method but head, each without its body or the call's headers
-;;; for one: Content-*, Digest and Last-Modified. Another origin, by scheme,
-;;; host A to Z folded and port, drops Authorization and Cookie from then
-;;; on, and the credentials key with them (ADR-0036), and another host
-;;; drops Host too; no request holds a Proxy-Authorization header, which the
-;;; low level refuses (ADR-0037);
+;;; (ADR-0008, ADR-0023 and ADR-0027): a 301, 302, 303, 307 or 308 whose
+;;; first Location header is neither empty nor blank. The Location's bytes
+;;; are resolved by curl-url-resolve against the URL the transfer requested;
+;;; one that is # and a fragment keeps that URL, its fragment set by
+;;; curl-url-with-fragment, and one with no # takes that URL's own fragment.
+;;; A 301 or 302 makes a post a get, and a 303 every method but head, each
+;;; without its body or the call's headers for one: Content-*, Digest and
+;;; Last-Modified. Another origin, by scheme, host A to Z folded and port,
+;;; drops Authorization and Cookie from then on, and the credentials key
+;;; with them (ADR-0036), and another host drops Host too; no request holds
+;;; a Proxy-Authorization header, which the low level refuses (ADR-0037);
 ;;; every other header follows, as every other key does, the http-version
-;;; among them: a redirect from http:// to https:// by prior knowledge
-;;; fails the call with the low level's refusal of its next request,
-;;; prior-knowledge-over-https, compounded with its &http-exchange (ADR-0034);
-;;; and a redirect within one origin to a URL holding a user or a password,
-;;; beside credentials, fails it so with credentials-beside-userinfo. The
-;;; proxy, the proxy CA file and the proxy's verification go to every hop,
-;;; another origin's too, the proxy URL's credentials with it: a hop to
-;;; https:// through an https:// proxy where TLS inside TLS stalls fails
-;;; the call so, proxy-tls-in-tls. A session's cookie jar goes to every
-;;; hop, another origin's too: libcurl matches cookies to hosts.
-;;; Each followed response joins the history. libcurl's own following stays
-;;; off.
+;;; among them: a redirect from http:// to https:// by prior knowledge fails
+;;; the call with the low level's refusal of its next request,
+;;; prior-knowledge-over-https, compounded with its &http-exchange
+;;; (ADR-0034); and a redirect within one origin to a URL holding a user or
+;;; a password, beside credentials, fails it so with
+;;; credentials-beside-userinfo. The proxy, the proxy CA file and the
+;;; proxy's verification go to every hop, another origin's too, the proxy
+;;; URL's credentials with it: a hop to https:// through an https:// proxy
+;;; where TLS inside TLS stalls fails the call so, proxy-tls-in-tls. A
+;;; session's cookie jar goes to every hop, another origin's too: libcurl
+;;; matches cookies to hosts. Each followed response joins the history.
+;;; libcurl's own following stays off.
 ;;;
 ;;; A retry policy treats a CONNECT a proxy refused with a status, a
 ;;; transfer failure that carries curl-transfer-error-connect-code, as a
 ;;; response with that status: retried when the policy's statuses hold it
 ;;; and its methods the call's, alike on every libcurl, its wait the
-;;; backoff's (ADR-0026, amended 2026-11-03). So the default policy retries
-;;; no 403 nor 407. A proxy that ends a CONNECT with no status keeps the
-;;; class rule above, where 7.85.0's request size, the CONNECT's, errs
-;;; toward not repeating a post.
+;;; backoff's (ADR-0026). So the default policy retries no 403 nor 407. A
+;;; proxy that ends a CONNECT with no status keeps the class rule above,
+;;; where 7.85.0's request size, the CONNECT's, errs toward not repeating a
+;;; post.
 ;;;
 ;;; What a call raises carries its context: a call compounds its own
 ;;; failures, (curl)'s included, with &http-exchange. A condition the
@@ -86,37 +84,33 @@
 ;;; them: a Ctrl-C made pending there runs as the section ends, and a timer
 ;;; that runs out there at a later event check, each outside the checks,
 ;;; so what it raises leaves as raised, whatever it is, and a continuable
-;;; raise a handler returns from resumes the call (ADR-0025, amended
-;;; 2026-11-05). A guard around the checks with interrupts on read a
-;;; handler's raise there as the call's own: its condition left
-;;; compounded, a continuable one could not resume the call, and an object
-;;; no clause took was re-raised back inside the URL's parse, whose
-;;; critical wind refused the re-entry (the M5 plan, section 10). The
-;;; section holds Ctrl-C and other threads' collections for the checks'
-;;; length, under 0.5 ms for an ordinary call, and each hold grows with
-;;; its input, with no bound but the input's: about 0.4 to 0.5 ms a MiB of
-;;; a bytevector body, as long as its copy, a primitive that makes no event
-;;; check wherever it runs; 2 to 2.7 ms a Mi chars of a string body; 31 to
-;;; 52 ms a Mi chars of a form value; 0.4 to 0.5 ms a thousand headers; 0.6
-;;; to 0.7 ms a thousand params; and about 29 ms a million chars of a URL,
-;;; up to libcurl's 8,000,000-byte cap: a URL longer than 8,000,000 chars,
-;;; whose UTF-8 bytes pass it, is refused at the checks' start, at once, as
-;;; libcurl refuses it, malformed-input, its refusal before the keys'
-;;; (.plans/research/m7/carried/guard/, the fix round's hold-rates.log).
-;;; Once a collection falls due during a hold, every thread stops at its
-;;; next event check until the hold ends, the engine's thread among them,
-;;; and with it every transfer that engine drives (traps.md). A caller who
-;;; takes a body, a form, headers or params from untrusted input bounds
-;;; their sizes first. A refusal is raised once the section has ended, so
-;;; a caller's handler runs with interrupts on. A redirect's step runs in
-;;; a critical section of its own too (the drive's section-step): what a
-;;; handler raises there comes after it, and no expiry lands inside it. A
-;;; group's step submits the next hop inside its section, so a raise that
-;;; comes as it ends cancels a transfer the engine may already have
-;;; started: one or two started, measured (research/m7/carried/guard/,
-;;; the fix round's tally); a single call submits after its section. It
-;;; re-exports nothing of (curl): a caller who catches a class of the low
-;;; level's imports (curl) too.
+;;; raise a handler returns from resumes the call (ADR-0025). A guard around
+;;; the checks with interrupts on read a handler's raise there as the call's
+;;; own: its condition left compounded, a continuable one could not resume
+;;; the call, and an object no clause took was re-raised back inside the
+;;; URL's parse, whose critical wind refused the re-entry. The section holds
+;;; Ctrl-C and other threads' collections for the checks' length, under 0.5
+;;; ms for an ordinary call, and each hold grows with its input, with no
+;;; bound but the input's: about 0.4 to 0.5 ms a MiB of a bytevector body,
+;;; as long as its copy, a primitive that makes no event check wherever it
+;;; runs; 2 to 2.7 ms a Mi chars of a string body; 31 to 52 ms a Mi chars of
+;;; a form value; 0.4 to 0.5 ms a thousand headers; 0.6 to 0.7 ms a thousand
+;;; params; and about 29 ms a million chars of a URL, up to libcurl's
+;;; 8,000,000-byte cap: a URL longer than 8,000,000 chars, whose UTF-8 bytes
+;;; pass it, is refused at the checks' start, at once, as libcurl refuses
+;;; it, malformed-input, its refusal before the keys'. Once a collection
+;;; falls due during a hold, every thread stops at its next event check
+;;; until the hold ends, the engine's thread among them, and with it every
+;;; transfer that engine drives. A caller who takes a body, a form, headers
+;;; or params from untrusted input bounds their sizes first. A refusal is
+;;; raised once the section has ended, so a caller's handler runs with
+;;; interrupts on. A redirect's step runs in a critical section of its own
+;;; too (the drive's section-step): what a handler raises there comes after
+;;; it, and no expiry lands inside it. A group's step submits the next hop
+;;; inside its section, so a raise that comes as it ends cancels a transfer
+;;; the engine may already have started: one or two started, measured; a
+;;; single call submits after its section. It re-exports nothing of (curl):
+;;; a caller who catches a class of the low level's imports (curl) too.
 ;;;
 ;;; A call that is escaped cancels its transfer: a Ctrl-C whose handler
 ;;; escapes, a timer's, a continuation, and a Chez engine's expiry, which
@@ -131,29 +125,27 @@
 ;;; submits anything: its await could not wait there.
 ;;;
 ;;; A request group runs many calls at once on one thread, with no thread
-;;; per call (ADR-0012; the M5 plan, section 3.7):
-;;; call-with-request-group calls its procedure with go, which starts a
-;;; call and answers its pending at once, and http-await answers one. Its
-;;; calls share one mailbox (ADR-0021), and whichever the thread waits for,
-;;; it drives them all: each step of a call, a redirect's and a retry's
-;;; among them, is the one-call shell's, and a submit's refusal is its own
-;;; call's failure alone. A limit queues the calls past it, each on its
-;;; clock. The group does not return while one of its calls is live: when
-;;; its procedure returns, it awaits every call and raises the first
-;;; failure no await answered; when its procedure escapes, it cancels
-;;; every call, waits for each transfer to end, then lets the escape go
-;;; on. http-parallel runs a list of calls so, checked first, and answers
-;;; their responses in order, or raises the first failure once the rest
-;;; have ended. A group takes no producer.
+;;; per call (ADR-0012): call-with-request-group calls its procedure with
+;;; go, which starts a call and answers its pending at once, and http-await
+;;; answers one. Its calls share one mailbox (ADR-0021), and whichever the
+;;; thread waits for, it drives them all: each step of a call, a redirect's
+;;; and a retry's among them, is the one-call shell's, and a submit's
+;;; refusal is its own call's failure alone. A limit queues the calls past
+;;; it, each on its clock. The group does not return while one of its calls
+;;; is live: when its procedure returns, it awaits every call and raises the
+;;; first failure no await answered; when its procedure escapes, it cancels
+;;; every call, waits for each transfer to end, then lets the escape go on.
+;;; http-parallel runs a list of calls so, checked first, and answers their
+;;; responses in order, or raises the first failure once the rest have
+;;; ended. A group takes no producer.
 ;;;
-;;; A call streams (ADR-0031; the M6 plan, section 3.6): through
-;;; call-with-response-port, whose procedure is handed the final head and a
-;;; port over the body as it arrives; and with a producer as its body,
-;;; called as libcurl asks, its body sent at most once (ADR-0032). Each
-;;; streamed transfer's head decides whether the call ends with it or steps
-;;; past it, by the rules above, read once: a hop whose request sends a
-;;; body is cancelled at its head, and one whose request sends none is read
-;;; whole into the history.
+;;; A call streams (ADR-0031): through call-with-response-port, whose
+;;; procedure is handed the final head and a port over the body as it
+;;; arrives; and with a producer as its body, called as libcurl asks, its
+;;; body sent at most once (ADR-0032). Each streamed transfer's head decides
+;;; whether the call ends with it or steps past it, by the rules above, read
+;;; once: a hop whose request sends a body is cancelled at its head, and one
+;;; whose request sends none is read whole into the history.
 (library (http-client)
   (export
    ;; --- sessions (ADR-0025) ------------------------------------------------
@@ -200,16 +192,15 @@
    ;; later call raises the engine's &curl-engine-error. A second close
    ;; returns. It does not drain. A second escape, a Ctrl-C or a timer's
    ;; handler, that lands as the close starts can leave the engine running
-   ;; until the process exits (ADR-0025, amended 2026-10-27), as a second
-   ;; Ctrl-C during a group's join leaves its tokens live (the M5 plan,
-   ;; section 3.7).
+   ;; until the process exits (ADR-0025), as a second Ctrl-C during a
+   ;; group's join leaves its tokens live.
    ;; call-with-http-session : Any ... (Session -> Any) -> Any
    ;; (call-with-http-session KEY VALUE ... PROC): PROC's answer, called with
    ;; a session made from the keys, which is closed when PROC returns or
    ;; escapes. The close is the after thunk of a plain dynamic-wind, so a
    ;; second escape that lands as it starts can skip it, and leave the
    ;; engine running until the process exits, as for http-session-close: a
-   ;; documented limit, not prevented (ADR-0025, amended 2026-10-27).
+   ;; documented limit, not prevented (ADR-0025).
    make-http-session http-session? http-session-close call-with-http-session
 
    ;; http-session-cookies : Session -> (Listof String)
@@ -234,7 +225,7 @@
    ;;   body         a bytevector, sent as it is, or a string, sent as its
    ;;                UTF-8 bytes, with no Content-Type of its own; or a
    ;;                producer, ( -> (U Bytevector Eof)), the body streamed
-   ;;                as it gives it (ADR-0031, decision 2), below
+   ;;                as it gives it (ADR-0031), below
    ;;   form         a list of (NAME . VALUE) strings, sent encoded as
    ;;                application/x-www-form-urlencoded, with that
    ;;                Content-Type, unless the headers name one, in any A to Z
@@ -253,9 +244,9 @@
    ;;                then, so its retries and hops send the files and bytes
    ;;                it began with; a session's Content-Type header is
    ;;                dropped, and libcurl writes the type and its boundary
-   ;;                (ADR-0039; the M8 plan, section 3.1). A multipart body
-   ;;                is a whole body, no producer: a group takes one, a
-   ;;                retry resends it, and a 307 or 308 keeps it
+   ;;                (ADR-0039). A multipart body is a whole body, no
+   ;;                producer: a group takes one, a retry resends it, and a
+   ;;                307 or 308 keeps it
    ;; A producer is called on the caller's thread, only once libcurl has
    ;; asked for the body and has room, and never after it answered the eof
    ;; object; it answers a bytevector of a byte or more, or the eof object
@@ -269,24 +260,24 @@
    ;; neither a bytevector of a byte or more nor the eof object is an
    ;; assertion violation from the call; a piece that would take the body
    ;; past its body-length is &http-request-error, field body, its value the
-   ;; producer, body-length-mismatch (ADR-0031, amended); each with its
+   ;; producer, body-length-mismatch (ADR-0031); each with its
    ;; &http-exchange, once its transfer is cancelled, before any of it is
    ;; put. Its own raise leaves the call as raised, once its transfer is
    ;; cancelled; a body that ends short of its body-length fails the
-   ;; transfer, (curl)'s body-length-mismatch, alike on every libcurl. Such a
-   ;; call is a streamed call, as call-with-response-port's is: it streams
+   ;; transfer, (curl)'s body-length-mismatch, alike on every libcurl. Such
+   ;; a call is a streamed call, as call-with-response-port's is: it streams
    ;; its response too, and reads its body whole, to body-limit. A streamed
    ;; call's hop, a redirect it follows or a retry it takes, whose request
    ;; sends a body is cancelled at its head, its history entry's body and
-   ;; timings #f; one whose request sends none is read whole (ADR-0031,
-   ;; amended 2026-10-31). A whole body's call is no streamed call, and runs
-   ;; as M5's. Over HTTP/2 on libcurl 8.20.0 and 8.23.0, a final 3xx, one
-   ;; the call does not follow, that arrives before a body is sent whole,
-   ;; streamed or whole, never ends but at the call's bound: pass a
-   ;; timeout-ms. So does a whole body's call's hop: M5's drive cannot
+   ;; timings #f; one whose request sends none is read whole (ADR-0031). A
+   ;; whole body's call is no streamed call, and runs through
+   ;; drive-exchange. Over HTTP/2 on libcurl 8.20.0 and 8.23.0, a final 3xx,
+   ;; one the call does not follow, that arrives before a body is sent
+   ;; whole, streamed or whole, never ends but at the call's bound: pass a
+   ;; timeout-ms. So does a whole body's call's hop: drive-exchange cannot
    ;; cancel it at its head. A streamed call whose retry runs out of time
    ;; after a hop it cancelled at its head fails with &http-timeout, as with
-   ;; no time left (decided by the maintainer, 2026-11-01).
+   ;; no time left.
    ;; body and form together are refused, multipart beside either, and any
    ;; of the three with get or head. A
    ;; call's header replaces every session header of its name, A to Z
@@ -304,7 +295,7 @@
    ;; http-request with the method each name says.
    http-request http-get http-head http-post http-put http-patch http-delete
 
-   ;; --- streaming the response (ADR-0031, decision 1) ----------------------
+   ;; --- streaming the response (ADR-0031) ----------------------------------
    ;; call-with-response-port : Session Symbol String Any ...
    ;;                           (Response Binary-Input-Port -> Any ...) -> Any ...
    ;; (call-with-response-port SESSION METHOD URL KEY VALUE ... PROC): the
@@ -376,7 +367,7 @@
    ;; http-retry? : Any -> Boolean
    make-http-retry http-retry?
 
-   ;; --- the request group (the M5 plan, section 3.7) ----------------------
+   ;; --- the request group -------------------------------------------------
    ;; call-with-request-group : Session Any ... (Go -> Any) -> Any
    ;; (call-with-request-group SESSION KEY VALUE ... PROC): PROC's values,
    ;; called with go, on a group of SESSION's on this thread, once every
@@ -468,20 +459,20 @@
    ;; stream-in-group; then its first request
    ;; by (curl)'s curl-request-check, as a submit would check it, its URL's
    ;; scheme and its CA file against the environment (ADR-0024) among it;
-   ;; each refusal compounded with &http-exchange (ADR-0023, amended
-   ;; 2026-10-28). A refusal only an engine makes, its stop or its
-   ;; failure, can still come once the calls run, as a failure among them.
-   ;; The first call to fail raises, as it raised, once every other is
-   ;; cancelled and its transfer has ended: the first the group saw fail,
-   ;; ties in the order of their latest submits. What a caller's interrupt
-   ;; handler or timer raises during the checks leaves as raised, as
-   ;; http-request's does; each spec's checks are a critical section of
-   ;; their own. An escape ends its group, a Chez engine's expiry among
-   ;; them: resumed, it enters no call more, submits none it had not, and
-   ;; raises its first failure, if any, or else the cancel of its first
-   ;; call, in SPECS' order, not done; an expiry that runs out in the checks
-   ;; lands after them, before the group is made, and the call goes on. It
-   ;; refuses inside a critical section, before anything else.
+   ;; each refusal compounded with &http-exchange (ADR-0023). A refusal only
+   ;; an engine makes, its stop or its failure, can still come once the
+   ;; calls run, as a failure among them. The first call to fail raises, as
+   ;; it raised, once every other is cancelled and its transfer has ended:
+   ;; the first the group saw fail, ties in the order of their latest
+   ;; submits. What a caller's interrupt handler or timer raises during the
+   ;; checks leaves as raised, as http-request's does; each spec's checks
+   ;; are a critical section of their own. An escape ends its group, a Chez
+   ;; engine's expiry among them: resumed, it enters no call more, submits
+   ;; none it had not, and raises its first failure, if any, or else the
+   ;; cancel of its first call, in SPECS' order, not done; an expiry that
+   ;; runs out in the checks lands after them, before the group is made, and
+   ;; the call goes on. It refuses inside a critical section, before
+   ;; anything else.
    http-parallel
 
    ;; --- the response -------------------------------------------------------
@@ -611,28 +602,27 @@
   ;; is, as call-request-of takes it, a group's refusing a producer, and WHO
   ;; names it in the refusals. With CHECK?, the first request also passes
   ;; (curl)'s curl-request-check, a submit's own checks, for http-parallel's
-  ;; checks before any submit (ADR-0023, amended 2026-10-28). Every
-  ;; condition raised, a check's, the URL's or the low level's, is
-  ;; compounded with &http-exchange, with no transfer made.
+  ;; checks before any submit (ADR-0023). Every condition raised, a check's,
+  ;; the URL's or the low level's, is compounded with &http-exchange, with
+  ;; no transfer made.
   ;;
   ;; The checks run in one critical section, the guard inside it, which
   ;; takes every raise there and answers it as data, raised once the
-  ;; section has ended (ADR-0025, amended 2026-11-05). So no interrupt
-  ;; handler runs inside the guard, which reads the checks' own raises
-  ;; alone: a Ctrl-C made pending in the section runs as it ends, outside
-  ;; the guard, and a timer or an engine's expiry at a later event check;
-  ;; an expiry never leaves a URL's parse behind; and the caller's handler
-  ;; for a refusal runs with interrupts on. Nothing inside calls the
-  ;; caller's code: a producer is kept, not called, and the keys' values
-  ;; are read by length, car, cdr and the copies. What runs inside is
-  ;; pure but for a stat of each file part's path a multipart body names,
-  ;; by make-curl-request's checks, once for the checked request and once
-  ;; for the call's own, and once more with CHECK?: a stat waits only on a
-  ;; hung network mount, which no check here can make (ADR-0039, after
-  ;; slice 3's review). The URL's parse takes
-  ;; three mutexes, the counters', native's owners' and memory's, each
-  ;; through locked, briefly, as every holder holds them. The test seam's
-  ;; gate, drive-checks-gate-set!'s, is called at the checks' start and end,
+  ;; section has ended (ADR-0025). So no interrupt handler runs inside the
+  ;; guard, which reads the checks' own raises alone: a Ctrl-C made pending
+  ;; in the section runs as it ends, outside the guard, and a timer or an
+  ;; engine's expiry at a later event check; an expiry never leaves a URL's
+  ;; parse behind; and the caller's handler for a refusal runs with
+  ;; interrupts on. Nothing inside calls the caller's code: a producer is
+  ;; kept, not called, and the keys' values are read by length, car, cdr and
+  ;; the copies. What runs inside is pure but for a stat of each file part's
+  ;; path a multipart body names, by make-curl-request's checks, once for
+  ;; the checked request and once for the call's own, and once more with
+  ;; CHECK?: a stat waits only on a hung network mount, which no check here
+  ;; can make (ADR-0039). The URL's parse takes three mutexes, the
+  ;; counters', native's owners' and memory's, each through locked, briefly,
+  ;; as every holder holds them. The test seam's gate,
+  ;; drive-checks-gate-set!'s, is called at the checks' start and end,
   ;; inside the section.
   (define (call-state session method url plist check? mode who)
     (let* ((start (monotonic-ns))
@@ -696,7 +686,7 @@
            (plist (reverse (cdr reversed))))
       ;; The irritant names the argument, never its value: a key's value
       ;; given last, a proxy URL holding a password among them, is never
-      ;; handed on (M7 slice 3).
+      ;; handed on.
       (unless (procedure? proc)
         (assertion-violation 'call-with-http-session
                              "the last argument is a procedure, of the session" 'proc))
@@ -710,7 +700,7 @@
   ;; The call's exchange, by call-state, then the drive: in the drive,
   ;; (curl)'s conditions are compounded by the core, and the drive's own
   ;; refusal by the drive. A call whose body is a producer is streamed,
-  ;; drive-stream's whole mode, its final body read whole; any other is M5's
+  ;; drive-stream's whole mode, its final body read whole; any other is
   ;; drive-exchange's.
   (define (http-request session method url . plist)
     (let* ((made (call-state session method url plist #f 'request 'http-request))

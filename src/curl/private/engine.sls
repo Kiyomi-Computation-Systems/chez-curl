@@ -1,16 +1,16 @@
 #!r6rs
 ;;; (curl private engine): an engine, one Chez thread that owns a multi
 ;;; handle, waits in curl_multi_poll, and runs the transfers other threads
-;;; submit (ADR-0012; M3 plan, sections 3.1 to 3.8). (curl) exports the
-;;; engine, the token, the waits and the mailbox (M4 plan, section 3.1);
-;;; the rest is private: the counts, the seams and the planted faults.
+;;; submit (ADR-0012). (curl) exports the engine, the token, the waits and
+;;; the mailbox; the rest is private: the counts, the seams and the
+;;; planted faults.
 ;;;
 ;;; make-curl-engine references the load first, on the caller's thread,
 ;;; and only then forks the engine's thread: Chez locks no library's
 ;;; invocation, and two threads' first references together raise cyclic
-;;; dependency (ADR-0002, amended 2026-10-24). The thread makes the multi
-;;; handle and reports that it is ready, or the refusal that stopped it,
-;;; which make-curl-engine raises.
+;;; dependency (ADR-0002). The thread makes the multi handle and reports
+;;; that it is ready, or the refusal that stopped it, which
+;;; make-curl-engine raises.
 ;;;
 ;;; A stalled name lookup does not stall the engine (ADR-0019). The thread
 ;;; sets CURLMOPT_QUICK_EXIT to 1 on its multi handle as it makes it, so
@@ -45,48 +45,45 @@
 ;;;   3. cancel each live transfer a cancel names: taken out and completed
 ;;;             as cancelled; then a stop, which ends the loop;
 ;;;   4. resume each live streamed transfer a resume names, the fourth
-;;;             message (ADR-0012, amended 2026-10-29): its pause state
-;;;             cleared, then curl_easy_pause, holding no mutex and outside
-;;;             any critical section; an answer but 0 fails it; a resume
-;;;             for a token taken out since is passed over;
+;;;             message (ADR-0012): its pause state cleared, then
+;;;             curl_easy_pause, holding no mutex and outside any critical
+;;;             section; an answer but 0 fails it; a resume for a token
+;;;             taken out since is passed over;
 ;;;   5. perform curl_multi_perform;
 ;;;   6. read   each finished transfer, by curl_multi_info_read: what it
 ;;;             ended with, read by finish-transfer, then taken out and its
 ;;;             token completed;
 ;;;   7. look   at the queue, under the mutex: a message queued skips the
-;;;             poll, and the next turn begins (ADR-0012, amended
-;;;             2026-10-30);
+;;;             poll, and the next turn begins (ADR-0012);
 ;;;   8. poll   curl_multi_poll, for at most 1000 ms: libcurl shortens the
 ;;;             wait to its own timers, and a wakeup ends it; a poll under
 ;;;             1 ms, in a turn that took no message and moved no byte,
 ;;;             while a transfer is paused, is followed by a sleep of 1 ms,
-;;;             the paced poll (ADR-0012, amended 2026-10-29).
+;;;             the paced poll (ADR-0012).
 ;;;
-;;; A streamed response (ADR-0030; the M6 plan, sections 3.2 to 3.5) is
-;;; the token's: its head, published by the header callable, its pieces,
-;;; taken by curl-token-next-piece or read through curl-token-body-port.
-;;; Every look at the stream decides the resume, and queues one when the
-;;; transfer is paused, none is queued, and the buffer is at half its
-;;; stream-buffer or less. The lock order is the engine's mutex, then a
-;;; stream's, as the engine's, then a mailbox's. On libcurl 8.7.0 and
-;;; 8.7.1 the multi handle multiplexes nothing (ADR-0030, amended
-;;; 2026-10-29); before 8.19.0 it stops multiplexing, for good, at its
-;;; first transfer through a proxy URL that holds userinfo (ADR-0037,
-;;; decision 11; ADR-0030, amended 2026-11-03).
+;;; A streamed response (ADR-0030) is the token's: its head, published
+;;; by the header callable, its pieces, taken by curl-token-next-piece
+;;; or read through curl-token-body-port. Every look at the stream
+;;; decides the resume, and queues one when the transfer is paused, none
+;;; is queued, and the buffer is at half its stream-buffer or less. The
+;;; lock order is the engine's mutex, then a stream's, as the engine's,
+;;; then a mailbox's. On libcurl 8.7.0 and 8.7.1 the multi handle
+;;; multiplexes nothing (ADR-0030); before 8.19.0 it stops multiplexing,
+;;; for good, at its first transfer through a proxy URL that holds
+;;; userinfo (ADR-0037; ADR-0030).
 ;;;
 ;;; curl_multi_info_read reads none for a removed handle, and only
-;;; curl_multi_perform makes its messages (M3 slice 2, measured on four
-;;; libcurls). So a cancel, carried out before the perform, never races a
-;;; message, and a transfer that ended in a perform completes before any
-;;; cancel that came after: that cancel finds its token done, and is
-;;; stale.
+;;; curl_multi_perform makes its messages (measured on four libcurls). So
+;;; a cancel, carried out before the perform, never races a message, and
+;;; a transfer that ended in a perform completes before any cancel that
+;;; came after: that cancel finds its token done, and is stale.
 ;;;
 ;;; A token holds one outcome: the response, or the condition the transfer
 ;;; failed with, cancelled and stopped among them, and write-body's log of
-;;; its chunks (M3 plan, section 3.6). Any thread may await it, any number
-;;; of times. A cancel of a token still queued completes it on the
-;;; caller's thread, so nothing native is made for it; of a live one, it is
-;;; a message; of a done one, nothing.
+;;; its chunks. Any thread may await it, any number of times. A cancel of a
+;;; token still queued completes it on the caller's thread, so nothing
+;;; native is made for it; of a live one, it is a message; of a done one,
+;;; nothing.
 ;;;
 ;;; A token submitted with a mailbox goes there as it becomes done, once,
 ;;; appended by the thread that completes it, holding the engine's mutex
@@ -94,76 +91,73 @@
 ;;; cancelled it queued (ADR-0021). The engine's is always taken first, and
 ;;; no hold of the mailbox's takes it. A caller's thread takes the token
 ;;; out, or delivers it, calling its callback there: the engine's thread
-;;; never calls one, so caller code never runs on it (ADR-0012, decision
-;;; 4). The outcome stays on the token, so a take that escapes loses a
-;;; notice, never an outcome (ADR-0021, amended).
+;;; never calls one, so caller code never runs on it (ADR-0012). The
+;;; outcome stays on the token, so a take that escapes loses a notice,
+;;; never an outcome (ADR-0021).
 ;;;
 ;;; Every wait, await's, a token's bounded wait, stop's, make-curl-engine's
 ;;; and a mailbox's take, polls: each read of what it waits for is a short
 ;;; hold of the engine's mutex, or the mailbox's, through locked, and
-;;; between reads it sleeps, from 50 us doubling
-;;; to 10 ms, holding nothing. Chez's sleep deactivates the thread when
-;;; interrupts are on, so other threads' collections go on, and a pending
-;;; Ctrl-C runs as it wakes; with them off it would not, so a wait refuses
-;;; to start inside a critical section, which would deadlock with a
-;;; collection the engine's thread joins. No
-;;; hold of any mutex waits, and none has interrupts on, so a thread blocked
-;;; on the mutex waits only for a holder that cannot join a collection: a
-;;; waiter that held the mutex with interrupts on, as a condition variable
-;;; needs, deadlocked against one (ADR-0013, amended 2026-10-25, after the
-;;; slice's review).
+;;; between reads it sleeps, from 50 us doubling to 10 ms, holding nothing.
+;;; Chez's sleep deactivates the thread when interrupts are on, so other
+;;; threads' collections go on, and a pending Ctrl-C runs as it wakes; with
+;;; them off it would not, so a wait refuses to start inside a critical
+;;; section, which would deadlock with a collection the engine's thread
+;;; joins. No hold of any mutex waits, and none has interrupts on, so a
+;;; thread blocked on the mutex waits only for a holder that cannot join a
+;;; collection: a waiter that held the mutex with interrupts on, as a
+;;; condition variable needs, deadlocked against one (ADR-0013).
 ;;;
 ;;; The loop runs under a guard. Something raised there, between libcurl
-;;; calls, or at its start, fails the engine: it marks itself failing, so no caller wakes its
-;;; handle again; every queued and live token completes with
-;;; &curl-engine-error, reason failed, carrying it; the engine frees all it
-;;; holds, cleans up its multi handle, and marks itself failed, its
+;;; calls, or at its start, fails the engine: it marks itself failing, so no
+;;; caller wakes its handle again; every queued and live token completes
+;;; with &curl-engine-error, reason failed, carrying it; the engine frees
+;;; all it holds, cleans up its multi handle, and marks itself failed, its
 ;;; thread's last act. A later submit raises that failure, and stop waits
-;;; for the last act, then returns (section 3.7). A planted fault, data
-;;; naming a step, raises there, for the test.
+;;; for the last act, then returns. A planted fault, data naming a step,
+;;; raises there, for the test.
 ;;;
-;;; Stop (ADR-0012, amended 2026-10-24) completes every queued token as
-;;; stopped, cancels every live one as stopped, frees all, cleans up the
-;;; multi handle, checks the table of live transfers empty, and signals the
-;;; stop as the thread's last act. The caller's stop returns once that
-;;; signal arrives. A later stop returns at once.
+;;; Stop (ADR-0012) completes every queued token as stopped, cancels every
+;;; live one as stopped, frees all, cleans up the multi handle, checks the
+;;; table of live transfers empty, and signals the stop as the thread's
+;;; last act. The caller's stop returns once that signal arrives. A later
+;;; stop returns at once.
 ;;;
 ;;; fork-thread is this library's alone (check-seam, rule (f)): one engine
 ;;; thread runs every transfer submitted to it.
 ;;;
-;;; The cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5): a
-;;; curl_share of cookies, made, used and freed on this thread, by message:
-;;; make, read out, load and close, each a message queued beside submits,
-;;; taken with them in the order queued, and answered through a reply the
-;;; caller waits on, as curl-engine-stop waits, with no bound: the engine
-;;; answers every jar message, at its turn, at a stop, or at its failure.
-;;; A jar's share and its own easy handle, the one its messages use,
-;;; attached to the share, are each made, and freed, in one critical
-;;; section with its count and its record; the handle is freed first, since
-;;; curl_share_cleanup answers CURLSHE_IN_USE while any handle holds the
-;;; share. A transfer holds the jar from the hold that records it live,
-;;; once start-transfer! has returned, to its take-out, counted in the
-;;; jar's holders and kept in the engine's table of holds, so it is let go
-;;; once: a start-transfer! that raises has freed its handle, and held
-;;; nothing. A close sets a live jar closing, and frees it at once when no
-;;; transfer holds it; otherwise the last to let it go frees it, the jar
-;;; marked closed in the share's section. set-up! checks the jar on this
-;;; thread, and a jar not live, or another engine's, fails the token, as
-;;; cookie-jar-closed or cookie-jar-engine: the submit's check of the same
-;;; is an early refusal only, since a close and a submit on two threads can
-;;; cross. A stop frees every jar, live or closing, once every live
-;;; transfer is taken out; a failure lets go of each transfer it frees, and
-;;; keeps the hold of each handle it abandons, whose share stays in use and
-;;; counted.
+;;; The cookie jar (ADR-0035): a curl_share of cookies, made, used and
+;;; freed on this thread, by message: make, read out, load and close, each
+;;; a message queued beside submits, taken with them in the order queued,
+;;; and answered through a reply the caller waits on, as curl-engine-stop
+;;; waits, with no bound: the engine answers every jar message, at its
+;;; turn, at a stop, or at its failure. A jar's share and its own easy
+;;; handle, the one its messages use, attached to the share, are each made,
+;;; and freed, in one critical section with its count and its record; the
+;;; handle is freed first, since curl_share_cleanup answers CURLSHE_IN_USE
+;;; while any handle holds the share. A transfer holds the jar from the
+;;; hold that records it live, once start-transfer! has returned, to its
+;;; take-out, counted in the jar's holders and kept in the engine's table
+;;; of holds, so it is let go once: a start-transfer! that raises has freed
+;;; its handle, and held nothing. A close sets a live jar closing, and
+;;; frees it at once when no transfer holds it; otherwise the last to let
+;;; it go frees it, the jar marked closed in the share's section. set-up!
+;;; checks the jar on this thread, and a jar not live, or another engine's,
+;;; fails the token, as cookie-jar-closed or cookie-jar-engine: the
+;;; submit's check of the same is an early refusal only, since a close and
+;;; a submit on two threads can cross. A stop frees every jar, live or
+;;; closing, once every live transfer is taken out; a failure lets go of
+;;; each transfer it frees, and keeps the hold of each handle it abandons,
+;;; whose share stays in use and counted.
 ;;;
 ;;; The engine's thread runs no caller code and sets no timer, so nothing
-;;; escapes there but by a raise. Its records of a transfer, the token's
-;;; and the table's, are therefore made after start-transfer! and cleared
-;;; after free-transfer!, the table's in a critical section of its own, so a
-;;; raise in the free leaves the transfer in the table, where the engine's
-;;; failure completes its token. The limit,
-;;; recorded: collect-request-handler is process-wide, so a caller's handler
-;;; that escapes could run on this thread (M3 plan, section 3.6).
+;;; escapes there but by a raise. Its records of a transfer, the token's and
+;;; the table's, are therefore made after start-transfer! and cleared after
+;;; free-transfer!, the table's in a critical section of its own, so a raise
+;;; in the free leaves the transfer in the table, where the engine's failure
+;;; completes its token. The limit, recorded: collect-request-handler is
+;;; process-wide, so a caller's handler that escapes could run on this
+;;; thread.
 (library (curl private engine)
   (export make-curl-engine curl-engine? curl-submit
           curl-engine-stop curl-engine-request-stop! curl-engine-state curl-engine-thread
@@ -211,7 +205,7 @@
   ;; with-mutex is a dynamic-wind whose before thunk takes the mutex, so an
   ;; interrupt that escapes between the take and the wind would leave it
   ;; held. Every hold of the mutex is locked's: short, with interrupts off,
-  ;; and none waits (ADR-0013, amended 2026-10-25).
+  ;; and none waits (ADR-0013).
   (define (locked lock thunk)
     (critical-section (with-mutex lock (thunk))))
 
@@ -237,13 +231,13 @@
   ;; and between reads a sleep, holding nothing: 50 us, then twice the
   ;; last, up to 10 ms; or #f, once a read after DEADLINE, a monotonic time
   ;; in ns, answers #f. A sleep never runs past DEADLINE, and #f waits for
-  ;; good. Chez's sleep deactivates this thread when
-  ;; interrupts are on, so other threads' collections go on while it
-  ;; sleeps, and sets its trap, so a pending Ctrl-C runs as it wakes
-  ;; (ADR-0013, amended 2026-10-25). With interrupts off, a sleep keeps the
-  ;; thread active: a collection would wait for it, the engine's thread
-  ;; with it, and the wait would never end. So a wait inside a critical
-  ;; section is an assertion violation from WHO, before it starts.
+  ;; good. Chez's sleep deactivates this thread when interrupts are on, so
+  ;; other threads' collections go on while it sleeps, and sets its trap,
+  ;; so a pending Ctrl-C runs as it wakes (ADR-0013). With interrupts off,
+  ;; a sleep keeps the thread active: a collection would wait for it, the
+  ;; engine's thread with it, and the wait would never end. So a wait
+  ;; inside a critical section is an assertion violation from WHO, before
+  ;; it starts.
   (define (wait-until who lock ready deadline)
     (require-interrupts-on who)
     (let loop ((pause 50000))
@@ -269,10 +263,9 @@
 
   ;; --- the records -----------------------------------------------------------------------
 
-  ;; An engine: its mutex; under the mutex, its queue of
-  ;; messages, newest first, its state, starting, running, stopping,
-  ;; stopped, failing or failed, its multi handle's address, #f once freed,
-  ;; its thread's
+  ;; An engine: its mutex; under the mutex, its queue of messages, newest
+  ;; first, its state, starting, running, stopping, stopped, failing or
+  ;; failed, its multi handle's address, #f once freed, its thread's
   ;; get-thread-id, the &curl-engine-error it failed with, and its table of
   ;; live transfers, by easy handle, each (TOKEN . LIVE); its planted fault,
   ;; a step or #f; and, on its own thread alone, the batch of messages its
@@ -284,27 +277,26 @@
   ;; but for the test seam; and, under the mutex, what became of its multi
   ;; handle's CURLMOPT_QUICK_EXIT, #f until its thread sets it; and the
   ;; CURLMcode it takes in place of libcurl's answer to that, #f but for the
-  ;; other test seam. Then, from M6 (the plan's section 3.4): its seams, a
-  ;; list, empty but for a test seam's, of unpaced, which turns the paced
-  ;; poll off, unmultiplexed, which sets CURLMOPT_PIPELINING to 0 on any
-  ;; libcurl, (pause-answer . CODE), a CURLcode its thread takes in
-  ;; place of curl_easy_pause's answer, reusing, which leaves FRESH_CONNECT
-  ;; off a streamed body, rewinding, which lets its seek callable
-  ;; answer OK once bytes were handed, (completion-stall . MS), a
-  ;; sleep between a finished transfer's outcome and its completion, and
-  ;; (prereq-hold . HOLD) beside (prereq-holds . COUNT), the hold a
-  ;; streamed body's prerequest callable makes at its first attempt and
-  ;; the count of those made; its counter of callables' calls that
-  ;; took bytes, a vector of one natural its thread alone writes and reads;
-  ;; and, under the mutex, whether its multi handle multiplexes, default or
-  ;; off, #f until its thread decides; the paced sleeps it has made; the
-  ;; resumes it has passed over; the late message's state, #f but for
-  ;; the look's test seam; and the paced poll's probe, #f but for its test
-  ;; seam, a vector of the turns it has left, whether it marks them, and
-  ;; the polls, fast polls, fast polls in turns that moved bytes, and
-  ;; paced sleeps it has seen. Then, from M7 slice 4, under the mutex: its
-  ;; cookie jars, each made and not yet freed, live or closing; and its
-  ;; table of holds, by token, each the jar a live transfer holds.
+  ;; other test seam. Then its seams, a list, empty but for a test seam's,
+  ;; of unpaced, which turns the paced poll off, unmultiplexed, which sets
+  ;; CURLMOPT_PIPELINING to 0 on any libcurl, (pause-answer . CODE), a
+  ;; CURLcode its thread takes in place of curl_easy_pause's answer,
+  ;; reusing, which leaves FRESH_CONNECT off a streamed body, rewinding,
+  ;; which lets its seek callable answer OK once bytes were handed,
+  ;; (completion-stall . MS), a sleep between a finished transfer's outcome
+  ;; and its completion, and (prereq-hold . HOLD) beside (prereq-holds .
+  ;; COUNT), the hold a streamed body's prerequest callable makes at its
+  ;; first attempt and the count of those made; its counter of callables'
+  ;; calls that took bytes, a vector of one natural its thread alone writes
+  ;; and reads; and, under the mutex, whether its multi handle multiplexes,
+  ;; default or off, #f until its thread decides; the paced sleeps it has
+  ;; made; the resumes it has passed over; the late message's state, #f but
+  ;; for the look's test seam; and the paced poll's probe, #f but for its
+  ;; test seam, a vector of the turns it has left, whether it marks them,
+  ;; and the polls, fast polls, fast polls in turns that moved bytes, and
+  ;; paced sleeps it has seen. Then, under the mutex: its cookie jars, each
+  ;; made and not yet freed, live or closing; and its table of holds, by
+  ;; token, each the jar a live transfer holds.
   (define-record-type (curl-engine make-engine-record curl-engine?)
     (fields (immutable lock curl-engine-lock)
             (mutable queue curl-engine-queue curl-engine-queue-set!)
@@ -331,8 +323,8 @@
             (immutable holds engine-holds))
     ;; Opaque: Chez prints a record's every field, and an engine's queue and
     ;; table hold its tokens, so a printed engine, or a token's assertion
-    ;; that printed its engine, showed another request's credentials (the
-    ;; review of M7 slice 2). An engine prints as #<curl-engine>.
+    ;; that printed its engine, showed another request's credentials. An
+    ;; engine prints as #<curl-engine>.
     (opaque #t))
 
   ;; A token: its engine and its plan; under the engine's mutex, its state,
@@ -340,10 +332,10 @@
   ;; chunks, write-body's log; on the engine's thread alone, its live
   ;; transfer while it has one; and the mailbox it goes to when done, and
   ;; the callback a delivery calls, each #f for none (ADR-0021). For a
-  ;; streamed response (the M6 plan, section 3.5), under the engine's
-  ;; mutex: whether its port has been made; and the plant a test seam sets
-  ;; in its takes, #f, spin, or a gate, a vector of its one phase, armed,
-  ;; waiting or open: data, never a procedure.
+  ;; streamed response, under the engine's mutex: whether its port has been
+  ;; made; and the plant a test seam sets in its takes, #f, spin, or a
+  ;; gate, a vector of its one phase, armed, waiting or open: data, never a
+  ;; procedure.
   (define-record-type (curl-token make-token curl-token?)
     (fields (immutable engine curl-token-engine)
             (immutable plan curl-token-plan)
@@ -403,8 +395,8 @@
   ;; The libcurl versions on which the engine multiplexes nothing: 8.7.0 and
   ;; 8.7.1. On Apple's 8.7.1 a paused HTTP/2 stream beside an active one
   ;; filled libcurl's 64 MiB cap and failed the connection, and a write
-  ;; callback's error on one stream failed its sibling (ADR-0030, amended
-  ;; 2026-10-29). tests/test-stream.sps holds it to its own copy.
+  ;; callback's error on one stream failed its sibling (ADR-0030).
+  ;; tests/test-stream.sps holds it to its own copy.
   (define unmultiplexed-versions '("8.7.0" "8.7.1"))
 
   ;; multiplexing-off? : String -> Boolean
@@ -434,19 +426,18 @@
 
   ;; curl-engine-passed-resumes : Engine -> Natural
   ;; How many resume messages ENGINE has passed over, their token taken out
-  ;; since they were queued: a private accessor (the M6 plan, section 3.4).
+  ;; since they were queued: a private accessor.
   (define (curl-engine-passed-resumes engine)
     (check-engine 'curl-engine-passed-resumes engine)
     (locked (curl-engine-lock engine) (lambda () (engine-passed engine))))
 
   ;; curl-engine-arm-late-message! : Engine -> Void
-  ;; The look's test seam, private (ADR-0012, amended 2026-10-30): the next
-  ;; turn of ENGINE's that carries out a resume queues a message of its
-  ;; own, a mark, from its own thread, with its wakeup, between its resume
-  ;; step and its perform, as a caller's thread could at that moment; and
-  ;; the turn that takes it records when. Guix's 8.20.0 reads that wakeup
-  ;; back inside the perform: without the look, the poll then waits for
-  ;; libcurl alone.
+  ;; The look's test seam, private (ADR-0012): the next turn of ENGINE's
+  ;; that carries out a resume queues a message of its own, a mark, from
+  ;; its own thread, with its wakeup, between its resume step and its
+  ;; perform, as a caller's thread could at that moment; and the turn that
+  ;; takes it records when. Guix's 8.20.0 reads that wakeup back inside the
+  ;; perform: without the look, the poll then waits for libcurl alone.
   (define (curl-engine-arm-late-message! engine)
     (check-engine 'curl-engine-arm-late-message! engine)
     (locked (curl-engine-lock engine) (lambda () (engine-late-set! engine 'armed))))
@@ -555,7 +546,7 @@
   ;; not done. It never waits and never raises the outcome, so it may run
   ;; inside a critical section, and a caller that waits with curl-token-wait
   ;; reads a failure with no guard around the wait, where a handler's own
-  ;; raise could be taken for the transfer's (M5 slice 3's review).
+  ;; raise could be taken for the transfer's.
   (define (curl-token-outcome token)
     (check-token 'curl-token-outcome token)
     (locked (curl-engine-lock (curl-token-engine token))
@@ -595,11 +586,11 @@
   ;; start, on its thread, before its multi handle is made; take, when the
   ;; queue holds a message, before the turn takes it; setup, before a
   ;; transfer's start-transfer!; cancel, before a live transfer's cancel;
-  ;; resume, before a live streamed transfer's curl_easy_pause (the M6
-  ;; plan, section 3.4); perform and poll, before curl_multi_perform and
-  ;; curl_multi_poll, while a transfer is live; read, before a finished
-  ;; transfer's finish-transfer; free, once a transfer is freed, its easy
-  ;; handle with it, and before the table lets it go.
+  ;; resume, before a live streamed transfer's curl_easy_pause; perform
+  ;; and poll, before curl_multi_perform and curl_multi_poll, while a
+  ;; transfer is live; read, before a finished transfer's finish-transfer;
+  ;; free, once a transfer is freed, its easy handle with it, and before
+  ;; the table lets it go.
   (define engine-fault-steps '(start take setup cancel resume perform read poll free))
 
   ;; planted-engine-fault : Symbol -> (List 'planted-engine-fault Symbol)
@@ -625,18 +616,18 @@
   ;; make-curl-engine's, with a fault planted at STEP, one of
   ;; engine-fault-steps: the engine raises (planted-engine-fault STEP) the
   ;; first time it reaches it, so a fault at start raises here, as the
-  ;; refusal. A test seam, private (section 3.7).
+  ;; refusal. A test seam, private.
   (define (make-faulty-curl-engine step)
     (unless (memq step engine-fault-steps)
       (assertion-violation 'make-faulty-curl-engine "not a step of the engine's loop" step))
     (start-engine step '() #f '()))
 
   ;; make-curl-engine-without-quick-exit : (Listof (U 'transfer 'multi)) -> Engine
-  ;; make-curl-engine's, but for the QUICK_EXIT settings WITHOUT names, which
-  ;; it leaves out: transfer, each transfer's QUICK_EXIT; multi, its multi
-  ;; handle's CURLMOPT_QUICK_EXIT. A test seam, private, so the test can
-  ;; show the stall each prevents (ADR-0019; M3 plan, section 6.2). No
-  ;; request reaches it: QUICK_EXIT is owned (ADR-0009).
+  ;; make-curl-engine's, but for the QUICK_EXIT settings WITHOUT names,
+  ;; which it leaves out: transfer, each transfer's QUICK_EXIT; multi, its
+  ;; multi handle's CURLMOPT_QUICK_EXIT. A test seam, private, so the test
+  ;; can show the stall each prevents (ADR-0019). No request reaches it:
+  ;; QUICK_EXIT is owned (ADR-0009).
   (define (make-curl-engine-without-quick-exit without)
     ;; Checked as a copy, and the copy used: the caller's pairs may change.
     (let ((copy (and (list? without) (fold-right cons '() without))))
@@ -650,7 +641,7 @@
   ;; answer to CURLMOPT_QUICK_EXIT, after making the call: a test seam,
   ;; private, so the test can watch an answer no libcurl gives refuse the
   ;; engine, its multi handle freed, as multi-quick-exit-verdict says
-  ;; (ADR-0019, decision 2). No request reaches it.
+  ;; (ADR-0019). No request reaches it.
   (define (make-curl-engine-answering-quick-exit code)
     (unless (and (integer? code) (exact? code))
       (assertion-violation 'make-curl-engine-answering-quick-exit "a CURLMcode is an exact integer" code))
@@ -659,27 +650,27 @@
   ;; make-curl-engine-unpaced : -> Engine
   ;; make-curl-engine's, with its paced poll turned off: a test seam,
   ;; private, so the test can show the spin the pacing ends, on Ubuntu's
-  ;; 8.5.0 (ADR-0012, amended 2026-10-29).
+  ;; 8.5.0 (ADR-0012).
   (define (make-curl-engine-unpaced) (start-engine #f '() #f '(unpaced)))
 
   ;; make-curl-engine-unmultiplexed : -> Engine
   ;; make-curl-engine's, with CURLMOPT_PIPELINING at 0 whatever the libcurl,
   ;; as on 8.7.0 and 8.7.1: a test seam, private, so a Linux lane can watch
-  ;; the setting by behaviour (ADR-0030, amended 2026-10-29).
+  ;; the setting by behaviour (ADR-0030).
   (define (make-curl-engine-unmultiplexed) (start-engine #f '() #f '(unmultiplexed)))
 
   ;; make-curl-engine-reusing : -> Engine
   ;; make-curl-engine's, but a streamed body's transfer leaves FRESH_CONNECT
   ;; off, so it may go on a pooled connection: a test seam, private, so the
   ;; test can watch the seek callable refuse libcurl's resend on a dead one
-  ;; (ADR-0032, amended). No request reaches it: FRESH_CONNECT is owned.
+  ;; (ADR-0032). No request reaches it: FRESH_CONNECT is owned.
   (define (make-curl-engine-reusing) (start-engine #f '() #f '(reusing)))
 
   ;; make-curl-engine-rewinding : -> Engine
   ;; make-curl-engine-reusing's, and its seek callable answers OK for an
   ;; offset of 0 from SEEK_SET once bytes were handed too: a test seam,
   ;; private, which puts libcurl's resend in front of the prerequest
-  ;; callable on every libcurl (ADR-0032, amended).
+  ;; callable on every libcurl (ADR-0032).
   (define (make-curl-engine-rewinding) (start-engine #f '() #f '(reusing rewinding)))
 
   ;; make-curl-engine-stalling-completion : Positive-Integer -> Engine
@@ -699,17 +690,17 @@
   ;; private, which stands for this thread paused there, by a collection
   ;; say, so that an answer written as the connection is accepted lands
   ;; before the request leaves; the head's body-asked bit then reads #f on
-  ;; 7.85.0 and 8.5.0, which stop sending once they read it (M6 slice 2's
-  ;; measurement). The sleep is HOLD, (prereq-hold . HOLD) in its seams,
-  ;; which the callable calls outside its upload's hold. It is safe there:
-  ;; the callable runs on this engine's thread, inside curl_multi_perform,
-  ;; which the engine's turn calls outside every critical section and hold;
-  ;; so it holds no mutex, and no caller's put, take or await waits on it,
-  ;; for each polls in holds of its own; and with interrupts on, which HOLD
-  ;; checks first, Chez's sleep deactivates the thread, so other threads'
-  ;; collections go on meanwhile. The thread takes no message while it
-  ;; sleeps, as completion-stall! does, and runs no caller code. Each hold
-  ;; made is counted, under a mutex of its own taken after the sleep, for
+  ;; 7.85.0 and 8.5.0, which stop sending once they read it. The sleep is
+  ;; HOLD, (prereq-hold . HOLD) in its seams, which the callable calls
+  ;; outside its upload's hold. It is safe there: the callable runs on this
+  ;; engine's thread, inside curl_multi_perform, which the engine's turn
+  ;; calls outside every critical section and hold; so it holds no mutex,
+  ;; and no caller's put, take or await waits on it, for each polls in
+  ;; holds of its own; and with interrupts on, which HOLD checks first,
+  ;; Chez's sleep deactivates the thread, so other threads' collections go
+  ;; on meanwhile. The thread takes no message while it sleeps, as
+  ;; completion-stall! does, and runs no caller code. Each hold made is
+  ;; counted, under a mutex of its own taken after the sleep, for
   ;; curl-engine-prereq-holds.
   (define (make-curl-engine-holding-prereq ms)
     (unless (and (integer? ms) (exact? ms) (positive? ms))
@@ -739,7 +730,7 @@
   ;; make-curl-engine's, but its thread takes CODE, a CURLcode, in place of
   ;; curl_easy_pause's answer at every resume, after making the call: a test
   ;; seam, private, so the test can watch an answer but 0 fail a transfer as
-  ;; pause-failed on every libcurl (the M6 plan, section 3.4).
+  ;; pause-failed on every libcurl.
   (define (make-curl-engine-answering-pause code)
     (unless (and (integer? code) (exact? code))
       (assertion-violation 'make-curl-engine-answering-pause "a CURLcode is an exact integer" code))
@@ -751,7 +742,7 @@
   ;; curl_share_setopt's at a jar's make; load, CURLOPT_COOKIELIST's at each
   ;; line of a load; read, CURLINFO_COOKIELIST's at a read-out. A test seam,
   ;; private, so the test can watch an answer no libcurl gives here fail the
-  ;; message, every answer read (ADR-0035; the M7 plan, section 3.5).
+  ;; message, every answer read (ADR-0035).
   (define (make-curl-engine-answering-jar which code)
     (unless (memq which '(make load read))
       (assertion-violation 'make-curl-engine-answering-jar "the call is make, load or read" which))
@@ -775,8 +766,8 @@
   ;; abandons the easy handle of every live transfer, as for one whose
   ;; removal from the multi handle failed: a test seam, private, so a test
   ;; can watch an abandoned handle keep its jar's share in use, and both
-  ;; stay counted (the M7 plan, section 3.5). Its process keeps them for
-  ;; good: a child runs it, and prints its counts.
+  ;; stay counted. Its process keeps them for good: a child runs it, and
+  ;; prints its counts.
   (define (make-curl-engine-abandoning step)
     (unless (memq step engine-fault-steps)
       (assertion-violation 'make-curl-engine-abandoning "not a step of the engine's loop" step))
@@ -857,8 +848,8 @@
   ;; condition it ended with, on this thread. Any thread may await a token,
   ;; any number of times: the outcome is kept. It polls, by wait-until, so
   ;; Ctrl-C runs as its sleep ends, and an escape from it leaves the
-  ;; transfer running: await again for its outcome (section 3.4). It must
-  ;; run with interrupts on: inside a critical section it is refused.
+  ;; transfer running: await again for its outcome. It must run with
+  ;; interrupts on: inside a critical section it is refused.
   (define (curl-token-await token)
     (check-token 'curl-token-await token)
     (require-interrupts-on 'curl-token-await)
@@ -881,7 +872,7 @@
                   (lambda () (eq? (token-state token) 'done))
                   deadline)))
 
-  ;; --- the response stream (ADR-0030; the M6 plan, sections 3.2 to 3.5) ------------------
+  ;; --- the response stream (ADR-0030) ----------------------------------------------------
 
   ;; token-stream : Symbol Any -> Stream
   ;; TOKEN's response stream; a token whose request does not stream its
@@ -900,8 +891,8 @@
   ;; look queues a resume, stream-look!'s rule, its flag set there; then,
   ;; when it does, the engine's again, the resume queued, while TOKEN is
   ;; live and its engine running. An escape cannot fall between the flag
-  ;; and the message (the M6 plan, section 3.4). Every look decides the
-  ;; resume, a take's and a wait's alike (section 3.5).
+  ;; and the message. Every look decides the resume, a take's and a
+  ;; wait's alike.
   (define (look token stream)
     (let ((engine (curl-token-engine token)))
       (critical-section
@@ -917,11 +908,11 @@
 
   ;; remove-taken! : Token Stream Pair Bytevector -> Void
   ;; The take's removal of PIECE, at NODE, after its look's section: the
-  ;; last thing a take does before it returns PIECE (the M6 plan, section
-  ;; 3.5). A plant, a test seam's, holds it up here: a gate waits, between
-  ;; the look and the removal, until the test opens it; spin runs a loop
-  ;; after the removal, where an expiry can land, the timer sweep's planted
-  ;; control. Without one, the removal is the last call.
+  ;; last thing a take does before it returns PIECE. A plant, a test
+  ;; seam's, holds it up here: a gate waits, between the look and the
+  ;; removal, until the test opens it; spin runs a loop after the removal,
+  ;; where an expiry can land, the timer sweep's planted control. Without
+  ;; one, the removal is the last call.
   (define (remove-taken! token stream node piece)
     (let ((plant (token-plant token)))
       (if (not plant)
@@ -948,19 +939,19 @@
 
   ;; curl-token-next-piece : Token Natural -> (U Bytevector Eof #f)
   ;; TOKEN's next piece, a bytevector of a byte or more that the caller
-  ;; owns; the eof object once every piece has been taken and TOKEN is
-  ;; done, however its transfer ended, which curl-token-outcome then tells;
-  ;; or #f once MS milliseconds pass with neither (ADR-0030, decision 4). It
-  ;; never raises the transfer's failure. Each look decides the resume; the
-  ;; take leaves the piece in the stream through its look's critical
-  ;; section, and removes it the last thing before it returns, so a Ctrl-C
-  ;; handler that escapes as that section ends leaves it for the next take
-  ;; (the M6 plan, section 3.5). It waits as await does, polling, and a wait
-  ;; inside a critical section is an assertion violation, before it sleeps.
-  ;; A token whose request does not stream its response is an assertion
-  ;; violation. A token has one taker at a time: the removal writes the
-  ;; taker's own fields, outside any hold, so two threads taking from one
-  ;; token at once could each be given the same piece.
+  ;; owns; the eof object once every piece has been taken and TOKEN is done,
+  ;; however its transfer ended, which curl-token-outcome then tells; or #f
+  ;; once MS milliseconds pass with neither (ADR-0030). It never raises the
+  ;; transfer's failure. Each look decides the resume; the take leaves the
+  ;; piece in the stream through its look's critical section, and removes it
+  ;; the last thing before it returns, so a Ctrl-C handler that escapes as
+  ;; that section ends leaves it for the next take. It waits as await does,
+  ;; polling, and a wait inside a critical section is an assertion
+  ;; violation, before it sleeps. A token whose request does not stream its
+  ;; response is an assertion violation. A token has one taker at a time:
+  ;; the removal writes the taker's own fields, outside any hold, so two
+  ;; threads taking from one token at once could each be given the same
+  ;; piece.
   (define (curl-token-next-piece token ms)
     (let ((stream (token-stream 'curl-token-next-piece token))
           (deadline (deadline-after 'curl-token-next-piece ms)))
@@ -978,25 +969,24 @@
                       (loop (min (* pause 2) 10000000)))))))))))
 
   ;; curl-token-body-port : Token -> Binary-Input-Port
-  ;; A custom binary input port over TOKEN's pieces, made once per token
-  ;; (the M6 plan, section 3.5). A read copies from the piece at hand, or
-  ;; takes the next as curl-token-next-piece does, the piece at hand set
-  ;; after the removal; with none ready it waits, polling, a wait inside a
-  ;; critical section an assertion violation, before it sleeps. Its ends
-  ;; stick: 0, the end, once every piece is read and the transfer ended
-  ;; with a response, every time after; the outcome's condition raised
-  ;; once it ended with a failure, every time after. A raise from a read
-  ;; loses the bytes earlier reads gave inside one get-bytevector-n, -n! or
-  ;; -all, never inside get-bytevector-some, -some! or get-u8. The port
-  ;; belongs to the thread that made it: a read from another that reaches
-  ;; read!, and a close from another, raise &curl-wrong-thread, and a close
-  ;; that raises leaves it open; but bytes Chez's port already buffered,
-  ;; which a read takes without calling read!, it serves to any thread, and
-  ;; a get-bytevector-n, -n! or -all from another thread that takes them,
-  ;; then reaches read! and raises, loses them (slice 1's second review). Its
-  ;; close cancels TOKEN, if it is not done. No collection, and no exit,
-  ;; closes it. A second port of TOKEN, and a token whose request does not
-  ;; stream its response, are assertion violations.
+  ;; A custom binary input port over TOKEN's pieces, made once per token. A
+  ;; read copies from the piece at hand, or takes the next as
+  ;; curl-token-next-piece does, the piece at hand set after the removal;
+  ;; with none ready it waits, polling, a wait inside a critical section an
+  ;; assertion violation, before it sleeps. Its ends stick: 0, the end, once
+  ;; every piece is read and the transfer ended with a response, every time
+  ;; after; the outcome's condition raised once it ended with a failure,
+  ;; every time after. A raise from a read loses the bytes earlier reads gave
+  ;; inside one get-bytevector-n, -n! or -all, never inside
+  ;; get-bytevector-some, -some! or get-u8. The port belongs to the thread
+  ;; that made it: a read from another that reaches read!, and a close from
+  ;; another, raise &curl-wrong-thread, and a close that raises leaves it
+  ;; open; but bytes Chez's port already buffered, which a read takes without
+  ;; calling read!, it serves to any thread, and a get-bytevector-n, -n! or
+  ;; -all from another thread that takes them, then reaches read! and raises,
+  ;; loses them. Its close cancels TOKEN, if it is not done. No collection,
+  ;; and no exit, closes it. A second port of TOKEN, and a token whose
+  ;; request does not stream its response, are assertion violations.
   (define (curl-token-body-port token)
     (let* ((who 'curl-token-body-port)
            (stream (token-stream who token))
@@ -1053,9 +1043,8 @@
   ;; curl-token-head-wait : Token Natural -> Boolean
   ;; Whether TOKEN's head has arrived, or TOKEN is done, within MS
   ;; milliseconds, waiting as await does; each read holds the engine's
-  ;; mutex, then the stream's, the lock order (the M6 plan, section 3.4). A
-  ;; token whose request does not stream its response is an assertion
-  ;; violation.
+  ;; mutex, then the stream's, the lock order. A token whose request does
+  ;; not stream its response is an assertion violation.
   (define (curl-token-head-wait token ms)
     (let ((stream (token-stream 'curl-token-head-wait token))
           (deadline (deadline-after 'curl-token-head-wait ms)))
@@ -1115,7 +1104,7 @@
   (define (curl-token-stall-state token)
     (stream-stall-state (token-stream 'curl-token-stall-state token)))
 
-  ;; --- the request stream (ADR-0030; the M6 plan, sections 3.3 to 3.5) -------------------
+  ;; --- the request stream (ADR-0030) -----------------------------------------------------
 
   ;; token-upload : Symbol Any -> Upload
   ;; TOKEN's request stream; a token whose request does not stream its body
@@ -1135,7 +1124,7 @@
   ;; The queueing hold: a resume for TOKEN, while it is live and its engine
   ;; runs, with the wakeup, in one hold of ENGINE's mutex. Its callers make
   ;; it inside the critical section of the stream hold that decided it, one
-  ;; hold after the other, never nested (the M6 plan, section 3.4).
+  ;; hold after the other, never nested.
   (define (queue-resume! engine token)
     (locked (curl-engine-lock engine)
       (lambda ()
@@ -1146,10 +1135,10 @@
   ;; curl-token-room-wait : Token Natural -> (U #t #f 'done)
   ;; #t once libcurl has asked for TOKEN's body and the request's buffer
   ;; has room; done once TOKEN is done, read first; #f once MS milliseconds
-  ;; pass (the M6 plan, section 3.1). It waits as await does, polling, and
-  ;; refuses to wait inside a critical section; each read holds the
-  ;; engine's mutex, then the stream's, the lock order. A token whose
-  ;; request does not stream its body is an assertion violation.
+  ;; pass. It waits as await does, polling, and refuses to wait inside a
+  ;; critical section; each read holds the engine's mutex, then the
+  ;; stream's, the lock order. A token whose request does not stream its
+  ;; body is an assertion violation.
   (define (curl-token-room-wait token ms)
     (let* ((who 'curl-token-room-wait)
            (up (token-upload who token))
@@ -1166,27 +1155,26 @@
   ;; keeps it, then put into TOKEN's request buffer, waiting while that
   ;; holds upload-buffer-limit bytes or more, at most MS milliseconds when
   ;; given: #t once taken; #f once MS pass; done once TOKEN is done, the
-  ;; piece not taken (the M6 plan, sections 3.1 and 3.3). Each try is one
-  ;; critical section of up to three holds, one after another: the
-  ;; engine's, whether TOKEN is done; the stream's, which commits the piece
-  ;; with its resume decision, so a handler that escapes as the section
-  ;; ends leaves it committed, and curl-token-body-count counts it (section
-  ;; 3.5); and the engine's again, to queue the resume. A piece that would
-  ;; take the body past its body-length raises &curl-request-error,
-  ;; body-length-mismatch, naming body-length and the length, the piece
-  ;; not taken, once the refusal is set and a resume queued, so the read
-  ;; callable fails the transfer with that reason, or, once libcurl reads
-  ;; no more, the transfer's outcome does (reason-of), unless another reason
-  ;; came first; it is checked before the room. Once the engine's thread
-  ;; has read the outcome, or freed the transfer, a put takes nothing: it
-  ;; waits, as for room, until TOKEN is done, and answers done, or #f once
-  ;; MS pass, so a done always finds TOKEN's outcome there. A put after
-  ;; curl-token-end-body! on a live token is an assertion violation; on a
-  ;; token done it answers done, and on a closed request stream it waits,
-  ;; then answers done.
-  ;; A wait sleeps between tries, refused inside a critical section, as
-  ;; every wait. A token whose request does not stream its body, and what
-  ;; is no piece, are assertion violations, before anything.
+  ;; piece not taken. Each try is one critical section of up to three holds,
+  ;; one after another: the engine's, whether TOKEN is done; the stream's,
+  ;; which commits the piece with its resume decision, so a handler that
+  ;; escapes as the section ends leaves it committed, and
+  ;; curl-token-body-count counts it; and the engine's again, to queue the
+  ;; resume. A piece that would take the body past its body-length raises
+  ;; &curl-request-error, body-length-mismatch, naming body-length and the
+  ;; length, the piece not taken, once the refusal is set and a resume
+  ;; queued, so the read callable fails the transfer with that reason, or,
+  ;; once libcurl reads no more, the transfer's outcome does (reason-of),
+  ;; unless another reason came first; it is checked before the room. Once
+  ;; the engine's thread has read the outcome, or freed the transfer, a put
+  ;; takes nothing: it waits, as for room, until TOKEN is done, and answers
+  ;; done, or #f once MS pass, so a done always finds TOKEN's outcome there.
+  ;; A put after curl-token-end-body! on a live token is an assertion
+  ;; violation; on a token done it answers done, and on a closed request
+  ;; stream it waits, then answers done. A wait sleeps between tries,
+  ;; refused inside a critical section, as every wait. A token whose request
+  ;; does not stream its body, and what is no piece, are assertion
+  ;; violations, before anything.
   (define curl-token-put-piece!
     (case-lambda
       ((token piece) (put-piece token piece #f))
@@ -1237,10 +1225,10 @@
   ;; curl-token-end-body! : Token -> Void
   ;; TOKEN's body's end, in one critical section: nothing on a token done,
   ;; or a second time; else the end set, and a resume queued when the
-  ;; transfer is paused for sending and none is (the M6 plan, section 3.3).
-  ;; The read callable then answers the end, or, short of the body-length,
-  ;; fails the transfer with body-length-mismatch. A token whose request
-  ;; does not stream its body is an assertion violation.
+  ;; transfer is paused for sending and none is. The read callable then
+  ;; answers the end, or, short of the body-length, fails the transfer with
+  ;; body-length-mismatch. A token whose request does not stream its body
+  ;; is an assertion violation.
   (define (curl-token-end-body! token)
     (let* ((up (token-upload 'curl-token-end-body! token)) (engine (curl-token-engine token)))
       (critical-section
@@ -1249,10 +1237,9 @@
       (if #f #f)))
 
   ;; curl-token-body-count : Token -> Natural
-  ;; The bytes TOKEN's puts have committed (the M6 plan, section 3.5): a
-  ;; caller that caught an escape from a put reads here whether it was
-  ;; taken. A token whose request does not stream its body is an
-  ;; assertion violation.
+  ;; The bytes TOKEN's puts have committed: a caller that caught an
+  ;; escape from a put reads here whether it was taken. A token whose
+  ;; request does not stream its body is an assertion violation.
   (define (curl-token-body-count token)
     (upload-count (token-upload 'curl-token-body-count token)))
 
@@ -1264,8 +1251,8 @@
   ;; curl-token-plant-put! : Token (U #f 'split) -> Void
   ;; A test seam, private: the plant TOKEN's next puts meet: split, a put
   ;; that commits its piece after its section, in two plain writes with a
-  ;; loop between, the timer sweep's planted control (the M6 plan, section
-  ;; 3.5); #f, none, the put's own path.
+  ;; loop between, the timer sweep's planted control; #f, none, the put's
+  ;; own path.
   (define (curl-token-plant-put! token plant)
     (let ((up (token-upload 'curl-token-plant-put! token)))
       (unless (memq plant '(#f split))
@@ -1334,7 +1321,7 @@
   ;; milliseconds for one, or #f once they pass. It waits as await does,
   ;; and never calls a callback. A take that escapes, by an interrupt
   ;; handler as it ends, loses its token's notice, never its outcome,
-  ;; which the token keeps (ADR-0021, amended).
+  ;; which the token keeps (ADR-0021).
   (define (curl-mailbox-take mailbox ms)
     (take 'curl-mailbox-take mailbox ms))
 
@@ -1355,7 +1342,7 @@
   ;; with nothing native made, whatever its engine's state; a live one is a
   ;; message, and the engine takes its transfer out and completes it as
   ;; cancelled, unless the engine is stopping or failing, which completes it
-  ;; as stopped or failed; a done one is left as it is (section 3.5).
+  ;; as stopped or failed; a done one is left as it is.
   (define (curl-token-cancel token)
     (check-token 'curl-token-cancel token)
     (let ((engine (curl-token-engine token)))
@@ -1396,7 +1383,7 @@
     (wait-until 'curl-engine-stop (curl-engine-lock engine) (lambda () (memq (engine-state engine) '(stopped failed))) #f)
     (if #f #f))
 
-  ;; --- the cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5) ---------------
+  ;; --- the cookie jar (ADR-0035) --------------------------------------------------------
   ;; A jar's message is (jar KIND JAR REPLY ARG), KIND make, read, load or
   ;; close, ARG a load's lines, as bytes, checked, or #f. REPLY is a vector,
   ;; #(STATE ANSWER), STATE pending until the engine's thread answers it,
@@ -1444,9 +1431,9 @@
   ;; curl-engine-stop waits, by wait-until, polling, with no bound: the
   ;; engine answers every jar message, at its turn, at its stop or at its
   ;; failure, and a fixed bound would fail a load slow by libcurl's own
-  ;; cost (ADR-0035, decision 9). (ok VALUE) answers VALUE; (raise
-  ;; CONDITION) raises CONDITION here. An escape from the wait leaves the
-  ;; message to be carried out: the engine answers it all the same.
+  ;; cost (ADR-0035). (ok VALUE) answers VALUE; (raise CONDITION) raises
+  ;; CONDITION here. An escape from the wait leaves the message to be
+  ;; carried out: the engine answers it all the same.
   (define (reply-of who engine reply)
     (let ((answer (wait-until who (curl-engine-lock engine)
                               (lambda () (and (eq? (vector-ref reply 0) 'done) (vector-ref reply 1)))
@@ -1454,13 +1441,13 @@
       (if (eq? (car answer) 'ok) (cadr answer) (raise (cadr answer)))))
 
   ;; make-curl-cookie-jar : Engine -> Jar
-  ;; A fresh, empty jar of ENGINE's, made on its thread, as its make
-  ;; message is carried out: a curl_share of cookies alone, share-settings'
-  ;; (ADR-0035, decision 1), and the easy handle the engine keeps for the
-  ;; jar's read-outs and loads, attached to it. What is no engine is an
-  ;; assertion violation; inside a critical section, where it could not
-  ;; wait, one too, before anything; an engine stopping, stopped or failed
-  ;; refuses it as a submit is refused; a make libcurl refuses, curl_share_init or
+  ;; A fresh, empty jar of ENGINE's, made on its thread, as its make message
+  ;; is carried out: a curl_share of cookies alone, share-settings'
+  ;; (ADR-0035), and the easy handle the engine keeps for the jar's
+  ;; read-outs and loads, attached to it. What is no engine is an assertion
+  ;; violation; inside a critical section, where it could not wait, one too,
+  ;; before anything; an engine stopping, stopped or failed refuses it as a
+  ;; submit is refused; a make libcurl refuses, curl_share_init or
   ;; curl_easy_init answering NULL, or a curl_share_setopt answering but
   ;; CURLSHE_OK, raises, what it made freed.
   (define (make-curl-cookie-jar engine)
@@ -1472,12 +1459,11 @@
   ;; curl-cookie-jar-cookies : Jar -> (Listof String)
   ;; JAR's cookies, read out on its engine's thread through
   ;; CURLINFO_COOKIELIST, as Netscape lines, each a Latin-1 string, each byte
-  ;; one char (ADR-0035, decision 8): DOMAIN TAILMATCH PATH SECURE EXPIRY
-  ;; NAME VALUE, tab-separated, #HttpOnly_ before an HttpOnly cookie's
-  ;; domain, in libcurl's order, which moves with its hash table. libcurl's
-  ;; lines as they are: by version, some are lines a load refuses (the M7
-  ;; plan, section 3.7). Refused as make-curl-cookie-jar refuses, and a jar
-  ;; not live as cookie-jar-closed.
+  ;; one char (ADR-0035): DOMAIN TAILMATCH PATH SECURE EXPIRY NAME VALUE,
+  ;; tab-separated, #HttpOnly_ before an HttpOnly cookie's domain, in
+  ;; libcurl's order, which moves with its hash table. libcurl's lines as
+  ;; they are: by version, some are lines a load refuses. Refused as
+  ;; make-curl-cookie-jar refuses, and a jar not live as cookie-jar-closed.
   (define (curl-cookie-jar-cookies jar)
     (define who 'curl-cookie-jar-cookies)
     (check-jar who jar)
@@ -1490,12 +1476,12 @@
   ;; CURLOPT_COOKIELIST, once every line is checked on this thread, on a
   ;; copy of the list and of each string, by cookie-line-bytes: a line not
   ;; in the form a read-out writes is refused as cookie-line, naming its
-  ;; index, never its text, and nothing is loaded (ADR-0035, decision 7).
-  ;; Every answer of libcurl's is read: one but 0 fails the load there,
-  ;; naming the line's index and the code, the lines before it loaded. A
-  ;; load costs about n^2 on the engine's thread, whose other transfers wait
-  ;; meanwhile: 10,000 lines 0.24 to 0.50 s, 50,000 up to 27 s (decision
-  ;; 9). Refused as curl-cookie-jar-cookies refuses.
+  ;; index, never its text, and nothing is loaded (ADR-0035). Every answer
+  ;; of libcurl's is read: one but 0 fails the load there, naming the line's
+  ;; index and the code, the lines before it loaded. A load costs about n^2
+  ;; on the engine's thread, whose other transfers wait meanwhile: 10,000
+  ;; lines 0.24 to 0.50 s, 50,000 up to 27 s. Refused as
+  ;; curl-cookie-jar-cookies refuses.
   (define (curl-cookie-jar-load! jar lines)
     (define who 'curl-cookie-jar-load!)
     (check-jar who jar)
@@ -1525,7 +1511,7 @@
   ;; and every answer taken, none refusing it: the jar, live, and each
   ;; call's CURLSHcode, in order. A test seam, private, so
   ;; tests/test-variadic.sps can watch curl_share_setopt's int arrive by
-  ;; behaviour, no answer alone telling 2 from 3 (the slice's measurement).
+  ;; behaviour, no answer alone telling 2 from 3.
   (define (make-curl-cookie-jar-sharing engine ops)
     (define who 'make-curl-cookie-jar-sharing)
     (check-engine who engine)
@@ -1655,7 +1641,7 @@
            (when (eqv? share 0)
              (error 'make-curl-cookie-jar "curl_share_init returned NULL: no memory for a share"))
            (locked lock (lambda () (cookie-jar-share-set! jar share)))))
-        ;; In order, a loop: map's order is no order (traps.md).
+        ;; In order, a loop: map's order is no order.
         (let ((codes
                (let loop ((rest (or ops share-settings)) (found '()))
                  (if (null? rest)
@@ -1772,8 +1758,8 @@
   ;; multi-quick-exit-verdict : Integer -> (U 'set 'unknown #f)
   ;; What curl_multi_setopt's CODE for CURLMOPT_QUICK_EXIT at 1 says: set,
   ;; for CURLM_OK; unknown, for CURLM_UNKNOWN_OPTION, from a libcurl older
-  ;; than the option; #f for any other, which refuses the engine (ADR-0019,
-  ;; decision 2).
+  ;; than the option; #f for any other, which refuses the engine
+  ;; (ADR-0019).
   (define (multi-quick-exit-verdict code)
     (cond ((eqv? code curlm-ok) 'set)
           ((eqv? code curlm-unknown-option) 'unknown)
@@ -1828,16 +1814,15 @@
 
   ;; turns : Engine Positive-Integer -> Void
   ;; The loop, until a stop: take, set up, cancel, resume, perform, read,
-  ;; look, poll (the M6 plan, section 3.4), a cookie jar's messages carried
-  ;; out with the set-ups, in the order queued (the M7 plan, section 3.5). The look reads the queue under
-  ;; the mutex, and a message queued skips the poll: Guix's 8.20.0 reads
-  ;; back, inside the perform, a wakeup made before it, and the poll would
-  ;; then wait for libcurl alone (ADR-0012, amended 2026-10-30). The paced
-  ;; poll: a poll that returned in under 1 ms, in a turn that took no
-  ;; message, while a transfer is paused and no callable took a byte since
-  ;; the turn began, is followed by a sleep of 1 ms, unless the test seam
-  ;; turned it off. Ubuntu's 8.5.0 spins otherwise (ADR-0012, amended
-  ;; 2026-10-29). While the probe, a test seam, has turns left as a turn
+  ;; look, poll, a cookie jar's messages carried out with the set-ups, in
+  ;; the order queued. The look reads the queue under the mutex, and a
+  ;; message queued skips the poll: Guix's 8.20.0 reads back, inside the
+  ;; perform, a wakeup made before it, and the poll would then wait for
+  ;; libcurl alone (ADR-0012). The paced poll: a poll that returned in under
+  ;; 1 ms, in a turn that took no message, while a transfer is paused and no
+  ;; callable took a byte since the turn began, is followed by a sleep of 1
+  ;; ms, unless the test seam turned it off. Ubuntu's 8.5.0 spins otherwise
+  ;; (ADR-0012). While the probe, a test seam, has turns left as a turn
   ;; begins, that turn wakes its poll first, if it reaches it, and records
   ;; what it decided.
   (define (turns engine multi)
@@ -1907,25 +1892,23 @@
   ;; any-paused? : Engine -> Boolean
   ;; Whether a live transfer of ENGINE's is paused, for receiving or for
   ;; sending: each transfer's bits read in a hold of its own, after the
-  ;; table's (the M6 plan, section 3.4).
+  ;; table's.
   (define (any-paused? engine)
     (exists (lambda (keyed) (live-transfer-paused? (cddr keyed)))
             (live-entries engine)))
 
   ;; resume! : Engine Positive-Integer Token -> Boolean
-  ;; The resume step for TOKEN, while it is live (the M6 plan, section
-  ;; 3.4; ADR-0012, amended 2026-10-29): in one hold of its streams' one
-  ;; mutex, both bits, the receive bit and the send bit, and the resume's
-  ;; flag cleared; then, holding no mutex
-  ;; and outside any critical section, curl_easy_pause with CURLPAUSE_CONT,
-  ;; inside which the callables take what libcurl held, and pause again,
-  ;; setting the bit, for what they cannot take; the read callable runs at
-  ;; the next perform, never inside the call (the M6 plan, section 2.2). An answer but 0, or the
-  ;; test seam's in its place, fails the transfer by resume-failure, a
-  ;; reason a callable recorded winning over pause-failed, and takes it out.
-  ;; #t once carried out. A token taken out since its resume was queued,
-  ;; its easy handle freed in the turn it ended, is passed over, counted,
-  ;; #f.
+  ;; The resume step for TOKEN, while it is live (ADR-0012): in one hold of
+  ;; its streams' one mutex, both bits, the receive bit and the send bit,
+  ;; and the resume's flag cleared; then, holding no mutex and outside any
+  ;; critical section, curl_easy_pause with CURLPAUSE_CONT, inside which the
+  ;; callables take what libcurl held, and pause again, setting the bit, for
+  ;; what they cannot take; the read callable runs at the next perform,
+  ;; never inside the call. An answer but 0, or the test seam's in its
+  ;; place, fails the transfer by resume-failure, a reason a callable
+  ;; recorded winning over pause-failed, and takes it out. #t once carried
+  ;; out. A token taken out since its resume was queued, its easy handle
+  ;; freed in the turn it ended, is passed over, counted, #f.
   (define (resume! engine multi token)
     (let* ((live (token-live token))
            (easy (and live (live-transfer-easy live))))
@@ -1965,8 +1948,7 @@
   ;; ENGINE's (pause-answer . CODE) seam, or #f. Its seams hold symbols
   ;; and pairs alike, unpaced and unmultiplexed beside it, so each is
   ;; looked at as what it is: assq raised "improperly formed alist" on a
-  ;; bare symbol, and those engines failed at their first resume (M6 slice
-  ;; 2's measurement).
+  ;; bare symbol, and those engines failed at their first resume.
   (define (pause-answer-seam engine)
     (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'pause-answer)))
           (engine-seams engine)))
@@ -2024,10 +2006,10 @@
   ;; stop-multiplexing! : Engine Positive-Integer -> Void
   ;; MULTI's CURLMOPT_PIPELINING set to 0 on ENGINE's thread, for good, and
   ;; recorded as switched, where the engine multiplexes: a plan whose
-  ;; stops-multiplexing? held, ADR-0037's decision 11. An engine already off
-  ;; or switched is left. A libcurl answer but CURLM_OK fails the engine, as
-  ;; the setting at its start does. The handles MULTI holds keep their
-  ;; connections: libcurl reads the option as a later transfer looks for one.
+  ;; stops-multiplexing? held (ADR-0037). An engine already off or switched
+  ;; is left. A libcurl answer but CURLM_OK fails the engine, as the setting
+  ;; at its start does. The handles MULTI holds keep their connections:
+  ;; libcurl reads the option as a later transfer looks for one.
   (define (stop-multiplexing! engine multi)
     (when (eq? (locked (curl-engine-lock engine) (lambda () (engine-multiplexing engine))) 'default)
       (let ((code (curl-multi-setopt-long multi curlmopt-pipelining curlpipe-nothing)))
@@ -2063,8 +2045,7 @@
               (let ((live (guard (e (#t (complete! engine token e '()) #f))
                             ;; A multipart plan's files, checked here, on
                             ;; this thread, outside every critical section,
-                            ;; before anything is made (ADR-0039, amended
-                            ;; 2026-11-06, decision 1).
+                            ;; before anything is made (ADR-0039).
                             (check-plan-files! (curl-token-plan token))
                             (start-transfer! (curl-token-plan token)
                                              (not (memq 'transfer (engine-without engine)))
@@ -2179,18 +2160,18 @@
           (map cons (vector->list easies) (vector->list entries))))))
 
   ;; fail-engine! : Engine Any -> Void
-  ;; RAISED fails ENGINE (section 3.7): it is marked failing under the
-  ;; mutex first, so no caller wakes its multi handle again and a submit
-  ;; raises the failure; then every token queued, in the turn's batch, or
-  ;; live completes with &curl-engine-error, reason failed, carrying RAISED,
-  ;; and every jar message queued or in the batch is answered with it;
-  ;; every live transfer is taken out and freed, but an easy handle whose
-  ;; removal failed, which stays counted, each freed one letting go of its
-  ;; jar, and an abandoned one keeping its hold; then every jar is freed,
-  ;; one whose share an abandoned handle holds kept, counted, as closing;
-  ;; and the multi handle cleaned up, each as far as it goes, so a free that
-  ;; fails leaves its count up; and last, the engine is marked failed.
-  ;; Nothing raised here leaves the thread.
+  ;; RAISED fails ENGINE: it is marked failing under the mutex first, so no
+  ;; caller wakes its multi handle again and a submit raises the failure;
+  ;; then every token queued, in the turn's batch, or live completes with
+  ;; &curl-engine-error, reason failed, carrying RAISED, and every jar
+  ;; message queued or in the batch is answered with it; every live transfer
+  ;; is taken out and freed, but an easy handle whose removal failed, which
+  ;; stays counted, each freed one letting go of its jar, and an abandoned
+  ;; one keeping its hold; then every jar is freed, one whose share an
+  ;; abandoned handle holds kept, counted, as closing; and the multi handle
+  ;; cleaned up, each as far as it goes, so a free that fails leaves its
+  ;; count up; and last, the engine is marked failed. Nothing raised here
+  ;; leaves the thread.
   (define (fail-engine! engine raised)
     (let* ((failure (engine-error 'failed raised))
            (lock (curl-engine-lock engine))

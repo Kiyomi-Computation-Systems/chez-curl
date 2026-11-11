@@ -5,12 +5,12 @@
 ;;; chez-curl's engine uses Chez's thread system (make-mutex, fork-thread,
 ;;; ...; ADR-0012), which Chez builds only into threaded builds. On a
 ;;; --nothreads Chez a library importing those names dies at import with a
-;;; bare "missing import for make-mutex". The floor is Chez 10.4.0 (ADR-0001,
-;;; decision 6): an older Chez dies somewhere in the first library that needs
-;;; something newer, with a message that does not say why. This library
-;;; raises a message naming the requirement instead. It raises from a macro,
-;;; so the refusal comes while this library is being expanded: before the
-;;; library importing it goes on to its next import.
+;;; bare "missing import for make-mutex". The floor is Chez 10.4.0 (ADR-0001):
+;;; an older Chez dies somewhere in the first library that needs something
+;;; newer, with a message that does not say why. This library raises a
+;;; message naming the requirement instead. It raises from a macro, so the
+;;; refusal comes while this library is being expanded: before the library
+;;; importing it goes on to its next import.
 ;;;
 ;;; A pre-release comes before the release it is numbered for, and
 ;;; (scheme-version-number) answers that release's numbers for it, so

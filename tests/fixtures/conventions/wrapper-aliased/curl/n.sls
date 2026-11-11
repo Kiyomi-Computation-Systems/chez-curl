@@ -1,5 +1,5 @@
 #!r6rs
-;; The review's A2: identifier-syntax makes bind-plain another name for
+;; Case A2: identifier-syntax makes bind-plain another name for
 ;; bind-required, and bind-plain binds curl-easy-setopt-long. An unused use
 ;; of bind-variadic keeps the count. The name in the template is stray.
 (library (curl n)

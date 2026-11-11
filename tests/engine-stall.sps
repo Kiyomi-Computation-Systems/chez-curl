@@ -2,7 +2,7 @@
 ;;; A child of tests/test-engine.sps, run under tests/stall-getaddrinfo.c, a
 ;;; stand-in getaddrinfo that stalls each name ending .stall.invalid for
 ;;; STALL_MS, which the suite sets well above 1000 ms, and logs to STALL_LOG
-;;; as each lookup starts and as it answers (ADR-0019; M3 plan, section 6.2).
+;;; as each lookup starts and as it answers (ADR-0019).
 ;;;
 ;;;   engine-stall.sps WITHOUT URL
 ;;;

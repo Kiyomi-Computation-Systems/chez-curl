@@ -8,10 +8,9 @@
 ;;; as a failure does (make-faulty-curl-engine), the control. It prints
 ;;; (OUTCOME STATE HOLDERS COUNTS): the transfer's outcome, as data; the
 ;;; jar's state and how many transfers hold it; and every count, once the
-;;; engine's stop has returned. An abandoned
-;;; handle keeps its hold on the jar, whose share then stays in use: both
-;;; stay counted, for good, so this runs in a process of its own (the M7
-;;; plan, section 3.5). A transfer to port 9 on 127.0.0.1 never connects
+;;; engine's stop has returned. An abandoned handle keeps its hold on the jar,
+;;; whose share then stays in use: both stay counted, for good, so this runs in
+;;; a process of its own. A transfer to port 9 on 127.0.0.1 never connects
 ;;; before the fault, which the first perform raises.
 (import (rnrs)
         (curl)

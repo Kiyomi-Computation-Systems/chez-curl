@@ -1,9 +1,8 @@
 #!r6rs
-;;; tests/proxy-env-join.sps: a transfer through proxy environment beside a
-;;; live tunnel a named proxy's transfer opened with its userinfo, on one
-;;; engine, run in a child Chez of tests/test-proxy.sps, which sets
-;;; https_proxy for the child alone, through its command (ADR-0037,
-;;; decision 11; the M7 plan, section 6.2).
+;;; tests/proxy-env-join.sps: a transfer through proxy environment beside a live
+;;; tunnel a named proxy's transfer opened with its userinfo, on one engine, run
+;;; in a child Chez of tests/test-proxy.sps, which sets https_proxy for the
+;;; child alone, through its command (ADR-0037).
 ;;;
 ;;;   proxy-env-join.sps NAMED-PROXY SLOW-URL QUICK-URL CA-FILE
 ;;;

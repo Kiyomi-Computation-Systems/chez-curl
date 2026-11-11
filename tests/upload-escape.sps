@@ -1,10 +1,10 @@
 #!r6rs
-;;; A child of tests/test-upload.sps: the put's escape (the M6 plan,
-;;; section 3.5). A keyboard interrupt made pending while a put waits for
-;;; the request stream's mutex inside its critical section runs as that
-;;; section ends, the piece already committed in its hold; a handler that
-;;; escapes there must leave it committed, counted and sent, and one that
-;;; returns the same (traps.md: planting an escape at a section's end).
+;;; A child of tests/test-upload.sps: the put's escape. A keyboard interrupt
+;;; made pending while a put waits for the request stream's mutex inside its
+;;; critical section runs as that section ends, the piece already committed in
+;;; its hold; a handler that escapes there must leave it committed, counted and
+;;; sent, and one that returns the same (a timer cannot plant an escape at a
+;;; section's end, so a SIGINT does).
 ;;;
 ;;;   upload-escape.sps BASE RUNS
 ;;;

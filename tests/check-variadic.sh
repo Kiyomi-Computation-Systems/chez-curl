@@ -1,6 +1,6 @@
 #!/bin/sh
 # `make check-variadic`: proves that a variadic binding without
-# (__varargs_after 2) fails, in a copy of the tree (ADR-0001, decision 1).
+# (__varargs_after 2) fails, in a copy of the tree (ADR-0001).
 # It mutates src/curl/private/native.sls eight ways, each from the
 # unchanged file: the convention removed from bind-variadic's template,
 # which every use loses at once, and then each of the seven uses alone bound
@@ -42,48 +42,47 @@
 #                annotated, so nothing writes through a garbage pointer: a
 #                crash, or no named test, fails. The multi one fails by the
 #                two drips, run one after the other at
-#                MAX_TOTAL_CONNECTIONS 1 and together at 2 (ADR-0001,
-#                amended 2026-10-25); the share one by its rows, a cookie
-#                carried between two transfers by SHARE 2 alone, 99 and -1
-#                refused, and UNSHARE 2 stopping the carrying (M7 slice 4);
+#                MAX_TOTAL_CONNECTIONS 1 and together at 2 (ADR-0001); the
+#                share one by its rows, a cookie carried between two
+#                transfers by SHARE 2 alone, 99 and -1 refused, and
+#                UNSHARE 2 stopping the carrying;
 #              - getinfo: it must fail, by name or by dying, and the step
 #                says which;
-#              - formadd, the load's mime probe's form (M8 slice 3): it
-#                must fail, by name or by dying, and the step says which:
-#                every suite's load calls it, so a variadic argument read
-#                from where this ABI never put it can crash the load, or
-#                answer a code but 0, which refuses multipart, and
-#                test-variadic's rows through curl-formadd-code, a valid
-#                form's 0 and an unknown option's 4, then fail
+#              - formadd, the load's mime probe's form: it must fail, by
+#                name or by dying, and the step says which: every suite's
+#                load calls it, so a variadic argument read from where
+#                this ABI never put it can crash the load, or answer a
+#                code but 0, which refuses multipart, and test-variadic's
+#                rows through curl-formadd-code, a valid form's 0 and an
+#                unknown option's 4, then fail
 #   other    on any other machine type, test-variadic runs on the mutant
 #            and its result is reported, never failed: x86-64 and Linux
 #            arm64 pass variadic arguments as they pass named ones, so a
 #            binding without the convention works there
 #   transfer test-transfer runs on the mutant, every easy setopt and
 #            getinfo binding observed in a real transfer (ADR-0001's FFI
-#            test; M2 plan, section 5.2), under a bound of its own,
-#            TRANSFER_TIMEOUT seconds, 180 by default: the long mutant can
-#            hand TIMEOUT_MS garbage, and a stall could then wait for ever.
-#            On Apple arm64 it must fail, and any non-zero exit counts: a
-#            FAIL line, a crash, or the bound, 124, reported as timed out.
-#            The step names which. On any other machine type its result is
-#            reported, never failed, as test-variadic's is.
-#            For the multi use its result is reported on every machine,
-#            never failed: no transfer shows a multi option on Apple's
-#            8.7.1, the Mac's libcurl, which lacks CURLMOPT_QUICK_EXIT, the
-#            one chez-curl sets, and answers any value of it alike. Only
-#            test-variadic's drips show that use. So for the share use: no
-#            transfer of test-transfer's holds a cookie jar, and only
-#            test-variadic's share rows show it; and for the formadd use:
-#            the load's probe is test-transfer's one call of it, and a
-#            broken answer refuses multipart alone, which test-transfer
-#            never sends
+#            test), under a bound of its own, TRANSFER_TIMEOUT seconds,
+#            180 by default: the long mutant can hand TIMEOUT_MS
+#            garbage, and a stall could then wait for ever. On Apple
+#            arm64 it must fail, and any non-zero exit counts: a FAIL
+#            line, a crash, or the bound, 124, reported as timed out.
+#            The step names which. On any other machine type its result
+#            is reported, never failed, as test-variadic's is. For the
+#            multi use its result is reported on every machine, never
+#            failed: no transfer shows a multi option on Apple's 8.7.1,
+#            which lacks CURLMOPT_QUICK_EXIT, the one chez-curl sets,
+#            and answers any value of it alike. Only test-variadic's
+#            drips show that use. So for the share use: no transfer of
+#            test-transfer's holds a cookie jar, and only test-variadic's
+#            share rows show it; and for the formadd use: the load's probe
+#            is test-transfer's one call of it, and a broken answer
+#            refuses multipart alone, which test-transfer never sends
 #
 # The control needs test-transfer to pass, and that needs a row in
 # tests/known-transfer-verdicts.sexp for the libcurl it runs against; and
 # test-variadic, which needs a row in its minus-one-rows. When either fails
 # for want of one, the control's line says so: add the row the suite
-# printed, then rerun. On the Mac: make test, add the rows it printed, then
+# printed, then rerun. On macOS: make test, add the rows it printed, then
 # make check-variadic.
 #
 # Every step needs positive evidence: a run's exit status, and the lines
@@ -92,10 +91,9 @@
 #
 # POSIX sh, for macOS too: no sed -i, exact-text replacement by awk's index,
 # changed lines counted by awk, and mktemp given a template under $TMPDIR,
-# which BSD mktemp needs (AGENTS.md). `make check-variadic` passes CHEZ,
-# TIMEOUT and TEST_TIMEOUT, the ones make test uses, and exports NODE. Run
-# directly, it takes scheme, timeout and node from PATH, and 300 seconds a
-# suite.
+# which BSD mktemp needs. `make check-variadic` passes CHEZ, TIMEOUT and
+# TEST_TIMEOUT, the ones make test uses, and exports NODE. Run directly, it
+# takes scheme, timeout and node from PATH, and 300 seconds a suite.
 set -u
 
 root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
@@ -123,7 +121,7 @@ stop() {
 }
 
 # The scratch directory: mktemp's one line, whole, absolute and a
-# directory, never its first word (AGENTS.md).
+# directory, never its first word.
 base=${TMPDIR:-/tmp}
 base=${base%/}
 tmp=$(mktemp -d "$base/check-variadic.XXXXXX") || stop "copy: mktemp -d failed under $base"

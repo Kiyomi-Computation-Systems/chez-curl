@@ -1,6 +1,5 @@
 #!r6rs
-;;; The suite for chez-curl's memory foundations (M2 plan, sections 3.2 to
-;;; 3.4, and 4.2 and 4.3):
+;;; The suite for chez-curl's memory foundations:
 ;;;
 ;;;   counters     (curl private counters): a count per kind of native
 ;;;                object, behind one mutex, with no reset. A count-down
@@ -11,17 +10,17 @@
 ;;;   copies       (curl private native)'s copy-foreign->bytevector! and
 ;;;                copy-bytevector->foreign!, the one checked wrapper for
 ;;;                every copy between a bytevector and foreign memory
-;;;                (ADR-0001, amended 2026-10-16). Valgrind cannot see an
-;;;                overrun into a bytevector, so each bound is held here, at
-;;;                its edges, in both directions, on both of each copy's
-;;;                paths: memcpy into or out of the bytevector itself, at
-;;;                offset 0, and through a fresh bytevector, past it, since
-;;;                Chez's u8* hands C a bytevector's first byte. memcpy's
-;;;                two bindings are held unexported
+;;;                (ADR-0001). Valgrind cannot see an overrun into a
+;;;                bytevector, so each bound is held here, at its edges, in
+;;;                both directions, on both of each copy's paths: memcpy
+;;;                into or out of the bytevector itself, at offset 0, and
+;;;                through a fresh bytevector, past it, since Chez's u8*
+;;;                hands C a bytevector's first byte. memcpy's two bindings
+;;;                are held unexported
 ;;;   C strings    call-with-c-string and c-string->bytevector: UTF-8 and a
 ;;;                NUL, U+0000 refused; call-with-latin-1-c-string, one byte
 ;;;                per char and a NUL, U+0000 and every char above U+00FF
-;;;                refused (ADR-0001, amended 2026-10-23)
+;;;                refused (ADR-0001)
 ;;;
 ;;; The foreign side of each copy is read and written here with Chez's own
 ;;; foreign-ref and foreign-set!, never through the copies under test, and
@@ -35,14 +34,13 @@
 ;;; actual expression, so none is #f, and each refusal is compared, who and
 ;;; irritants, against a no-raise sentinel.
 ;;;
-;;; The counters and the blocks never load libcurl, and are imported. The
-;;; copies and the C strings live in (curl private native), whose body is
-;;; the load, and the load reads curl_version_info's strings through them.
-;;; So this suite reaches native through eval, under a guard: a copy broken
-;;; so badly that the load fails names the tests that use it, and the
-;;; counters' and blocks' tests still run, where an import would kill the
-;;; suite, unnamed, before its first line (.plans/traps.md). make
-;;; test-memory runs it under Valgrind.
+;;; The counters and the blocks never load libcurl, and are imported. The copies
+;;; and the C strings live in (curl private native), whose body is the load, and
+;;; the load reads curl_version_info's strings through them. So this suite
+;;; reaches native through eval, under a guard: a copy broken so badly that the
+;;; load fails names the tests that use it, and the counters' and blocks' tests
+;;; still run, where an import would kill the suite, unnamed, before its first
+;;; line. make test-memory runs it under Valgrind.
 (import (rnrs)
         (rnrs eval)
         (rnrs mutable-strings)
@@ -646,7 +644,7 @@
          (b (raised (lambda () (call-with-c-string "abc" 'not-a-procedure)))))
     (list a b (native-counts))))
 
-;; --- Latin-1 C strings (ADR-0001, amended 2026-10-23) ------------------------------------
+;; --- Latin-1 C strings (ADR-0001) --------------------------------------------------------
 
 ;; latin-1-bytes : String -> Any
 ;; What call-with-latin-1-c-string hands C for STRING, read with foreign-ref

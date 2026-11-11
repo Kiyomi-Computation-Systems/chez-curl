@@ -1,7 +1,7 @@
 #!r6rs
 ;;; tests/example-runner.sps: runs one example as tests/test-examples.sps
 ;;; needs it run, so that the example imports public libraries alone and the
-;;; native counts are still read (AGENTS.md's counters rule).
+;;; native counts are still read.
 ;;;
 ;;;   example-runner.sps EXAMPLE ARG ...
 ;;;

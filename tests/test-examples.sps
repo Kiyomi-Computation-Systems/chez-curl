@@ -1,7 +1,6 @@
 #!r6rs
-;;; The suite for examples/ (the M8 plan, section 3.5): every example runs as
-;;; its head comment says to run it, against the test origin, and prints what
-;;; examples/expected/ holds for it.
+;;; The suite for examples/: every example runs as its head comment says to run
+;;; it, against the test origin, and prints what examples/expected/ holds for it.
 ;;;
 ;;;   - examples/ holds exactly the examples written out below, each
 ;;;     NAME.sps, and examples/expected/ an output for exactly those, each
@@ -25,10 +24,9 @@
 ;;;     examples/expected/NAME.out byte for byte; and its stderr is one line,
 ;;;     the runner's (counts ALIST), every count 0. An example that raises,
 ;;;     or calls exit, writes no counts line, one that leaves a native object
-;;;     behind writes a count that is not 0 (AGENTS.md's counters rule: the
-;;;     child prints its counts, and the suite asserts them zero), and one
-;;;     whose output hangs on what the origin kept from the first round
-;;;     differs in the second;
+;;;     behind writes a count that is not 0 (the child prints its counts, and
+;;;     the suite asserts them zero), and one whose output hangs on what the
+;;;     origin kept from the first round differs in the second;
 ;;;   - the runner reads its counts once the program's body has returned: a
 ;;;     control, tests/example-leak.sps, run through it beside the examples,
 ;;;     leaves an engine and a jar behind, and its counts line shows one

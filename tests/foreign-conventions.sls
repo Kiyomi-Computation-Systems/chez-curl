@@ -1,8 +1,8 @@
 #!r6rs
 ;;; (foreign-conventions): the calling conventions chez-curl's foreign
 ;;; procedures and callables must carry, and a reader that finds the ones
-;;; they do carry (ADR-0013, harness plan §3 item 3). Test-only: it lives in
-;;; tests/, and tests/test-collect-safe.sps is its suite.
+;;; they do carry (ADR-0013). Test-only: it lives in tests/, and
+;;; tests/test-collect-safe.sps is its suite.
 ;;;
 ;;;   conventions-table   one row per C entry point or callable: its key,
 ;;;                       its required conventions, and a citation
@@ -140,9 +140,9 @@
 ;;;
 ;;; A fixture tree's any macros are held to neither kind's rules.
 ;;;
-;;; Types, read as an allowlist (ADR-0013, amended). Every parameter and
-;;; result type of every binding must be one of these, else the binding is
-;;; a type the reader cannot read, and a violation:
+;;; Types, read as an allowlist (ADR-0013). Every parameter and result type
+;;; of every binding must be one of these, else the binding is a type the
+;;; reader cannot read, and a violation:
 ;;;
 ;;;   - an immediate or address type Chez 10.4.0 documents (immediate-types),
 ;;;     and void as a result: C gets a value, never a pointer into Chez's
@@ -169,9 +169,9 @@
 ;;; callable's result, and each binding carries them, in order, as its
 ;;; crossings:
 ;;;
-;;;   - a bytevector's data, u8*, u16* or u32*. One checked wrapper (M2)
-;;;     owns every copy between a bytevector and foreign memory, so only a
-;;;     row marked (bytevector-crossing CITATION) may have one;
+;;;   - a bytevector's data, u8*, u16* or u32*. One checked wrapper owns
+;;;     every copy between a bytevector and foreign memory, so only a row
+;;;     marked (bytevector-crossing CITATION) may have one;
 ;;;   - a string, Chez's copy in its own heap: string, utf-8, utf-16le,
 ;;;     utf-16be, utf-32le, utf-32be, wstring. A callee that kept it would
 ;;;     read garbage once the collector moved it, so only a row marked
@@ -277,12 +277,12 @@
 
   (define cannot-block (cite adr-0013 "Calls that cannot block stay plain."))
   (define can-block (cite adr-0013 "`curl_multi_poll` is the engine's wait, so it is `__collect_safe`."))
-  ;; What spike E1 measured (M3 slice 1; ADR-0013, accepted): the multi
-  ;; calls that waited 9 to 10 s while a name lookup stalled, and those that
-  ;; never took a millisecond. curl_easy_cleanup is plain for a handle taken
-  ;; out of the engine's multi handle, and for the load's header probe's,
-  ;; which never ran a transfer. After curl_easy_perform it waited about 9 s
-  ;; on 8.20.0; slice 2 deleted that path, and the binding with it.
+  ;; What was measured (ADR-0013): the multi calls that waited 9 to 10 s
+  ;; while a name lookup stalled, and those that never took a millisecond.
+  ;; curl_easy_cleanup is plain for a handle taken out of the engine's multi
+  ;; handle, and for the load's header probe's, which never ran a transfer.
+  ;; After curl_easy_perform it waited about 9 s on 8.20.0; nothing binds
+  ;; curl_easy_perform.
   (define e1-can-block
     (cite adr-0013 "`curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block, so each is `__collect_safe`."))
   (define e1-plain
@@ -303,16 +303,15 @@
     (cite adr-0001 "Variadic entry points are bound once per value type, with `(__varargs_after 2)`."))
   ;; write-body, (curl private transfer)'s callable for every transfer, is
   ;; invoked from inside curl_multi_perform, a __collect_safe call, so it
-  ;; reactivates the thread (CSUG). Spike E1 saw it fire there and nowhere
-  ;; else; from M6 it fires inside curl_easy_pause too.
+  ;; reactivates the thread (CSUG). It fires there, and inside
+  ;; curl_easy_pause too.
   (define callback-in-perform
     (cite adr-0013 "So the engine's write callable is `__collect_safe`, as its perform is."))
-  ;; The M6 plan's, section 3.4: curl_easy_pause runs the callables inside
-  ;; it, as curl_multi_perform does, and is __collect_safe through
-  ;; bind-blocking; and the header callable, read-head, which fires inside
-  ;; either, is __collect_safe as write-body is (ADR-0030, consequences),
-  ;; and so are the request stream's, M6 slice 2's: read-body, the read
-  ;; callable, seek-body and prereq-body, which fire inside
+  ;; curl_easy_pause runs the callables inside it, as curl_multi_perform
+  ;; does, and is __collect_safe through bind-blocking; and the header
+  ;; callable, read-head, which fires inside either, is __collect_safe as
+  ;; write-body is (ADR-0030), and so are the request stream's: read-body,
+  ;; the read callable, seek-body and prereq-body, which fire inside
   ;; curl_multi_perform.
   (define adr-0012 ".plans/decisions/0012-engine-thread-owns-every-handle.md")
   (define adr-0030 ".plans/decisions/0030-streams-are-request-keys-and-token-operations.md")
@@ -320,7 +319,7 @@
     (cite adr-0012 "so the callbacks run on the engine's thread, inside that call, as inside a perform."))
   ;; curl_mime_filedata stats its path, and on 7.85.0 and 8.5.0 accesses it:
   ;; a file system call, which can wait on a slow or a network mount, so it
-  ;; is __collect_safe, through bind-blocking (the M8 plan, section 3.9).
+  ;; is __collect_safe, through bind-blocking.
   (define filedata-can-block
     (cite adr-0013 "A libcurl call that can block is a `__collect_safe` foreign procedure."))
   (define stream-callables
@@ -335,15 +334,14 @@
   ;; callable, keyed by the name it is defined as, a symbol. A convention is
   ;; a symbol, __collect_safe, or a list, (__varargs_after 2). A row for an
   ;; entry not bound yet holds the binding to its convention the moment it
-  ;; is made. M2, M3 and M7 slice 4 bound theirs against rows written
-  ;; first, curl_multi_setopt's and curl_share_setopt's among them.
+  ;; is made.
   ;;
   ;; A mark clears the row's bindings of one kind of crossing: a
   ;; bytevector's data, or a string its callee keeps no pointer to. Its
   ;; citation quotes a decision record, checked as the row's own is, and a
-  ;; marked row is never __collect_safe (ADR-0013's decision 4). A row has
-  ;; one mark at most. Two rows are marked string-not-kept, and memcpy's,
-  ;; the checked copies', bytevector-crossing.
+  ;; marked row is never __collect_safe (ADR-0013). A row has one mark at
+  ;; most. Two rows are marked string-not-kept, and memcpy's, the checked
+  ;; copies', bytevector-crossing.
   ;;
   ;; A binder names the one way the row's entry may be bound: a known
   ;; wrapper, foreign-procedure or foreign-callable. The five variadic rows
@@ -621,9 +619,9 @@
       long-long unsigned-long-long ptrdiff_t size_t ssize_t iptr uptr void*
       fixnum boolean stdbool char wchar_t wchar))
 
-  ;; The crossing kinds (ADR-0013, amended): a bytevector's data (Chez
-  ;; 10.4.0 refuses u64* and bytevector as types), a string Chez copies into
-  ;; its heap, and a Scheme object itself.
+  ;; The crossing kinds (ADR-0013): a bytevector's data (Chez 10.4.0
+  ;; refuses u64* and bytevector as types), a string Chez copies into its
+  ;; heap, and a Scheme object itself.
   (define bytevector-types '(u8* u16* u32*))
   (define string-types '(string utf-8 utf-16le utf-16be utf-32le utf-32be wstring))
   (define object-types '(scheme-object))

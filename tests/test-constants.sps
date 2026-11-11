@@ -1,7 +1,6 @@
 #!r6rs
-;;; The suite for chez-curl's constants and struct layouts, each checked
-;;; against libcurl's own headers by a C program compiled here, at test
-;;; time (ADR-0001, decisions 3 and 4).
+;;; The suite for chez-curl's constants and struct layouts, each checked against
+;;; libcurl's own headers by a C program compiled here, at test time (ADR-0001).
 ;;;
 ;;;   constants  src/curl/private/constants.sls, read as data for its
 ;;;              export list. Each export has a row in constant-rows,
@@ -56,7 +55,7 @@
 ;;;              which includes curl/options.h, must be exactly
 ;;;              curlot-types' names, prefixed and upcased, - as _. Its
 ;;;              values are checked as a list row's are; this check sees a
-;;;              type the list leaves out (ADR-0001, amended 2026-10-17).
+;;;              type the list leaves out (ADR-0001).
 ;;;   prototypes every entry point src/ binds has a row in prototype-rows,
 ;;;              and every row is bound: the header's declaration, its
 ;;;              result and parameter types in the header's own spelling.
@@ -962,7 +961,7 @@
 ;; loaded-libcurl, run here, in this process. A refusal is named by its
 ;; reason and path, never raised. (curl private native) loads libcurl in its
 ;; library body, and a guard in a program catches a raise from there only
-;; through eval (AGENTS.md).
+;; through eval.
 (define library-version
   (guard (e ((curl-library-unavailable? e)
              (list 'refused (curl-library-unavailable-reason e)

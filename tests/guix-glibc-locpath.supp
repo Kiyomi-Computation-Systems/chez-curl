@@ -1,6 +1,6 @@
 # tests/guix-glibc-locpath.supp: the memory gate's one suppression
-# (ADR-0014, amended 2026-10-16). make test-memory hands it to Valgrind only
-# in a Guix environment (GUIX_ENVIRONMENT set). CI passes none.
+# (ADR-0014). make test-memory hands it to Valgrind only in a Guix environment
+# (GUIX_ENVIRONMENT set). CI passes none.
 #
 # In the Guix container, loading libcurl runs p11-kit's constructor, which
 # calls newlocale. Guix's glibc patch for GUIX_LOCPATH adds

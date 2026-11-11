@@ -1,21 +1,20 @@
 #!r6rs
 ;;; (curl private transfer): a request, and its transfer on an engine's
-;;; thread (M2 plan, sections 3 and 5; M3 plan, sections 3.1 and 5.2; M4
-;;; plan, sections 3.2 to 3.4). (curl) exports the request and the
-;;; response; (curl private engine) runs the transfer.
+;;; thread. (curl) exports the request and the response; (curl private
+;;; engine) runs the transfer.
 ;;;
 ;;; A request is made from a property list, (make-curl-request URL KEY
 ;;; VALUE ...), and curl-request-with makes a new one with keys replaced,
-;;; the URL among them by its url key (ADR-0023). An unknown key, a key with no value and a repeated key are
-;;; refused by name before anything else is checked. Then its fields are
-;;; checked, before anything native: wrong types are assertion violations,
-;;; and a body with get or head, a header or a user agent libcurl would
-;;; send otherwise than asked, or a CA file's path holding U+0000, is a
-;;; &curl-request-error. Header strings are Latin-1, both ways (ADR-0001,
-;;; amended 2026-10-23); a CA file's path is UTF-8, as every other string.
-;;; A request holds no procedure: its private fields, a fault and whether
-;;; to follow redirects, are data, set by private constructors alone (M3
-;;; plan, section 3.6; M4 plan, section 3.2).
+;;; the URL among them by its url key (ADR-0023). An unknown key, a key
+;;; with no value and a repeated key are refused by name before anything
+;;; else is checked. Then its fields are checked, before anything native:
+;;; wrong types are assertion violations, and a body with get or head, a
+;;; header or a user agent libcurl would send otherwise than asked, or a
+;;; CA file's path holding U+0000, is a &curl-request-error. Header
+;;; strings are Latin-1, both ways (ADR-0001); a CA file's path is UTF-8,
+;;; as every other string. A request holds no procedure: its private
+;;; fields, a fault and whether to follow redirects, are data, set by
+;;; private constructors alone.
 ;;;
 ;;; A request holds the caller's strings, lists and body, which stay
 ;;; mutable. So a submit, on the caller's thread, checks nothing it does
@@ -23,64 +22,59 @@
 ;;; for the URL, the headers, the user agent and the CA file, and a fresh
 ;;; copy of the body, checks the plan by the constructor's rules, and
 ;;; parses the plan's URL and checks its scheme, freeing that CURLU before
-;;; it returns (ADR-0008, amended
-;;; 2026-10-24). Every refusal raises there, before anything is queued. A
-;;; request changed after it was made is refused then; a change it takes is
-;;; sent as changed. The engine sends only the plan.
+;;; it returns (ADR-0008). Every refusal raises there, before anything is
+;;; queued. A request changed after it was made is refused then; a change
+;;; it takes is sent as changed. The engine sends only the plan.
 ;;;
-;;; A body (M4 plan, section 3.2). post, put and patch always send one,
-;;; empty when the request has none, and delete sends one only when it has
-;;; one: POSTFIELDSIZE_LARGE at its length, then COPYPOSTFIELDS at a counted
-;;; copy of it, which libcurl copies and which is freed once setopt
-;;; returns. An empty body is a block of one byte, never NULL, as a
-;;; defence: with a size of 0 libcurl reads nothing either way, but NULL
-;;; tells its setopt to send the body through its read callback, whose
-;;; default reads stdin, and its setopt allocates a byte for a size of 0
-;;; "to mark that postfields is used rather than read function"
-;;; (lib/setopt.c, 7.85.0).
-;;; put, patch and delete set CUSTOMREQUEST to their names. libcurl adds
-;;; Content-Type: application/x-www-form-urlencoded to every body, and
-;;; Expect: 100-continue past 1 MiB, then waits a second for a server that
-;;; never answers it; so a request that sends a body also sends "Content-Type:"
-;;; and "Expect:", which take libcurl's own away, unless it names a header
-;;; of that name itself, which replaces libcurl's (measured on five
-;;; libcurls, the M4 plan, section 4.1). Nothing follows a redirect:
-;;; FOLLOWLOCATION is owned, and set only for the private follow field.
+;;; A body. post, put and patch always send one, empty when the request has
+;;; none, and delete sends one only when it has one: POSTFIELDSIZE_LARGE at its
+;;; length, then COPYPOSTFIELDS at a counted copy of it, which libcurl copies
+;;; and which is freed once setopt returns. An empty body is a block of one
+;;; byte, never NULL, as a defence: with a size of 0 libcurl reads nothing
+;;; either way, but NULL tells its setopt to send the body through its read
+;;; callback, whose default reads stdin, and its setopt allocates a byte for a
+;;; size of 0 "to mark that postfields is used rather than read function"
+;;; (lib/setopt.c, 7.85.0). put, patch and delete set CUSTOMREQUEST to their
+;;; names. libcurl adds Content-Type: application/x-www-form-urlencoded to
+;;; every body, and Expect: 100-continue past 1 MiB, then waits a second for a
+;;; server that never answers it; so a request that sends a body also sends
+;;; "Content-Type:" and "Expect:", which take libcurl's own away, unless it
+;;; names a header of that name itself, which replaces libcurl's (measured on
+;;; five libcurls). Nothing follows a redirect: FOLLOWLOCATION is owned, and
+;;; set only for the private follow field.
 ;;;
-;;; A multipart body (ADR-0039, amended twice; the M8 plan, sections 3.1 and
-;;; 3.4): (multipart PART ...), each PART (NAME SOURCE OPTION ...), NAME a
-;;; string, SOURCE a string, sent as UTF-8, a bytevector, or (file PATH),
-;;; and each OPTION filename STRING or type STRING, once at most. A wrong
-;;; shape is an assertion violation naming the body by its kind. As the
-;;; request is made, the list and its metadata are copied, fresh pairs and
-;;; fresh name, filename, type and path strings, the data kept as given,
-;;; and the copy checked and kept: (multipart) is multipart-empty; a name,
-;;; filename or type that is "" is part-empty, and one holding a control
-;;; char, U+0000 to U+001F or U+007F, or a name or filename a ", part-bytes,
-;;; a file part's default filename, its path's last component, by the
-;;; filename's rules; a header named Content-Type beside it is
+;;; A multipart body (ADR-0039): (multipart PART ...), each PART (NAME SOURCE
+;;; OPTION ...), NAME a string, SOURCE a string, sent as UTF-8, a bytevector,
+;;; or (file PATH), and each OPTION filename STRING or type STRING, once at
+;;; most. A wrong shape is an assertion violation naming the body by its
+;;; kind. As the request is made, the list and its metadata are copied, fresh
+;;; pairs and fresh name, filename, type and path strings, the data kept as
+;;; given, and the copy checked and kept: (multipart) is multipart-empty; a
+;;; name, filename or type that is "" is part-empty, and one holding a
+;;; control char, U+0000 to U+001F or U+007F, or a name or filename a ",
+;;; part-bytes, a file part's default filename, its path's last component, by
+;;; the filename's rules; a header named Content-Type beside it is
 ;;; multipart-content-type; then each path, empty or holding U+0000, is
 ;;; part-file, a relative one is resolved against current-directory, once,
 ;;; and one that names no regular file by stat, symlinks followed, is
-;;; part-file too. Nothing is opened. curl-request-body answers a copy of
-;;; the list, as curl-request-credentials does. A submit checks the
-;;; record's copy again, on a copy of its own, by stat again, without
-;;; resolving: a path that is not absolute there is part-file, which only a
-;;; fault, the private curl-request-with-unresolved-path's, brings; on a
-;;; libcurl whose load found no mime it refuses the body before any of the
-;;; body's own checks, multipart-unsupported, naming what the probe found.
-;;; Then the submit copies each part's data, a
-;;; string's UTF-8, a bytevector's bytes: the data is copied at submit
-;;; alone. On the engine's thread, outside every critical section, before
-;;; the transfer is set up, check-plan-files! checks each file part's path
-;;; by stat, a regular file, then opens and closes it: a failure is the
-;;; transfer's, part-file, with nothing made. start-transfer! then makes the
-;;; mime with the transfer's easy handle, counted as mime, and adds each part
-;;; through native's curl-mime-add-part!: any answer but 0 fails the
-;;; transfer before it starts, part-file for a file's data, mime-failed for
-;;; the rest. MIMEPOST is the transfer's last body option, set in place of
-;;; POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; the transfer leaves the
-;;; Content-Type: blank out of its header list, so libcurl writes
+;;; part-file too. Nothing is opened. curl-request-body answers a copy of the
+;;; list, as curl-request-credentials does. A submit checks the record's copy
+;;; again, on a copy of its own, by stat again, without resolving: a path
+;;; that is not absolute there is part-file, which only a fault, the private
+;;; curl-request-with-unresolved-path's, brings; on a libcurl whose load
+;;; found no mime it refuses the body before any of the body's own checks,
+;;; multipart-unsupported, naming what the probe found. Then the submit
+;;; copies each part's data, a string's UTF-8, a bytevector's bytes: the data
+;;; is copied at submit alone. On the engine's thread, outside every critical
+;;; section, before the transfer is set up, check-plan-files! checks each
+;;; file part's path by stat, a regular file, then opens and closes it: a
+;;; failure is the transfer's, part-file, with nothing made. start-transfer!
+;;; then makes the mime with the transfer's easy handle, counted as mime, and
+;;; adds each part through native's curl-mime-add-part!: any answer but 0
+;;; fails the transfer before it starts, part-file for a file's data,
+;;; mime-failed for the rest. MIMEPOST is the transfer's last body option,
+;;; set in place of POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; the transfer
+;;; leaves the Content-Type: blank out of its header list, so libcurl writes
 ;;; multipart/form-data and its boundary, and keeps Expect:. MIME_OPTIONS is
 ;;; owned and never set, so libcurl escapes nothing the byte rules let
 ;;; through. free-transfer! frees the mime after curl_easy_cleanup; an
@@ -89,7 +83,7 @@
 ;;; A finished transfer's response carries its timings, read as curl_off_t
 ;;; microseconds through native's off_t reader. A failed one carries its
 ;;; request size, CURLINFO_REQUEST_SIZE, and raises its code's class
-;;; (ADR-0022, amended 2026-10-26).
+;;; (ADR-0022).
 ;;;
 ;;; On the engine's thread (ADR-0012), start-transfer! makes, in order:
 ;;;
@@ -110,18 +104,16 @@
 ;;; before the header list, the error buffer and the CURLU it used. A
 ;;; transfer cancelled, or stopped, is freed the same way, unread. Each
 ;;; object is made, and recorded in the transfer's live record, in one
-;;; critical section, and freed, and cleared, in another (ADR-0013, amended
-;;; 2026-10-23). Each mutex is held through locked, in a critical section,
-;;; and no hold waits.
+;;; critical section, and freed, and cleared, in another (ADR-0013). Each
+;;; mutex is held through locked, in a critical section, and no hold waits.
 ;;;
 ;;; Options are named, never numbered: their ids and CURLOT types come from
 ;;; the loaded library, through curl-easy-option, cached once per process
-;;; behind a mutex (ADR-0001, decision 2). Setting one checks the value
-;;; against its type, sends it through the binding option-bindings names
-;;; for that type, and judges the code libcurl answers by setopt-accepted?:
-;;; CURLE_OK, or CURLE_NOT_BUILT_IN for a clear. Every option a request
-;;; field sets is named once, in request-field-options, where a field may
-;;; name several.
+;;; behind a mutex (ADR-0001). Setting one checks the value against its
+;;; type, sends it through the binding option-bindings names for that type,
+;;; and judges the code libcurl answers by setopt-accepted?: CURLE_OK, or
+;;; CURLE_NOT_BUILT_IN for a clear. Every option a request field sets is
+;;; named once, in request-field-options, where a field may name several.
 ;;;
 ;;; TLS (ADR-0018). Every transfer, an http:// one too, makes the settings
 ;;; tls-settings computes from its plan's CA file and verification, as
@@ -140,24 +132,24 @@
 ;;; refuses http/2-prior-knowledge beside an https:// URL, once the URL is
 ;;; parsed, as prior-knowledge-over-https. No transfer sets PIPEWAIT.
 ;;;
-;;; Credentials (ADR-0036, amended twice). A request's credentials, one
-;;; scheme's, Basic, Digest or Bearer, make the settings
-;;; credentials-settings computes, as data, HTTPAUTH at the scheme's bit,
-;;; then USERNAME and PASSWORD, or XOAUTH2_BEARER, each a UTF-8 string, set
-;;; with the request's other settings, before tls-settings'. The record
-;;; keeps a fresh copy, checked, and answers a fresh copy, so no caller
-;;; holds what is sent. Its shape is checked as the request is made, and
-;;; again at submit on the submit's own copies: a control char in any
-;;; part, or a colon in a Basic user, credentials-bytes; nothing to send,
-;;; credentials-empty; an Authorization header beside it,
-;;; credentials-beside-authorization; Digest beside a streamed body or
-;;; response, digest-with-stream. A submit refuses it beside a URL whose
-;;; user or password part libcurl reports, once the URL is parsed, as
-;;; credentials-beside-userinfo. No refusal names a credentials string:
-;;; each names the scheme, and the part refused. Every transfer pins
-;;; MAXREDIRS at 30, which bounds the follows libcurl makes inside a
-;;; transfer, an auth round's, a stale round's and a 417's resend among
-;;; them; never its retry of a request a dead or refused connection lost.
+;;; Credentials (ADR-0036). A request's credentials, one scheme's, Basic,
+;;; Digest or Bearer, make the settings credentials-settings computes, as
+;;; data, HTTPAUTH at the scheme's bit, then USERNAME and PASSWORD, or
+;;; XOAUTH2_BEARER, each a UTF-8 string, set with the request's other
+;;; settings, before tls-settings'. The record keeps a fresh copy, checked,
+;;; and answers a fresh copy, so no caller holds what is sent. Its shape is
+;;; checked as the request is made, and again at submit on the submit's own
+;;; copies: a control char in any part, or a colon in a Basic user,
+;;; credentials-bytes; nothing to send, credentials-empty; an Authorization
+;;; header beside it, credentials-beside-authorization; Digest beside a
+;;; streamed body or response, digest-with-stream. A submit refuses it
+;;; beside a URL whose user or password part libcurl reports, once the URL
+;;; is parsed, as credentials-beside-userinfo. No refusal names a
+;;; credentials string: each names the scheme, and the part refused. Every
+;;; transfer pins MAXREDIRS at 30, which bounds the follows libcurl makes
+;;; inside a transfer, an auth round's, a stale round's and a 417's resend
+;;; among them; never its retry of a request a dead or refused connection
+;;; lost.
 ;;;
 ;;; The environment (ADR-0024). Guix's 8.20.0 writes SSL_CERT_FILE over
 ;;; CAINFO and SSL_CERT_DIR over the cleared CAPATH when a transfer starts,
@@ -171,52 +163,51 @@
 ;;; URL. The proxy variables are libcurl's to read; a proxy of #f sets
 ;;; PROXY to "", which reads none of them.
 ;;;
-;;; A proxy given by URL (ADR-0037, amended twice; the M7 plan, section
-;;; 3.4). A request's proxy may be a URL string, copied as the request is
-;;; made, the copy what every later check and use reads. A submit parses it
-;;; with CURLU_NON_SUPPORT_SCHEME, so chez-curl judges its scheme alike on
-;;; every libcurl, and refuses, as WHO, field proxy, value the symbol proxy,
-;;; never the URL, which can hold a password: a URL libcurl cannot parse,
-;;; or whose user or password holds a % not followed by two hex digits,
-;;; proxy-url; a scheme but http or https, A to Z folded, proxy-scheme; a
-;;; path but /, a query or a fragment, proxy-url-parts; then the userinfo,
-;;; percent-decoded here from the parts libcurl gives back still encoded,
-;;; by the server credentials' rules (ADR-0036, decisions 5 to 7), value
-;;; (proxy PART): a decoded control byte, bytes that are not UTF-8, or a
-;;; colon in the user, credentials-bytes; a user and a password both
-;;; empty, credentials-empty. A decoded control byte sent 7.85.0 and 8.5.0
-;;; around the proxy, direct. PROXY gets the URL libcurl gives back, its
-;;; scheme's port set when it names none, and NOPROXY "", so no variable
-;;; sends the transfer direct. proxy-ca-file and proxy-verify are an
-;;; https:// proxy URL's alone, PROXY_CAINFO with PROXY_CAPATH cleared, and
-;;; the two verify switches, refused beside any other proxy as
+;;; A proxy given by URL (ADR-0037). A request's proxy may be a URL string,
+;;; copied as the request is made, the copy what every later check and use
+;;; reads. A submit parses it with CURLU_NON_SUPPORT_SCHEME, so chez-curl
+;;; judges its scheme alike on every libcurl, and refuses, as WHO, field
+;;; proxy, value the symbol proxy, never the URL, which can hold a password:
+;;; a URL libcurl cannot parse, or whose user or password holds a % not
+;;; followed by two hex digits, proxy-url; a scheme but http or https, A to
+;;; Z folded, proxy-scheme; a path but /, a query or a fragment,
+;;; proxy-url-parts; then the userinfo, percent-decoded here from the parts
+;;; libcurl gives back still encoded, by the server credentials' rules
+;;; (ADR-0036), value (proxy PART): a decoded control byte, bytes that are
+;;; not UTF-8, or a colon in the user, credentials-bytes; a user and a
+;;; password both empty, credentials-empty. A decoded control byte sent
+;;; 7.85.0 and 8.5.0 around the proxy, direct. PROXY gets the URL libcurl
+;;; gives back, its scheme's port set when it names none, and NOPROXY "", so
+;;; no variable sends the transfer direct. proxy-ca-file and proxy-verify
+;;; are an https:// proxy URL's alone, PROXY_CAINFO with PROXY_CAPATH
+;;; cleared, and the two verify switches, refused beside any other proxy as
 ;;; proxy-tls-without-https-proxy, and a proxy CA file refused against the
 ;;; environment as a CA file is. proxy-settings computes them all, as data.
 ;;; A caller's Proxy-Authorization header is refused, as is prior knowledge
 ;;; beside a proxy URL, an https:// URL through an https:// proxy where TLS
 ;;; inside TLS stalls, tls-in-tls-stall?'s list, and an https:// proxy URL
 ;;; on a libcurl built without HTTPS-proxy support, which would write the
-;;; URL whole into its error buffer. Before libcurl 8.19.0
-;;; an https:// URL's tunnel through a proxy URL sets FRESH_CONNECT, and
-;;; with userinfo FORBID_REUSE too, unshared-tunnel-settings': 7.85.0 let a
-;;; later request ride a pooled tunnel another user had opened
-;;; (CVE-2026-3784). And before 8.19.0 a transfer through a proxy URL that
-;;; holds userinfo stops its engine's multiplexing, stops-multiplexing?'s,
-;;; for good: 7.85.0 let a transfer through the environment's proxy ride a
-;;; live authenticated tunnel as a second HTTP/2 stream (ADR-0037, decision
-;;; 11). A failed transfer carries the status a proxy refused
-;;; its CONNECT with, CURLINFO_HTTP_CONNECTCODE, when it is no 2xx.
+;;; URL whole into its error buffer. Before libcurl 8.19.0 an https:// URL's
+;;; tunnel through a proxy URL sets FRESH_CONNECT, and with userinfo
+;;; FORBID_REUSE too, unshared-tunnel-settings': 7.85.0 let a later request
+;;; ride a pooled tunnel another user had opened (CVE-2026-3784). And before
+;;; 8.19.0 a transfer through a proxy URL that holds userinfo stops its
+;;; engine's multiplexing, stops-multiplexing?'s, for good: 7.85.0 let a
+;;; transfer through the environment's proxy ride a live authenticated
+;;; tunnel as a second HTTP/2 stream (ADR-0037). A failed transfer carries
+;;; the status a proxy refused its CONNECT with, CURLINFO_HTTP_CONNECTCODE,
+;;; when it is no 2xx.
 ;;;
-;;; The cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5). A
-;;; jar is a record of this library's, opaque: the request's cookie-jar key
-;;; checks its value as the request is made, and this library cannot import
-;;; the engine's, which imports it. The engine makes, uses and frees it, on
-;;; its own thread (curl private engine). A request's cookie-jar, a jar or
-;;; #f, makes the settings jar-settings computes, as data, SHARE at the
-;;; jar's share, then COOKIEFILE at "", set with the request's other
-;;; settings, before tls-settings'; the share holds what share-settings
-;;; says, CURL_LOCK_DATA_COOKIE alone. Beside a jar, a header named Cookie
-;;; or Host, A to Z folded, any value, is refused, cookie-beside-jar, as the
+;;; The cookie jar (ADR-0035). A jar is a record of this library's, opaque:
+;;; the request's cookie-jar key checks its value as the request is made,
+;;; and this library cannot import the engine's, which imports it. The
+;;; engine makes, uses and frees it, on its own thread (curl private
+;;; engine). A request's cookie-jar, a jar or #f, makes the settings
+;;; jar-settings computes, as data, SHARE at the jar's share, then
+;;; COOKIEFILE at "", set with the request's other settings, before
+;;; tls-settings'; the share holds what share-settings says,
+;;; CURL_LOCK_DATA_COOKIE alone. Beside a jar, a header named Cookie or
+;;; Host, A to Z folded, any value, is refused, cookie-beside-jar, as the
 ;;; request is made and again at submit, naming the header, never its value:
 ;;; libcurl sends a caller's Cookie beside the jar's, and a caller's Host
 ;;; moves the host the jar matches cookies against. A load's lines are
@@ -224,64 +215,60 @@
 ;;; strings, every line before any is loaded, and refused, cookie-line,
 ;;; naming the line by its index, never its text: a cookie's value is a
 ;;; secret. A line is a Latin-1 string both ways, each char one byte, as a
-;;; header's strings are (ADR-0035, decision 8).
+;;; header's strings are (ADR-0035).
 ;;;
-;;; The callables (M2 plan, section 3.5; ADR-0030; ADR-0040): write-body
-;;; and read-head, the header callable, for every transfer. Each is
-;;; __collect_safe, since curl_multi_perform and
-;;; curl_easy_pause, where they fire, are (ADR-0013, accepted 2026-10-24),
-;;; locked where it is defined and never unlocked, and handed the
-;;; transfer's key, an integer, as its WRITEDATA or HEADERDATA, so no Scheme
-;;; object crosses into C. Neither runs a procedure a caller supplied
-;;; (ADR-0012, decision 4). write-body logs each chunk libcurl hands it, its
-;;; length, the thread it ran on and what became of it, as data the engine
-;;; hands the token; for a stream, a count of each verdict and its threads.
-;;; No raise leaves either: its whole body runs under a guard that records
-;;; anything raised against the key and returns 0. libcurl then answers
-;;; CURLE_WRITE_ERROR, 23, and the transfer fails with what was recorded. A
-;;; request's fault plants such a raise, at the chunk it names. The body
-;;; limit takes the same path: CURLOPT_MAXFILESIZE_LARGE is the limit plus
-;;; one (M2 plan, section 5.3), so a declared length past that is refused
-;;; before its body, and the callable refuses the first byte past the limit
-;;; itself, on every libcurl, a stream's bytes counted as a whole body's.
+;;; The callables (ADR-0030; ADR-0040): write-body and read-head, the header
+;;; callable, for every transfer. Each is __collect_safe, since
+;;; curl_multi_perform and curl_easy_pause, where they fire, are (ADR-0013),
+;;; locked where it is defined and never unlocked, and handed the transfer's
+;;; key, an integer, as its WRITEDATA or HEADERDATA, so no Scheme object
+;;; crosses into C. Neither runs a procedure a caller supplied (ADR-0012).
+;;; write-body logs each chunk libcurl hands it, its length, the thread it
+;;; ran on and what became of it, as data the engine hands the token; for a
+;;; stream, a count of each verdict and its threads. No raise leaves either:
+;;; its whole body runs under a guard that records anything raised against
+;;; the key and returns 0. libcurl then answers CURLE_WRITE_ERROR, 23, and
+;;; the transfer fails with what was recorded. A request's fault plants such
+;;; a raise, at the chunk it names. The body limit takes the same path:
+;;; CURLOPT_MAXFILESIZE_LARGE is the limit plus one, so a declared length
+;;; past that is refused before its body, and the callable refuses the first
+;;; byte past the limit itself, on every libcurl, a stream's bytes counted
+;;; as a whole body's.
 ;;;
-;;; The cap on response headers (ADR-0040, amended twice) takes that path
-;;; too: read-head counts, over the whole transfer, every byte libcurl hands
-;;; it and every header line, a head's status line and empty line left out,
-;;; each 1xx head's, a trailer section's, a CONNECT answer's and each
-;;; response of an auth round or a resend among them, and refuses the line
-;;; that takes either count past header-line-cap or header-byte-cap,
-;;; recording header-limit, of &curl-too-large. Once any reason is recorded
-;;; against a transfer, read-head refuses every later call, as stream-chunk!
-;;; does: a request's private mark, (mark N), records a planted reason at
-;;; the head's line N and answers that line, so libcurl calls again, which
-;;; the Linux libcurls never do after a refusal. The recorded reason wins
-;;; over libcurl's code, 0 among them: 8.5.0 loses a refused HTTP/2
-;;; trailer, and ends the transfer 0. libcurl's own refusals that come
-;;; before any line reaches the callable keep their codes, by version.
+;;; The cap on response headers (ADR-0040) takes that path too: read-head
+;;; counts, over the whole transfer, every byte libcurl hands it and every
+;;; header line, a head's status line and empty line left out, each 1xx
+;;; head's, a trailer section's, a CONNECT answer's and each response of an
+;;; auth round or a resend among them, and refuses the line that takes
+;;; either count past header-line-cap or header-byte-cap, recording
+;;; header-limit, of &curl-too-large. Once any reason is recorded against a
+;;; transfer, read-head refuses every later call, as stream-chunk! does: a
+;;; request's private mark, (mark N), records a planted reason at the head's
+;;; line N and answers that line, so libcurl calls again, which the Linux
+;;; libcurls never do after a refusal. The recorded reason wins over
+;;; libcurl's code, 0 among them: 8.5.0 loses a refused HTTP/2 trailer, and
+;;; ends the transfer 0. libcurl's own refusals that come before any line
+;;; reaches the callable keep their codes, by version.
 ;;;
-;;; A streamed response (ADR-0030; the M6 plan, sections 3.2 to 3.5): a
-;;; request's stream-buffer gives each submit a stream of its own, made
-;;; with its plan. write-body fills its bounded buffer, a queue of pieces,
-;;; each a fresh bytevector the checked copy filled once, and answers
-;;; CURL_WRITEFUNC_PAUSE when it is full, the check and the receive bit in
-;;; one hold of the stream's mutex; read-head publishes the first final
-;;; head. A taker leaves a piece in place inside its look's hold and removes
-;;; it after, writing fields only the taker writes; every look decides the
-;;; resume. The engine's token operations take from it.
+;;; A streamed response (ADR-0030): a request's stream-buffer gives each
+;;; submit a stream of its own, made with its plan. write-body fills its
+;;; bounded buffer, a queue of pieces, each a fresh bytevector the checked
+;;; copy filled once, and answers CURL_WRITEFUNC_PAUSE when it is full, the
+;;; check and the receive bit in one hold of the stream's mutex; read-head
+;;; publishes the first final head. A taker leaves a piece in place inside
+;;; its look's hold and removes it after, writing fields only the taker
+;;; writes; every look decides the resume. The engine's token operations
+;;; take from it.
 ;;;
-;;; The hatch (ADR-0009; the M4 plan, section 3.7): curl-request-with-options,
-;;; which (curl unsupported) exports, attaches options to a request by name.
-;;; Each is checked as it is attached, on the caller's thread, against the
-;;; loaded libcurl's own table: a type that hands libcurl no address of the
-;;; caller's, long, enumerated values, off_t, a string, a string list or a
-;;; blob; a value that fits it, no string holding U+0000, CR or LF; and
-;;; none chez-curl owns, nor an owned setting's twin, compared by id. The
-;;; request keeps a copy of each value, the one checked, so a submit has
-;;; nothing of the hatch's to check, and the engine sets the copies last,
-;;; after every option chez-curl sets itself. It took the place of M2's
-;;; and M3's test seam, curl-engine-submit-with, which took long,
-;;; enumerated-value and off_t options alone (ADR-0009, amended 2026-10-27).
+;;; The hatch (ADR-0009): curl-request-with-options, which (curl unsupported)
+;;; exports, attaches options to a request by name. Each is checked as it is
+;;; attached, on the caller's thread, against the loaded libcurl's own table:
+;;; a type that hands libcurl no address of the caller's, long, enumerated
+;;; values, off_t, a string, a string list or a blob; a value that fits it, no
+;;; string holding U+0000, CR or LF; and none chez-curl owns, nor an owned
+;;; setting's twin, compared by id. The request keeps a copy of each value,
+;;; the one checked, so a submit has nothing of the hatch's to check, and the
+;;; engine sets the copies last, after every option chez-curl sets itself.
 ;;;
 ;;; The pins, ADR-0003's PROTOCOLS_STR and REDIR_PROTOCOLS_STR at
 ;;; "http,https", NOSIGNAL at 1 and ADR-0036's MAXREDIRS at 30, which
@@ -297,8 +284,8 @@
 ;;; pinned-options, quick-exit-pin and owned-option-names.
 ;;;
 ;;; It imports foreign-callable, foreign-callable-entry-point and
-;;; lock-object, which check-seam lets this library alone import (ADR-0007,
-;;; M2 plan, section 3.6).
+;;; lock-object, which check-seam lets this library alone import
+;;; (ADR-0007).
 (library (curl private transfer)
   (export make-curl-request curl-request-with curl-request?
           curl-request-url curl-request-method curl-request-headers curl-request-body
@@ -485,7 +472,7 @@
   ;; its value is read, so the refusal names the header, never its value,
   ;; a proxy's secret: inside a tunnel libcurl sends a caller's
   ;; Proxy-Authorization to the origin, and a proxy's credentials are its
-  ;; URL's userinfo (ADR-0037, decision 4).
+  ;; URL's userinfo (ADR-0037).
   ;; Then the user agent, value-problem's rules. Each refusal is a
   ;; &curl-request-error naming the field; a header value's names its
   ;; header's name, never the value, which can be a secret: an
@@ -556,10 +543,9 @@
   ;; pkcs11-prefix? : String -> Boolean
   ;; Whether PATH begins pkcs11:, in any ASCII case. GnuTLS reads such a CA
   ;; path as a PKCS#11 URL, not a file, in every ASCII case, even with a
-  ;; file of that name there (GnuTLS 3.8.3, 3.8.9 and 3.8.13; ADR-0024,
-  ;; amended 2026-10-26). A to Z alone fold: char-downcase and string-ci=?
-  ;; fold U+212A KELVIN SIGN to k, and GnuTLS compares bytes, so p, U+212A,
-  ;; cs11: names a file.
+  ;; file of that name there (GnuTLS 3.8.3, 3.8.9 and 3.8.13; ADR-0024). A
+  ;; to Z alone fold: char-downcase and string-ci=? fold U+212A KELVIN SIGN
+  ;; to k, and GnuTLS compares bytes, so p, U+212A, cs11: names a file.
   (define (pkcs11-prefix? path)
     (let ((prefix "pkcs11:"))
       (and (>= (string-length path) (string-length prefix))
@@ -585,7 +571,7 @@
   ;; #f. A path holding U+0000 is refused as embedded-nul;
   ;; then one that begins pkcs11:, in any ASCII case, as pkcs11-url, on
   ;; every backend, so the field always names a file, and a file really
-  ;; named so is reached as ./pkcs11:... (ADR-0024, decision 4). Each is a
+  ;; named so is reached as ./pkcs11:... (ADR-0024). Each is a
   ;; &curl-request-error naming FIELD. No other char is refused: a path
   ;; may hold CR or LF. The copy is made before the checks, so what is
   ;; checked is what is sent. It is scanned by index, allocating nothing:
@@ -608,27 +594,26 @@
            copy)))
 
   ;; guix-ca-overrides : (Listof (Pairof String Symbol))
-  ;; Guix's libcurls, by version, and what each one's environment patch
-  ;; does to a request's CA file when SSL_CERT_FILE or SSL_CERT_DIR was set
-  ;; as libcurl loaded: overrides, for one that writes SSL_CERT_FILE over
+  ;; Guix's libcurls, by version, and what each one's environment patch does
+  ;; to a request's CA file when SSL_CERT_FILE or SSL_CERT_DIR was set as
+  ;; libcurl loaded: overrides, for one that writes SSL_CERT_FILE over
   ;; CAINFO and SSL_CERT_DIR over the cleared CAPATH when a transfer starts,
-  ;; after every setopt (ADR-0018; ADR-0024, decision 2). 8.20.0's was
-  ;; measured, in Guix and outside it. A Guix libcurl with no row is taken
-  ;; to override: 8.6.0's older patch does not, and the maintainer kept it
-  ;; taken to, since no lane runs it (ADR-0024, amended 2026-10-26).
-  ;; tests/test-transfer-tls.sps holds it to its own copy.
+  ;; after every setopt (ADR-0018; ADR-0024). 8.20.0's was measured, in Guix
+  ;; and outside it. A Guix libcurl with no row is taken to override:
+  ;; 8.6.0's older patch does not, but no lane runs it, so it has no row
+  ;; (ADR-0024). tests/test-transfer-tls.sps holds it to its own copy.
   (define guix-ca-overrides '(("8.20.0" . overrides)))
 
   ;; ca-overridden? : (U String #f) String Boolean String -> Boolean
   ;; Whether a libcurl at VERSION, mapped from FILE, or loaded from PATH
-  ;; where FILE is #f, is Guix's and writes the variables over a CA file.
-  ;; It is Guix's when that file is under /gnu/store/, or when PATCHED, its
-  ;; file holding Guix's patch's literal, SSL_CERT_FILE (ADR-0024, amended
-  ;; 2026-10-26: the key); then its version's row in guix-ca-overrides says
-  ;; overrides, or it has no row. FILE is the native layer's
-  ;; loaded-libcurl-file, every symlink resolved, so a profile's link is
-  ;; Guix's, and so is a Guix libcurl loaded by a Chez outside Guix; PATCHED
-  ;; is its loaded-libcurl-patched?, so a copy out of the store is too.
+  ;; where FILE is #f, is Guix's and writes the variables over a CA file. It
+  ;; is Guix's when that file is under /gnu/store/, or when PATCHED, its
+  ;; file holding Guix's patch's literal, SSL_CERT_FILE, the key (ADR-0024);
+  ;; then its version's row in guix-ca-overrides says overrides, or it has
+  ;; no row. FILE is the native layer's loaded-libcurl-file, every symlink
+  ;; resolved, so a profile's link is Guix's, and so is a Guix libcurl
+  ;; loaded by a Chez outside Guix; PATCHED is its loaded-libcurl-patched?,
+  ;; so a copy out of the store is too.
   (define (ca-overridden? file path patched version)
     (and (or patched (string-prefix? "/gnu/store/" (or file path)))
          (let ((row (assoc version guix-ca-overrides)))
@@ -647,10 +632,10 @@
   ;; VALUE) as the native layer recorded it at the load, #f for one unset or
   ;; empty: each NAME whose VALUE is a string, in VARIABLES' order, when
   ;; CA-FILE is a path, VERIFY is on, and ca-overridden? says the libcurl
-  ;; writes them over a CA file; () otherwise (ADR-0024, decision
-  ;; 2). With VERIFY off, libcurl reads no CA, and a request with no CA
-  ;; file trusts the store the variables name, the operator's setting:
-  ;; neither is refused. Pure: check-ca-environment hands it native's.
+  ;; writes them over a CA file; () otherwise (ADR-0024). With VERIFY off,
+  ;; libcurl reads no CA, and a request with no CA file trusts the store the
+  ;; variables name, the operator's setting: neither is refused. Pure:
+  ;; check-ca-environment hands it native's.
   (define (overriding-variables ca-file verify file path patched version variables)
     (if (and ca-file verify (ca-overridden? file path patched version))
         (map car (filter cdr variables))
@@ -664,10 +649,9 @@
   ;; Apple's LibreSSL checks the keychain when a CA file fails to verify, so
   ;; example.com, which the keychain trusts, passed a CA file that named
   ;; another CA; SecureTransport, selected by CURL_SSL_BACKEND, keeps the CA
-  ;; file the only anchor (measured on Apple's 8.7.1; ADR-0024, amended
-  ;; 2026-10-27). A libcurl built elsewhere on upstream LibreSSL has no
-  ;; keychain to fall back to. Pure: check-ca-environment hands it native's
-  ;; records.
+  ;; file the only anchor (measured on Apple's 8.7.1; ADR-0024). A libcurl
+  ;; built elsewhere on upstream LibreSSL has no keychain to fall back to.
+  ;; Pure: check-ca-environment hands it native's records.
   (define (keychain-fallback? ca-file verify macos path backend)
     (and ca-file verify macos (string-prefix? "/usr/lib/" path)
          (or (not (string? backend)) (string-prefix? "LibreSSL" backend))
@@ -683,9 +667,9 @@
   ;; so for the loaded libcurl and the backend its init put in use:
   ;; keychain-fallback, whose irritants are the path, then that backend.
   ;; Guix's 8.20.0 writes SSL_CERT_FILE and SSL_CERT_DIR over PROXY_CAINFO
-  ;; as over CAINFO, cleared PROXY_CAPATH or not (M7 slice 3's
-  ;; measurement); no probe has a proxy CA the keychain trusts, and the
-  ;; proxy's is refused there by analogy (the M7 plan, section 3.4).
+  ;; as over CAINFO, cleared PROXY_CAPATH or not, as measured; no
+  ;; measurement had a proxy CA the keychain trusts, and the proxy's is
+  ;; refused there by analogy.
   (define (check-ca-environment who field ca-file verify)
     (let* ((info (loaded-libcurl))
            (names (overriding-variables ca-file verify (loaded-libcurl-file) (libcurl-info-path info)
@@ -711,8 +695,8 @@
   (define body-limit-bound (- (expt 2 63) 1))
 
   ;; request-methods : (Listof Symbol)
-  ;; The methods a request may have, the M4 plan's fixed set (ADR-0023,
-  ;; decision 4). post, put, patch and delete may carry a body.
+  ;; The methods a request may have, a fixed set (ADR-0023). post, put,
+  ;; patch and delete may carry a body.
   (define request-methods '(get head post put patch delete))
 
   ;; request-keys : (Listof Symbol)
@@ -722,16 +706,16 @@
     '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
       stream-buffer body-length http-version credentials proxy-ca-file proxy-verify cookie-jar))
 
-  ;; A cookie jar (ADR-0035; the M7 plan, section 3.5): its engine, the one
-  ;; that made it; and, written on that engine's thread under its mutex,
-  ;; the address of its share, a curl_share of cookies, and of its own easy
-  ;; handle, the one the engine keeps for the jar's messages, attached to
-  ;; the share, each #f until made and once freed; its state, pending until
-  ;; its make is carried out, then live, closing once closed while a
-  ;; transfer holds it, and closed once its share is freed; and how many
-  ;; transfers hold it, each from the hold that records it live to its
-  ;; take-out. Every field is the engine's: (curl) exports the predicate
-  ;; alone, and the engine's procedures read the rest.
+  ;; A cookie jar (ADR-0035): its engine, the one that made it; and,
+  ;; written on that engine's thread under its mutex, the address of its
+  ;; share, a curl_share of cookies, and of its own easy handle, the one
+  ;; the engine keeps for the jar's messages, attached to the share, each
+  ;; #f until made and once freed; its state, pending until its make is
+  ;; carried out, then live, closing once closed while a transfer holds it,
+  ;; and closed once its share is freed; and how many transfers hold it,
+  ;; each from the hold that records it live to its take-out. Every field
+  ;; is the engine's: (curl) exports the predicate alone, and the engine's
+  ;; procedures read the rest.
   ;; curl-cookie-jar? : Any -> Boolean
   ;; new-cookie-jar : Engine -> Jar
   ;;   ENGINE's jar, pending, with no share, no handle and no holder
@@ -751,13 +735,12 @@
   ;; http-versions : (Listof Symbol)
   ;; The values http-version takes but #f: HTTP/1.1, HTTP/2, and HTTP/2 by
   ;; prior knowledge, each spelt as a response's http-version reads it
-  ;; (ADR-0034; the M7 plan, section 3.1).
+  ;; (ADR-0034).
   (define http-versions '(http/1.1 http/2 http/2-prior-knowledge))
 
   ;; credentials-arities : (Listof (Pairof Symbol Natural))
   ;; Each scheme a credentials key names, with the strings it carries: basic
-  ;; and digest a user and a password, bearer a token (ADR-0036, decision
-  ;; 2; the M7 plan, section 3.1).
+  ;; and digest a user and a password, bearer a token (ADR-0036).
   (define credentials-arities '((basic . 2) (digest . 2) (bearer . 1)))
 
   ;; credentials-copy : Symbol Any -> (U Credentials #f)
@@ -769,8 +752,7 @@
   ;; secret given in the wrong shape is never handed on. The list is read
   ;; once, by the count its scheme has, its tag and each part once, so
   ;; another thread that changes it meanwhile is refused or copied, never
-  ;; followed round a cycle; and the copy is what is checked and sent
-  ;; (AGENTS.md's mutable values).
+  ;; followed round a cycle; and the copy is what is checked and sent.
   (define (credentials-copy who credentials)
     (define (wrong)
       (assertion-violation who
@@ -815,7 +797,7 @@
   ;;                     (U Bytevector 'stream #f) (U Positive-Integer #f) -> Void
   ;; Refuses, as WHO, CREDENTIALS, a checked copy, beside HEADERS, the
   ;; snapshot's copies, BODY and STREAM-BUFFER, by the rules a request's
-  ;; shape holds (ADR-0036, amended 2026-11-02), in order, each a
+  ;; shape holds (ADR-0036), in order, each a
   ;; &curl-request-error, field credentials:
   ;;   - each part in order, user then password, or the token, its first
   ;;     offending char deciding: a control char, U+0000 to U+001F or
@@ -945,7 +927,7 @@
   ;;                       http_proxy, https_proxy, HTTPS_PROXY, all_proxy and
   ;;                       ALL_PROXY, with no_proxy and NO_PROXY, but never
   ;;                       HTTP_PROXY; or #f, to go direct, whatever they say
-  ;;                       (ADR-0024, decision 1); or a URL string, an
+  ;;                       (ADR-0024); or a URL string, an
   ;;                       http:// or https:// proxy every transfer goes
   ;;                       through, whatever a variable says, no_proxy and
   ;;                       NO_PROXY among them (ADR-0037): the record keeps a
@@ -975,13 +957,13 @@
   ;;                       it is refused as stream-with-rounds, however the
   ;;                       two came together: each makes a second request
   ;;                       inside the transfer, whose head the stream would
-  ;;                       not publish (the M6 plan, section 3.2)
+  ;;                       not publish
   ;;   body-length         a streamed body's length, an exact natural below
   ;;                       2^63 - 1, sent as Content-Length; or #f, the
   ;;                       default, which sends it chunked over HTTP/1.1 and
   ;;                       as DATA frames over HTTP/2. Beside a body that does
   ;;                       not stream it is refused as body-length-without-
-  ;;                       stream (the M6 plan, section 3.1)
+  ;;                       stream
   ;;   http-version        the HTTP version libcurl asks for, HTTP_VERSION
   ;;                       (ADR-0034): http/1.1, HTTP/1.1 alone, 1_1;
   ;;                       http/2, HTTP/2 by ALPN over https://, and HTTP/1.1
@@ -993,7 +975,7 @@
   ;;                       proxy that does not tunnel, an http:// or
   ;;                       https:// one, the environment's among them,
   ;;                       libcurl ignores prior knowledge, and sends
-  ;;                       HTTP/1.1 (the slice's measurement). Or #f, the
+  ;;                       HTTP/1.1, as measured. Or #f, the
   ;;                       default, which sets no HTTP_VERSION: libcurl's
   ;;                       own, which acts as 2TLS on every libcurl
   ;;                       measured. No transfer sets PIPEWAIT, so requests
@@ -1059,7 +1041,7 @@
   ;; prior-knowledge-through-proxy, and an https:// URL through an https://
   ;; proxy URL, on a libcurl tls-in-tls-stall? names, as proxy-tls-in-tls.
   ;;
-  ;; The defaults set no policy: libcurl's own stand (ADR-0023, decision 3).
+  ;; The defaults set no policy: libcurl's own stand (ADR-0023).
   ;; The keys are refused first, by request-settings' rules, then a URL
   ;; that is not a string, then a wrong type for method, body, timeout-ms,
   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer,
@@ -1087,18 +1069,17 @@
   ;; url, the URL make-curl-request takes first, checked as that one is,
   ;; its refusals naming curl-request-with; make-curl-request does not take
   ;; it. A multipart body it is not given is kept as REQUEST holds it, not
-  ;; stat'd again; a submit stats it (ADR-0023, after slice 3's review).
+  ;; stat'd again; a submit stats it (ADR-0023).
   ;;
   ;; The private fields are no keys, and (curl) exports none: FAULT, #f, or
   ;; a positive exact integer, a planted fault that makes the callable
   ;; raise (planted-fault FAULT) at the chunk of that number, counting from
-  ;; 1, before its limit check (M3 plan, section 3.6); FOLLOW, a
-  ;; boolean, FOLLOWLOCATION at 1 when #t, for the tests that follow a
-  ;; redirect, which nothing public may (M4 plan, section 3.2); and
-  ;; OPTIONS, the hatch's settings, () until curl-request-with-options
+  ;; 1, before its limit check; FOLLOW, a boolean, FOLLOWLOCATION at 1 when
+  ;; #t, for the tests that follow a redirect, which nothing public may;
+  ;; and OPTIONS, the hatch's settings, () until curl-request-with-options
   ;; attaches some, each a copy no caller holds, which curl-request-with
   ;; and the private constructors keep (ADR-0009). Each is data, never a
-  ;; procedure: a request holds no caller code (ADR-0012, decision 4).
+  ;; procedure: a request holds no caller code (ADR-0012).
   (define-record-type (curl-request new-curl-request curl-request?)
     (fields (immutable url unchecked-curl-request-url)
             (immutable method unchecked-curl-request-method)
@@ -1123,14 +1104,13 @@
             (immutable options curl-request-options))
     ;; Opaque: Chez prints a record's every field, and record-rtd opens
     ;; one, so a printed request showed its credentials, and reflection
-    ;; read and changed its private copy (the review of M7 slice 2). A
-    ;; request prints as #<curl-request>.
+    ;; read and changed its private copy. A request prints as
+    ;; #<curl-request>.
     (opaque #t))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-request-url
     (checked-accessor 'curl-request-url curl-request? "a request" unchecked-curl-request-url))
   (define curl-request-method
@@ -1139,7 +1119,7 @@
     (checked-accessor 'curl-request-headers curl-request? "a request" unchecked-curl-request-headers))
   ;; A multipart body is answered as a copy, multipart-answer's: the list is
   ;; the request's own, its paths resolved, and a change to it from outside
-  ;; would reach every later submit (ADR-0039, amended 2026-11-07).
+  ;; would reach every later submit (ADR-0039).
   (define curl-request-body
     (let ((checked (checked-accessor 'curl-request-body curl-request? "a request"
                                      unchecked-curl-request-body)))
@@ -1281,7 +1261,7 @@
                             credentials proxy-ca-file proxy-verify cookie-jar fault follow
                             options)))))
 
-  ;; --- a multipart body (ADR-0039, amended twice; the M8 plan, sections 3.1 and 3.4) ----
+  ;; --- a multipart body (ADR-0039) ------------------------------------------------------
 
   ;; A multipart body, as a request keeps it and curl-request-body answers
   ;; it: (multipart PART ...), each PART (NAME SOURCE OPTION ...), SOURCE a
@@ -1307,9 +1287,8 @@
   ;; refused: part-empty for "", part-bytes for a control char, U+0000 to
   ;; U+001F or U+007F, or, when QUOTED, a "; #f when it passes. libcurl sends
   ;; a type raw, and escapes a name's and a filename's ", CR and LF by
-  ;; version and MIME_OPTIONS, the rest raw (the M8 plan, section 2), so a
-  ;; byte rule of its own holds alike on every libcurl (ADR-0039,
-  ;; decision 2).
+  ;; version and MIME_OPTIONS, the rest raw, so a byte rule of its own holds
+  ;; alike on every libcurl (ADR-0039).
   (define (part-fault s quoted)
     (if (= (string-length s) 0)
         'part-empty
@@ -1395,7 +1374,7 @@
       (unless (and n (>= n 2)) (wrong))
       ;; Each element is read once, into a local, then checked and copied:
       ;; the caller's pairs are mutable, and another thread could change one
-      ;; between a check of it and its copy (traps.md).
+      ;; between a check of it and its copy.
       (let* ((given-name (car part))
              (name (if (string? given-name) (string-copy given-name) (wrong)))
              (given-source (cadr part))
@@ -1430,14 +1409,13 @@
   ;; multipart-paths-checked : Symbol List Boolean -> List
   ;; COPY, a checked copy, its file parts' paths resolved when RESOLVE, the
   ;; request being made: a relative path is joined to current-directory's
-  ;; answer, once (ADR-0039, amended 2026-11-06, decision 3 revised). When
-  ;; not, at submit, a path that is not absolute is part-file: the record
-  ;; holds resolved paths, and only a fault hands a submit another
-  ;; (ADR-0039, amended 2026-11-07). Then each path is stat'd, symlinks
-  ;; followed, and one that names no regular file is part-file. Nothing is
-  ;; opened: an open of a FIFO would wait, and every high-level submit runs
-  ;; inside a critical section (ADR-0039, amended 2026-11-06). COPY's own
-  ;; pairs are rebuilt where a path changes.
+  ;; answer, once (ADR-0039). When not, at submit, a path that is not
+  ;; absolute is part-file: the record holds resolved paths, and only a
+  ;; fault hands a submit another (ADR-0039). Then each path is stat'd,
+  ;; symlinks followed, and one that names no regular file is part-file.
+  ;; Nothing is opened: an open of a FIFO would wait, and every high-level
+  ;; submit runs inside a critical section (ADR-0039). COPY's own pairs are
+  ;; rebuilt where a path changes.
   (define (multipart-paths-checked who copy resolve)
     (cons 'multipart
           (let loop ((parts (cdr copy)) (i 0) (found '()))
@@ -1452,8 +1430,7 @@
                                          (else (refuse-part who i 'path 'part-file)))))
                         ;; file-regular? answers #f, never raises, for a
                         ;; string: a guard here took a caller's timer or
-                        ;; interrupt raise for part-file (the slice's
-                        ;; review, review-timer-rerun.log).
+                        ;; interrupt raise for part-file.
                         (unless (file-regular? path)
                           (refuse-part who i 'path 'part-file))
                         (loop (cdr parts) (+ i 1)
@@ -1464,7 +1441,7 @@
   ;; snapshot's copies, named Content-Type, A to Z folded alone, whatever
   ;; its value: multipart-content-type, field header-name, value its name as
   ;; given. libcurl writes the body's type and its boundary, and appends one
-  ;; to a caller's (ADR-0039, decision 1). Checked as the request is made,
+  ;; to a caller's (ADR-0039). Checked as the request is made,
   ;; and again at submit on the submit's own copies.
   (define (check-multipart-content-type who headers)
     (for-each (lambda (header)
@@ -1475,7 +1452,7 @@
   ;; multipart-answer : List -> List
   ;; A request's multipart body as curl-request-body answers it: fresh
   ;; pairs, fresh name, filename, type and path strings, the data as the
-  ;; request holds it, the caller's own (ADR-0039, amended 2026-11-07, as
+  ;; request holds it, the caller's own (ADR-0039; as
   ;; curl-request-credentials answers its copy).
   (define (multipart-answer body)
     (cons 'multipart
@@ -1490,7 +1467,7 @@
   ;; A submit's checked copy as its plan holds it, (multipart #(NAME KIND
   ;; PAYLOAD FILENAME TYPE) ...): KIND data, PAYLOAD a fresh bytevector, a
   ;; string's UTF-8 or a bytevector's bytes, copied here, at submit alone
-  ;; (ADR-0023, decision 4); or KIND file, PAYLOAD the path. FILENAME and
+  ;; (ADR-0023); or KIND file, PAYLOAD the path. FILENAME and
   ;; TYPE are #f when not given.
   (define (multipart-for-plan copy)
     (cons 'multipart
@@ -1506,16 +1483,16 @@
                (cdr copy))))
 
   ;; check-plan-files! : Plan -> Void
-  ;; The engine's check of PLAN's file parts (ADR-0039, amended 2026-11-06,
-  ;; decision 1), on the engine's thread, outside every critical section,
-  ;; before the transfer's setup: each path, in order, by stat, a regular
-  ;; file, symlinks followed, then opened and closed, so a file gone, not
-  ;; regular or unreadable since the submit fails the transfer alike on
-  ;; every lane, before anything is made or sent: &curl-transfer-error,
-  ;; part-file, no code, a request size of 0. An open of a path swapped to a
-  ;; FIFO between the stat and the open waits for a writer, holding the
-  ;; engine's thread: the window the record keeps, not closed. A plan of any
-  ;; other body passes. The gate, a test seam, runs first when armed.
+  ;; The engine's check of PLAN's file parts (ADR-0039), on the engine's
+  ;; thread, outside every critical section, before the transfer's setup:
+  ;; each path, in order, by stat, a regular file, symlinks followed, then
+  ;; opened and closed, so a file gone, not regular or unreadable since the
+  ;; submit fails the transfer alike on every lane, before anything is made
+  ;; or sent: &curl-transfer-error, part-file, no code, a request size of 0.
+  ;; An open of a path swapped to a FIFO between the stat and the open waits
+  ;; for a writer, holding the engine's thread: the window the record keeps,
+  ;; not closed. A plan of any other body passes. The gate, a test seam,
+  ;; runs first when armed.
   (define (check-plan-files! plan)
     (let ((body (plan-body plan)))
       (when (multipart? body)
@@ -1647,12 +1624,12 @@
   ;; copies, named Cookie or Host, A to Z folded alone, whatever its value,
   ;; an empty one too: cookie-beside-jar, field header-name, value its name
   ;; as given, never its value, a secret. One source holds a request's
-  ;; cookies (ADR-0035, decision 6, as measured): libcurl sends a caller's
+  ;; cookies (ADR-0035, as measured): libcurl sends a caller's
   ;; Cookie, in any case, empty too, as a second header beside the jar's;
   ;; and a caller's Host, in any case, with any port, sends that host's
   ;; cookies and stores the answer's there, over HTTP/1.1 and over HTTP/2 as
   ;; :authority. Never string-ci=?, which folds U+212A KELVIN SIGN to k and
-  ;; U+017F LONG S to s: a server compares bytes (traps.md). Checked as the
+  ;; U+017F LONG S to s: a server compares bytes. Checked as the
   ;; request is made, and again at submit on the submit's own copies.
   (define (check-cookie-beside-jar who jar headers)
     (when jar
@@ -1689,20 +1666,19 @@
   ;; S with A to Z as a to z, and every other char as it is: how an Expect
   ;; header's name and value are compared, as libcurl compares them. Never
   ;; string-ci=? nor char-foldcase, which fold U+017F LONG S to s and
-  ;; U+212A KELVIN SIGN to k (traps.md).
+  ;; U+212A KELVIN SIGN to k.
   (define (ascii-folded s)
     (list->string (map ascii-downcase (string->list s))))
 
   ;; expect-continue? : (Listof (Pairof String String)) -> Boolean
   ;; Whether HEADERS, checked copies, name Expect, in any ASCII case, with a
-  ;; value that holds 100-continue, in any ASCII case, anywhere in it:
-  ;; libcurl then waits for a 100 before a body, and on a 417 resends the
-  ;; request, without it, inside the same transfer; a get, or a delete
-  ;; with no body, it sends once, the 417 final (slice 1's second review,
-  ;; on 8.20.0), and the rule refuses those too. 7.85.0 and 8.5.0 match it so,
-  ;; anywhere in the value, "x100-continue" and "100-continue;q=1" among
-  ;; them; 8.20.0 and 8.23.0 as an element of a comma-separated list alone,
-  ;; as M6 slice 1's Expect probe measured. This holds the wider rule, on
+  ;; value that holds 100-continue, in any ASCII case, anywhere in it: libcurl
+  ;; then waits for a 100 before a body, and on a 417 resends the request,
+  ;; without it, inside the same transfer; a get, or a delete with no body, it
+  ;; sends once, the 417 final (on 8.20.0), and the rule refuses those too.
+  ;; 7.85.0 and 8.5.0 match it so, anywhere in the value, "x100-continue" and
+  ;; "100-continue;q=1" among them; 8.20.0 and 8.23.0 as an element of a
+  ;; comma-separated list alone, as measured. This holds the wider rule, on
   ;; every Expect header, not only the first, which libcurl reads. Pure.
   (define (expect-continue? headers)
     (exists (lambda (header)
@@ -1723,10 +1699,10 @@
   ;; Refuses, as WHO, a streamed response, STREAM-BUFFER, beside HEADERS, the
   ;; snapshot's copies, that name Expect: 100-continue: stream-with-rounds,
   ;; whatever the method, since a 417 makes libcurl resend a request that
-  ;; sends a body inside the transfer, and the head
-  ;; published would be the 417's (the M6 plan, section 3.2: one transfer,
-  ;; one request). Checked as the request is made, and again at submit on
-  ;; the submit's own copies, since a caller's string may change between.
+  ;; sends a body inside the transfer, and the head published would be the
+  ;; 417's (one transfer, one request). Checked as the request is made, and
+  ;; again at submit on the submit's own copies, since a caller's string may
+  ;; change between.
   (define (check-expect-round who stream-buffer headers)
     (when (and stream-buffer (expect-continue? headers))
       (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds)))
@@ -1745,7 +1721,7 @@
   ;; not name is kept as REQUEST holds it, its paths resolved and checked
   ;; as REQUEST was made, with no stat: so a retry's request with a new
   ;; timeout-ms, the high level's, makes no file system call, and its
-  ;; submit's stat is the one check (ADR-0039, after slice 3's review).
+  ;; submit's stat is the one check (ADR-0039).
   (define (request-like who request settings url fault follow options)
     (define (given key accessor)
       (let ((hit (assq key settings))) (if hit (cdr hit) (accessor request))))
@@ -1784,9 +1760,9 @@
                   (request-settings 'make-curl-request plist) url #f #f '()))
 
   ;; curl-request-with's keys: a request's, and url, the URL make-curl-request
-  ;; takes as its first argument, checked as it checks that one (ADR-0023,
-  ;; after slice 3's review): a hop's request is the last one with its URL
-  ;; and its method and headers changed, the rest kept.
+  ;; takes as its first argument, checked as it checks that one (ADR-0023): a
+  ;; hop's request is the last one with its URL and its method and headers
+  ;; changed, the rest kept.
   (define (curl-request-with request . plist)
     (unless (curl-request? request)
       (assertion-violation 'curl-request-with "not a request" (shown-value request)))
@@ -1797,8 +1773,8 @@
                     (curl-request-follow request) (curl-request-options request))))
 
   ;; curl-request-with-fault : Request (U Positive-Integer #f) -> Request
-  ;; REQUEST with its private fault FAULT, the test seam's (M3 plan, section
-  ;; 3.6). (curl) does not export it.
+  ;; REQUEST with its private fault FAULT, the test seam's. (curl) does not
+  ;; export it.
   (define (curl-request-with-fault request fault)
     (unless (curl-request? request)
       (assertion-violation 'curl-request-with-fault "not a request" (shown-value request)))
@@ -1826,11 +1802,10 @@
   ;; REQUEST with its private mark (mark N): at the head's line N, counting
   ;; from 1 the lines read-head took, never one it refused, read-head
   ;; records (planted-head-mark N) as callback-raised and answers the line's
-  ;; length,
-  ;; so libcurl calls it again, which it must then refuse, as every later
-  ;; call once a reason is recorded (ADR-0040, amended 2026-11-06): the
-  ;; Linux libcurls never call it again after a refusal. A test seam;
-  ;; (curl) does not export it.
+  ;; length, so libcurl calls it again, which it must then refuse, as every
+  ;; later call once a reason is recorded (ADR-0040): the Linux libcurls
+  ;; never call it again after a refusal. A test seam; (curl) does not
+  ;; export it.
   (define (curl-request-with-head-mark request n)
     (unless (curl-request? request)
       (assertion-violation 'curl-request-with-head-mark "not a request" (shown-value request)))
@@ -1859,7 +1834,7 @@
   ;; REQUEST, following redirects: FOLLOWLOCATION at 1, for the tests of a
   ;; followed redirect and of ADR-0003's redirect pin. Nothing public
   ;; follows one: through a 301, 302 or 303, libcurl resends a custom
-  ;; method without its body (ADR-0023, amended 2026-10-26). (curl) does
+  ;; method without its body (ADR-0023). (curl) does
   ;; not export it.
   (define (curl-request-following request)
     (unless (curl-request? request)
@@ -1881,7 +1856,7 @@
   ;; last request, CURLH_HEADER's, as Latin-1 strings in libcurl's order;
   ;; the body, #f for a streamed one; and its timings, timing-infos' names
   ;; in its order, each the microseconds from the transfer's start to that
-  ;; phase's end, as libcurl reports them (M4 plan, section 3.3).
+  ;; phase's end, as libcurl reports them.
   (define-record-type (curl-response make-curl-response curl-response?)
     (fields (immutable status unchecked-curl-response-status)
             (immutable http-version unchecked-curl-response-http-version)
@@ -1891,14 +1866,12 @@
             (immutable timings unchecked-curl-response-timings))
     ;; Opaque: Chez prints a record's every field, and a response's headers
     ;; can hold a Set-Cookie, whose value is a secret, as a password is
-    ;; (ADR-0035; the M7 plan, section 3.5). A response prints as
-    ;; #<curl-response>.
+    ;; (ADR-0035). A response prints as #<curl-response>.
     (opaque #t))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-response-status
     (checked-accessor 'curl-response-status curl-response? "a response" unchecked-curl-response-status))
   (define curl-response-http-version
@@ -1916,12 +1889,11 @@
   ;; Each timing a response carries, in its order, with the CURLINFO_ it is
   ;; read from, a curl_off_t of microseconds: name-lookup, NAMELOOKUP_TIME_T;
   ;; connect, CONNECT_TIME_T; tls-handshake, APPCONNECT_TIME_T, 0 without
-  ;; TLS; first-byte, STARTTRANSFER_TIME_T; total, TOTAL_TIME_T. On a
-  ;; success every libcurl measured reports them in that order (M4 plan,
-  ;; section 4.1), and a phase the transfer skipped as 0: on a connection
-  ;; reused, name-lookup, connect and tls-handshake are all 0 (8.20.0, the
-  ;; slice's review), but for 7.85.0's connect, 10 to 37 microseconds on a
-  ;; connection reused once the transfer before had ended (M7 slice 1).
+  ;; TLS; first-byte, STARTTRANSFER_TIME_T; total, TOTAL_TIME_T. On a success
+  ;; every libcurl measured reports them in that order, and a phase the
+  ;; transfer skipped as 0: on a connection reused, name-lookup, connect and
+  ;; tls-handshake are all 0 (8.20.0), but for 7.85.0's connect, 10 to 37
+  ;; microseconds on a connection reused once the transfer before had ended.
   ;; tests/test-request.sps writes it out.
   (define timing-infos
     `((name-lookup . ,curlinfo-namelookup-time-t)
@@ -1943,7 +1915,7 @@
 
   ;; bytes->latin-1 : Bytevector -> String
   ;; Each byte as one char, byte n as U+00nn: how a header's bytes become a
-  ;; string (ADR-0001, amended 2026-10-23).
+  ;; string (ADR-0001).
   (define (bytes->latin-1 bytes)
     (let* ((n (bytevector-length bytes)) (s (make-string n)))
       (let loop ((i 0))
@@ -1974,7 +1946,7 @@
   ;; failure : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any (U Natural #f)
   ;;           (U Positive-Integer #f) -> Condition
   ;; What a transfer that failed for REASON raises: the class of CODE, by
-  ;; make-classed-transfer-error's rule (ADR-0022, amended 2026-10-26), with
+  ;; make-classed-transfer-error's rule (ADR-0022), with
   ;; CODE's strerror, the error buffer's text, read now, while the buffer
   ;; lives, REQUEST-SIZE, the bytes of request sent, and CONNECT-CODE, the
   ;; status a proxy refused the transfer's CONNECT with, or #f.
@@ -1998,10 +1970,10 @@
 
   ;; request-size-unreliable : (Listof String)
   ;; The libcurl versions whose CURLINFO_REQUEST_SIZE answers 0 for every
-  ;; transfer, one that sent its request too: upstream 8.7.0 and 8.7.1, the
-  ;; Mac's, measured on slice 1's probe's 21 transfers, where 8.6.0 and
-  ;; 8.8.0 answered each request's length (ADR-0022, amended 2026-10-27).
-  ;; tests/test-request.sps holds it to its own copy.
+  ;; transfer, one that sent its request too: upstream 8.7.0 and 8.7.1, and
+  ;; Apple's 8.7.1, measured on 21 transfers, where 8.6.0 and 8.8.0
+  ;; answered each request's length (ADR-0022). tests/test-request.sps
+  ;; holds it to its own copy.
   (define request-size-unreliable '("8.7.0" "8.7.1"))
 
   ;; reported-request-size : String Natural -> (U Natural #f)
@@ -2014,7 +1986,7 @@
   ;; connect-status : Integer -> (U Positive-Integer #f)
   ;; CODE, CURLINFO_HTTP_CONNECTCODE's answer, as a failure carries it: the
   ;; status a proxy answered a CONNECT with, when it is no 2xx; #f for 0, no
-  ;; CONNECT status, and for a 2xx, the tunnel opened (ADR-0037, decision 9).
+  ;; CONNECT status, and for a 2xx, the tunnel opened (ADR-0037).
   ;; Pure.
   (define (connect-status code)
     (and (integer? code) (positive? code) (not (<= 200 code 299)) code))
@@ -2081,42 +2053,34 @@
       (else (assertion-violation 'option-setter "not a setopt binding's name" binding))))
 
   ;; request-field-options : (Listof (Pairof Symbol (Listof String)))
-  ;; Each request field that sets options, with their names, (FIELD NAME
-  ;; ...): the one place the transfer reads them from, and part of
-  ;; owned-option-names, so a field's options are closed to the hatch by
-  ;; being a field's (ADR-0009, consequences). method sets NOBODY for head
-  ;; and CUSTOMREQUEST for put, patch and delete, and for a streamed body
-  ;; POST, or UPLOAD for put (the M6 plan, section 3.3); body, for a whole
-  ;; one, POSTFIELDSIZE_LARGE then COPYPOSTFIELDS, in that order, since
-  ;; libcurl copies the size the first set, and for a streamed one
-  ;; POSTFIELDSIZE_LARGE, put's aside, the read callable and its data, the
-  ;; seek callable's, the prerequest callable's and FRESH_CONNECT (ADR-0032);
-  ;; and for a multipart one MIMEPOST, the transfer's mime, its last body
-  ;; option (ADR-0039; MIMEPOST was a twin before, M8 slice 3);
-  ;; body-length, put's INFILESIZE_LARGE, the length a streamed put sends.
-  ;; The TLS fields set two each, in the order tls-settings makes
-  ;; them: ca-file CAINFO, its path, then CAPATH, cleared; verify
-  ;; SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018). proxy sets PROXY, to ""
-  ;; when it is #f (ADR-0024, decision 1), and for a URL PROXY at it, then
-  ;; NOPROXY at "", so no variable sends the transfer direct, and
-  ;; FORBID_REUSE, with FRESH_CONNECT, the body's, where
-  ;; unshared-tunnel-settings asks (ADR-0037, amended twice): NOPROXY was
-  ;; the field's twin before; proxy-ca-file PROXY_CAINFO, its path, then
-  ;; PROXY_CAPATH, cleared; proxy-verify PROXY_SSL_VERIFYPEER, then
-  ;; PROXY_SSL_VERIFYHOST, by proxy-settings. cookie-jar sets SHARE at its
-  ;; jar's share, then COOKIEFILE at "", by jar-settings, when it is not #f
-  ;; (ADR-0035): COOKIEFILE was kept from the hatch before, for its "-".
-  ;; follow is the private field's
-  ;; (M4 plan, section 3.2). stream-buffer owns the header callable and its
-  ;; data, the transfer's key, which every transfer sets, for the cap on
-  ;; response headers (ADR-0040), and which publish a streamed response's
-  ;; head (the M6 plan, sections 3.2 and 3.3). http-version sets HTTP_VERSION, by
-  ;; version-settings, when it is not #f (ADR-0034). credentials sets
-  ;; HTTPAUTH at its scheme's bit, then USERNAME and PASSWORD, or
+  ;; Each request field that sets options, with their names, (FIELD NAME ...):
+  ;; the one place the transfer reads them from, and part of owned-option-names,
+  ;; so a field's options are closed to the hatch by being a field's (ADR-0009).
+  ;; method sets NOBODY for head and CUSTOMREQUEST for put, patch and delete, and
+  ;; for a streamed body POST, or UPLOAD for put; body, for a whole one,
+  ;; POSTFIELDSIZE_LARGE then COPYPOSTFIELDS, in that order, since libcurl copies
+  ;; the size the first set, and for a streamed one POSTFIELDSIZE_LARGE, put's
+  ;; aside, the read callable and its data, the seek callable's, the prerequest
+  ;; callable's and FRESH_CONNECT (ADR-0032); and for a multipart one MIMEPOST,
+  ;; the transfer's mime, its last body option (ADR-0039); body-length, put's
+  ;; INFILESIZE_LARGE, the length a streamed put sends. The TLS fields set two
+  ;; each, in the order tls-settings makes them: ca-file CAINFO, its path, then
+  ;; CAPATH, cleared; verify SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018).
+  ;; proxy sets PROXY, to "" when it is #f (ADR-0024), and for a URL PROXY at it,
+  ;; then NOPROXY at "", so no variable sends the transfer direct, and
+  ;; FORBID_REUSE, with FRESH_CONNECT, the body's, where unshared-tunnel-settings
+  ;; asks (ADR-0037); proxy-ca-file PROXY_CAINFO, its path, then PROXY_CAPATH,
+  ;; cleared; proxy-verify PROXY_SSL_VERIFYPEER, then PROXY_SSL_VERIFYHOST, by
+  ;; proxy-settings. cookie-jar sets SHARE at its jar's share, then COOKIEFILE at
+  ;; "", by jar-settings, when it is not #f (ADR-0035). follow is the private
+  ;; field's. stream-buffer owns the header callable and its data, the transfer's
+  ;; key, which every transfer sets, for the cap on response headers (ADR-0040),
+  ;; and which publish a streamed response's head. http-version sets
+  ;; HTTP_VERSION, by version-settings, when it is not #f (ADR-0034). credentials
+  ;; sets HTTPAUTH at its scheme's bit, then USERNAME and PASSWORD, or
   ;; XOAUTH2_BEARER, by credentials-settings, when it is not #f (ADR-0036).
-  ;; USERNAME and PASSWORD were owned before as the URL's twins, which each
-  ;; replace part of the URL's credentials on some version (M4 slice 4's
-  ;; review); now they are this field's.
+  ;; USERNAME and PASSWORD each replace part of the URL's credentials on some
+  ;; version, and are this field's.
   (define request-field-options
     '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
       (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION"
@@ -2149,12 +2113,11 @@
   ;; Every option that sets a proxy's TLS but the four the proxy-ca-file and
   ;; proxy-verify fields set, PROXY_CAINFO, PROXY_CAPATH,
   ;; PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST, in the options tables of
-  ;; the five libcurls the M4 plan measured, 7.85.0 to 8.23.0: each other
-  ;; PROXY_SSL_* and PROXY_CA* option, and the rest of the PROXY_ TLS
-  ;; settings, which could loosen it too, its version, ciphers and TLS-SRP
-  ;; among them. Each is a twin of those fields', owned since M4 (ADR-0024,
-  ;; amended 2026-10-26, decided by the maintainer); a proxy's own CA and
-  ;; verification are the fields' from M7 slice 3 (ADR-0037, decision 5).
+  ;; the five libcurls, 7.85.0 to 8.23.0: each other PROXY_SSL_* and
+  ;; PROXY_CA* option, and the rest of the PROXY_ TLS settings, which could
+  ;; loosen it too, its version, ciphers and TLS-SRP among them. Each is a
+  ;; twin of those fields' (ADR-0024); a proxy's own CA and verification are
+  ;; the fields' (ADR-0037).
   (define proxy-tls-option-names
     '("PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
       "PROXY_CAINFO_BLOB" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
@@ -2164,125 +2127,115 @@
       "PROXY_TLSAUTH_PASSWORD"))
 
   ;; owned-option-names : (Listof String)
-  ;; The options the hatch refuses, by name (ADR-0009, amended
-  ;; 2026-10-23 to 2026-10-27): those the transfer always sets, QUICK_EXIT
-  ;; among them where the libcurl knows it, and MAXREDIRS, pinned at 30
-  ;; (ADR-0036, amended 2026-11-02, decision 8), and the protocol pins'
-  ;; deprecated bitmasks; then every option of each request field, the
-  ;; credentials field's HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER
-  ;; among them; then
-  ;; each owned setting's twin, an option with an id of its own that sets
-  ;; the same thing:
+  ;; The options the hatch refuses, by name (ADR-0009): those the transfer
+  ;; always sets, QUICK_EXIT among them where the libcurl knows it, and
+  ;; MAXREDIRS, pinned at 30 (ADR-0036), and the protocol pins' deprecated
+  ;; bitmasks; then every option of each request field, the credentials
+  ;; field's HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER among them;
+  ;; then each owned setting's twin, an option with an id of its own that
+  ;; sets the same thing:
   ;;   - the timeouts' and the body limit's: TIMEOUT, CONNECTTIMEOUT and
   ;;     MAXFILESIZE, in seconds or as a long;
   ;;   - the method's and the body's: HTTPGET and PUT, which set the
   ;;     method, as the method field's POST and UPLOAD do; POSTFIELDS,
   ;;     POSTFIELDSIZE and HTTPPOST, another body, size or form; and
   ;;     MIME_OPTIONS, which changes how a multipart body's name and
-  ;;     filename are escaped, never set (ADR-0039, decision 2): MIMEPOST
-  ;;     was its twin until the body field took it over (M8 slice 3);
-  ;;     INFILESIZE, an upload's size, as body-length's INFILESIZE_LARGE;
+  ;;     filename are escaped, never set (ADR-0039); INFILESIZE, an
+  ;;     upload's size, as body-length's INFILESIZE_LARGE;
   ;;   - the URL's: PORT, which replaces its port, and REQUEST_TARGET, its
-  ;;     target on the request line (the options tables, M4 slice 1);
-  ;;   - the body's and the response's, found by the slice's review: CRLF,
-  ;;     which rewrites each LF in what libcurl sends as CRLF, the body's too,
-  ;;     and HEADER, which hands the response's head to WRITEFUNCTION with
-  ;;     its body, against the body limit;
+  ;;     target on the request line;
+  ;;   - the body's and the response's: CRLF, which rewrites each LF in what
+  ;;     libcurl sends as CRLF, the body's too, and HEADER, which hands the
+  ;;     response's head to WRITEFUNCTION with its body, against the body
+  ;;     limit;
   ;;   - the CA file's: CAINFO_BLOB, which adds a CA, and SSL_OPTIONS, whose
   ;;     NATIVE_CA adds the system store;
-  ;;   - the proxy field's (ADR-0024, decision 1): PRE_PROXY, a SOCKS proxy
-  ;;     before it; PROXYPORT and PROXYTYPE, its port and its kind, parts
-  ;;     of the proxy PROXY names, as PORT is of the URL. NOPROXY, whose "*"
-  ;;     turns the environment's proxy off as PROXY "" does, was its twin
-  ;;     until M7 slice 3 made it the field's own;
-  ;;   - found by M4 slice 4's review of every option the hatch's types
-  ;;     reach, each measured on five libcurls but where named (ADR-0009,
-  ;;     amended 2026-10-27, decided by the maintainer): TRANSFERTEXT, which
-  ;;     rewrites the body as CRLF does; USERPWD and NETRC, which each
+  ;;   - the proxy field's (ADR-0024): PRE_PROXY, a SOCKS proxy before it;
+  ;;     PROXYPORT and PROXYTYPE, its port and its kind, parts of the proxy
+  ;;     PROXY names, as PORT is of the URL. NOPROXY, whose "*" turns the
+  ;;     environment's proxy off as PROXY "" does, is the field's own;
+  ;;   - twins found among every option the hatch's types reach, each
+  ;;     measured on five libcurls but where named (ADR-0009): TRANSFERTEXT,
+  ;;     which rewrites the body as CRLF does; USERPWD and NETRC, which each
   ;;     replace part of the URL's credentials on some version, as USERNAME
-  ;;     and PASSWORD do, which are the credentials field's now, and HSTS,
-  ;;     which turns its http:// into https://;
-  ;;     UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET, which skip the
-  ;;     environment's proxy, as NOPROXY does; PROXYHEADER, whose headers
-  ;;     reach a proxied request past the header checks, a second
-  ;;     Content-Length among them, and HEADEROPT, whose UNIFIED sends the
-  ;;     request's headers to the proxy in a CONNECT;
+  ;;     and PASSWORD do, which are the credentials field's, and HSTS, which
+  ;;     turns its http:// into https://; UNIX_SOCKET_PATH and
+  ;;     ABSTRACT_UNIX_SOCKET, which skip the environment's proxy, as
+  ;;     NOPROXY does; PROXYHEADER, whose headers reach a proxied request
+  ;;     past the header checks, a second Content-Length among them, and
+  ;;     HEADEROPT, whose UNIFIED sends the request's headers to the proxy
+  ;;     in a CONNECT;
   ;;   - and, kept from the hatch though no twin: RESUME_FROM and
   ;;     RESUME_FROM_LARGE, which beside a body read stdin on 7.85.0 and
   ;;     send part of the body; COOKIEJAR, whose "-" writes stdout from the
   ;;     engine's thread, and COOKIEFILE, whose "-" reads stdin, the
-  ;;     cookie-jar field's from M7 slice 4; CONNECT_ONLY,
-  ;;     which sends no request and ends OK; DOH_URL, whose lookups ignore
-  ;;     the proxy field; RESOLVE, whose entries reach every later request
-  ;;     on the engine through the DNS cache its multi handle shares; and
-  ;;     SSLENGINE_DEFAULT, which sets OpenSSL's default for the whole
-  ;;     process, by curl's source;
+  ;;     cookie-jar field's; CONNECT_ONLY, which sends no request and ends
+  ;;     OK; DOH_URL, whose lookups ignore the proxy field; RESOLVE, whose
+  ;;     entries reach every later request on the engine through the DNS
+  ;;     cache its multi handle shares; and SSLENGINE_DEFAULT, which sets
+  ;;     OpenSSL's default for the whole process, by curl's source;
   ;;   - the HTTP version's, measured through the engine on five libcurls
-  ;;     (M7 slice 1; ADR-0009, amended 2026-11-02): SSL_ENABLE_ALPN, whose
-  ;;     0 turns http/2's HTTP/2 into HTTP/1.1 at a server offering both;
-  ;;     ALTSVC, whose cache file, an earlier transfer's or written by hand,
-  ;;     moves a later transfer to another port, host and version, at
-  ;;     http/1.1 too, and which libcurl writes as the engine cleans the
-  ;;     handle up, on its thread; and ALTSVC_CTRL, which alone makes the
-  ;;     handle a cache in memory that an Alt-Svc header fills: the 417's
-  ;;     resend of a caller's Expect: 100-continue, a second request on the
-  ;;     same handle, went to the first response's alternative, another
-  ;;     port, and over HTTP/2 to an h2 one (8.20.0, the slice's review); a
-  ;;     hatch HTTPAUTH round and the private follow make second requests
-  ;;     too. HSTS_CTRL stays the hatch's: libcurl reads
+  ;;     (ADR-0009): SSL_ENABLE_ALPN, whose 0 turns http/2's HTTP/2 into
+  ;;     HTTP/1.1 at a server offering both; ALTSVC, whose cache file, an
+  ;;     earlier transfer's or written by hand, moves a later transfer to
+  ;;     another port, host and version, at http/1.1 too, and which libcurl
+  ;;     writes as the engine cleans the handle up, on its thread; and
+  ;;     ALTSVC_CTRL, which alone makes the handle a cache in memory that an
+  ;;     Alt-Svc header fills: the 417's resend of a caller's Expect:
+  ;;     100-continue, a second request on the same handle, went to the
+  ;;     first response's alternative, another port, and over HTTP/2 to an
+  ;;     h2 one (8.20.0); a hatch HTTPAUTH round and the private follow make
+  ;;     second requests too. HSTS_CTRL stays the hatch's: libcurl reads
   ;;     Strict-Transport-Security from an https:// response alone, and
   ;;     rewrites an http:// URL alone (7.85.0's url.c and http.c, 8.23.0's
-  ;;     hsts_upgrade and Curl_xfer_is_secure, read), and no second
-  ;;     request within one transfer changes its URL, but the private
-  ;;     follow's, which nothing public sets. PIPEWAIT, HTTP09_ALLOWED,
-  ;;     HTTP200ALIASES and CONNECT_TO stay the hatch's too, and
-  ;;     HTTPPROXYTUNNEL did until M7 slice 3;
+  ;;     hsts_upgrade and Curl_xfer_is_secure, read), and no second request
+  ;;     within one transfer changes its URL, but the private follow's,
+  ;;     which nothing public sets. PIPEWAIT, HTTP09_ALLOWED, HTTP200ALIASES
+  ;;     and CONNECT_TO stay the hatch's too;
   ;;   - the credentials field's, measured through the engine on five
-  ;;     libcurls (M7 slice 2; ADR-0036, amended 2026-11-02): AWS_SIGV4,
-  ;;     which set after HTTPAUTH replaced every scheme's header with an
-  ;;     AWS4-HMAC-SHA256 signature. FAILONERROR, which makes a wrong
-  ;;     password's 401 code 22, AUTOREFERER, which adds a Referer to
-  ;;     Digest's second request, KEEP_SENDING_ON_ERROR, UNRESTRICTED_AUTH,
-  ;;     which reaches libcurl's own follow alone, DISALLOW_USERNAME_IN_URL,
-  ;;     LOGIN_OPTIONS, SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE
-  ;;     stay the hatch's, each changing nothing the field sends;
+  ;;     libcurls (ADR-0036): AWS_SIGV4, which set after HTTPAUTH replaced
+  ;;     every scheme's header with an AWS4-HMAC-SHA256 signature.
+  ;;     FAILONERROR, which makes a wrong password's 401 code 22,
+  ;;     AUTOREFERER, which adds a Referer to Digest's second request,
+  ;;     KEEP_SENDING_ON_ERROR, UNRESTRICTED_AUTH, which reaches libcurl's
+  ;;     own follow alone, DISALLOW_USERNAME_IN_URL, LOGIN_OPTIONS,
+  ;;     SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE stay the
+  ;;     hatch's, each changing nothing the field sends;
   ;;   - the proxy field's, measured through the engine on five libcurls
-  ;;     (M7 slice 3; ADR-0037, amended 2026-11-03): PROXYAUTH,
-  ;;     PROXYUSERPWD, PROXYUSERNAME and PROXYPASSWORD, which set a proxy's
-  ;;     credentials another way than its URL's userinfo, and decode them
-  ;;     differently by version; HTTPPROXYTUNNEL, which moves an http://
-  ;;     URL's request from the proxy into a tunnel to the origin, with
-  ;;     every caller header, and lets prior knowledge speak HTTP/2 through
-  ;;     a named proxy; HAPROXYPROTOCOL, which writes a PROXY line to the
-  ;;     proxy by absolute form and to the origin inside a tunnel, breaking
-  ;;     a TLS origin's handshake, 35, and HAPROXY_CLIENT_IP, which rewrites
-  ;;     that line's addresses: 7.85.0 knows no HAPROXY_CLIENT_IP, and an
-  ;;     owned name a libcurl does not know is no id of its own, its
-  ;;     attachment refused as unknown-option first.
-  ;;     PROXY_SERVICE_NAME and SOCKS5_AUTH stay the hatch's, each changing
-  ;;     no byte either side got, and nothing chez-curl reads, and
-  ;;     SUPPRESS_CONNECT_HEADERS did until M8 slice 2;
-  ;;   - the cookie jar's, measured through the engine on five libcurls (M7
-  ;;     slice 4; ADR-0035, amended 2026-11-04): SHARE, which attaches a
-  ;;     share, and COOKIEFILE, which turns the cookie engine on, are the
-  ;;     cookie-jar field's, SHARE refused by its type before; COOKIE,
+  ;;     (ADR-0037): PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME and
+  ;;     PROXYPASSWORD, which set a proxy's credentials another way than its
+  ;;     URL's userinfo, and decode them differently by version;
+  ;;     HTTPPROXYTUNNEL, which moves an http:// URL's request from the
+  ;;     proxy into a tunnel to the origin, with every caller header, and
+  ;;     lets prior knowledge speak HTTP/2 through a named proxy;
+  ;;     HAPROXYPROTOCOL, which writes a PROXY line to the proxy by absolute
+  ;;     form and to the origin inside a tunnel, breaking a TLS origin's
+  ;;     handshake, 35, and HAPROXY_CLIENT_IP, which rewrites that line's
+  ;;     addresses: 7.85.0 knows no HAPROXY_CLIENT_IP, and an owned name a
+  ;;     libcurl does not know is no id of its own, its attachment refused
+  ;;     as unknown-option first. PROXY_SERVICE_NAME and SOCKS5_AUTH stay
+  ;;     the hatch's, each changing no byte either side got, and nothing
+  ;;     chez-curl reads;
+  ;;   - the cookie jar's, measured through the engine on five libcurls
+  ;;     (ADR-0035): SHARE, which attaches a share, and COOKIEFILE, which
+  ;;     turns the cookie engine on, are the cookie-jar field's; COOKIE,
   ;;     which joins its own line to the jar's Cookie line, and beside a
-  ;;     caller's Cookie header is dropped; COOKIELIST, which reaches past
-  ;;     its transfer: ALL and SESS cleared the jar for every transfer that
-  ;;     holds it, and a Netscape or Set-Cookie: line set by it went into
-  ;;     the jar past the load's rules, and every later holder sent it; and
-  ;;     COOKIESESSION, which changed nothing the jar held, measured, but
-  ;;     tells libcurl to drop a session's cookies as it starts, which is
-  ;;     the jar's to own. HSTS_CTRL stays the hatch's: it changed nothing
-  ;;     the jar held, and a share of cookies alone carries no HSTS entry.
-  ;;     CONNECT_TO stays the hatch's too (ADR-0035, decision 13): it routes
-  ;;     a transfer to another server, and the jar's cookies follow the
-  ;;     URL's host, libcurl storing the reached server's Set-Cookie under
-  ;;     it and sending it that host's cookies (8.20.0 lib/http.c:3553-3560,
-  ;;     read in source), as they would a hosts file's entry;
-  ;;   - the header callable's, measured through the engine on five
-  ;;     libcurls (M8 slice 2; ADR-0040, amended 2026-11-06, decided by the
-  ;;     maintainer): SUPPRESS_CONNECT_HEADERS, which hides a CONNECT answer
+  ;;     caller's Cookie header is dropped;
+  ;;     COOKIELIST, which reaches past its transfer: ALL and SESS cleared
+  ;;     the jar for every transfer that holds it, and a Netscape or
+  ;;     Set-Cookie: line set by it went into the jar past the load's rules,
+  ;;     and every later holder sent it; and COOKIESESSION, which changed
+  ;;     nothing the jar held, measured, but tells libcurl to drop a
+  ;;     session's cookies as it starts, which is the jar's to own.
+  ;;     HSTS_CTRL stays the hatch's: it changed nothing the jar held, and a
+  ;;     share of cookies alone carries no HSTS entry. CONNECT_TO stays the
+  ;;     hatch's too (ADR-0035): it routes a transfer to another server, and
+  ;;     the jar's cookies follow the URL's host, libcurl storing the
+  ;;     reached server's Set-Cookie under it and sending it that host's
+  ;;     cookies (8.20.0 lib/http.c:3553-3560, read in source), as they
+  ;;     would a hosts file's entry;
+  ;;   - the header callable's, measured through the engine on five libcurls
+  ;;     (ADR-0040): SUPPRESS_CONNECT_HEADERS, which hides a CONNECT answer
   ;;     from the callable on every libcurl, so the cap would never count
   ;;     it, and libcurl's own caps alone would hold it, by version. Every
   ;;     transfer sets the callable, its options stream-buffer's.
@@ -2314,22 +2267,20 @@
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
   ;; The settings every transfer makes, before its own: ADR-0003's protocol
-  ;; pins, PROTOCOLS_STR and REDIR_PROTOCOLS_STR at "http,https", and
-  ;; NOSIGNAL at 1, so that no signal handler is installed in a process that
-  ;; runs threads; and MAXREDIRS at 30 (ADR-0036, amended 2026-11-02,
-  ;; decision 8). libcurl counts each follow it makes against MAXREDIRS,
-  ;; FOLLOW_REDIR: a redirect, and every new request a transfer makes
-  ;; inside it as one, an auth round, a stale=true round, and a 417's
-  ;; resend of a caller's Expect: 100-continue alike; never FOLLOW_RETRY,
-  ;; its retry of a request a dead reused or refused connection lost
-  ;; (7.85.0 transfer.c:1583-1593; 8.20.0 http.c:1154-1165). 7.85.0's default is
-  ;; -1, unbounded: against a server that answers 417, or stale=true, for
-  ;; ever, it made about 90,000 and 43,000 requests in 5 s, and with no
-  ;; timeout would never stop. At 30 it stops at 31 requests, 47, as 8.5.0
-  ;; and later do at their default, 30, and a Digest round still ends in
-  ;; two. Nothing public follows a redirect, so the count reaches those
-  ;; follows inside a transfer alone. tests/test-transfer.sps writes it
-  ;; out.
+  ;; pins, PROTOCOLS_STR and REDIR_PROTOCOLS_STR at "http,https", and NOSIGNAL
+  ;; at 1, so that no signal handler is installed in a process that runs
+  ;; threads; and MAXREDIRS at 30 (ADR-0036). libcurl counts each follow it
+  ;; makes against MAXREDIRS, FOLLOW_REDIR: a redirect, and every new request a
+  ;; transfer makes inside it as one, an auth round, a stale=true round, and a
+  ;; 417's resend of a caller's Expect: 100-continue alike; never FOLLOW_RETRY,
+  ;; its retry of a request a dead reused or refused connection lost (7.85.0
+  ;; transfer.c:1583-1593; 8.20.0 http.c:1154-1165). 7.85.0's default is -1,
+  ;; unbounded: against a server that answers 417, or stale=true, for ever, it
+  ;; made about 90,000 and 43,000 requests in 5 s, and with no timeout would
+  ;; never stop. At 30 it stops at 31 requests, 47, as 8.5.0 and later do at
+  ;; their default, 30, and a Digest round still ends in two. Nothing public
+  ;; follows a redirect, so the count reaches those follows inside a transfer
+  ;; alone. tests/test-transfer.sps writes it out.
   (define pinned-options
     '(("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)
       ("MAXREDIRS" . 30)))
@@ -2350,7 +2301,7 @@
 
   ;; quick-exit-known? : -> Boolean
   ;; Whether the loaded libcurl knows quick-exit-pin's option, by name: the
-  ;; floor, 7.85.0, does not (ADR-0019, decision 1).
+  ;; floor, 7.85.0, does not (ADR-0019).
   (define (quick-exit-known?)
     (and (curl-easy-option (car quick-exit-pin)) #t))
 
@@ -2444,7 +2395,7 @@
 
   ;; set-string-option! : Positive-Integer String String (U Positive-Integer #f) -> Void
   ;; NAME set to a counted UTF-8 copy of TEXT, freed once setopt returns:
-  ;; libcurl copies its string options (plan, section 2).
+  ;; libcurl copies its string options.
   (define (set-string-option! easy name text buffer)
     (call-with-c-string text (lambda (address) (set-option! easy name address buffer))))
 
@@ -2497,11 +2448,11 @@
   ;; The settings an http-version VERSION makes (ADR-0034), as data: #f,
   ;; none, so libcurl keeps its own; http/1.1, HTTP_VERSION at
   ;; CURL_HTTP_VERSION_1_1; http/2, at CURL_HTTP_VERSION_2TLS, not 2_0,
-  ;; whose Upgrade: h2c over http:// no server here takes (the M7 plan,
-  ;; section 3.1); http/2-prior-knowledge, at
-  ;; CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE. Any other VERSION is an assertion
-  ;; violation. The name is request-field-options'. Pure.
-  ;; tests/test-version.sps writes out every answer.
+  ;; whose Upgrade: h2c over http:// no server here takes;
+  ;; http/2-prior-knowledge, at CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE. Any
+  ;; other VERSION is an assertion violation. The name is
+  ;; request-field-options'. Pure. tests/test-version.sps writes out every
+  ;; answer.
   (define (version-settings version)
     (let ((name (field-option 'http-version)))
       (case version
@@ -2521,7 +2472,7 @@
   ;; Bearer on the first request, and Digest after a bare one. HTTPAUTH
   ;; first: libcurl reads every one as the transfer starts, whatever the
   ;; order. Each string is the answer's, set as UTF-8 by set-string-option!
-  ;; (ADR-0036, decision 5). Anything but credentials-copy's shape is an
+  ;; (ADR-0036). Anything but credentials-copy's shape is an
   ;; assertion violation, naming its scheme alone. The names are
   ;; request-field-options'. Pure. tests/test-auth.sps writes out every
   ;; scheme's answer.
@@ -2544,7 +2495,7 @@
   ;; proxy-settings : (U 'environment #f String) (U String #f) Boolean
   ;;                  -> (Listof (Pairof String (U String Integer #f)))
   ;; The settings a request's PROXY, its PROXY-CA-FILE and its VERIFY make
-  ;; (ADR-0024, decision 1; ADR-0037), as data, in order: environment, none,
+  ;; (ADR-0024; ADR-0037), as data, in order: environment, none,
   ;; so libcurl reads the proxy variables by its own rules, and keeps its
   ;; verified default for the proxy they name; #f, PROXY at "", which reads
   ;; none of them; a URL, the one a submit hands libcurl, its scheme's port
@@ -2585,22 +2536,21 @@
   ;; unshared-tunnel-settings : Natural (U String #f) Boolean Boolean
   ;;                            -> (Listof (Pairof String Integer))
   ;; The settings that keep a tunnel through a named proxy unshared, by
-  ;; ADR-0037's decision 8 (amended 2026-11-03), as data: on a libcurl whose
-  ;; VERSION-NUMBER is below unshared-tunnel-floor, a transfer to an https://
-  ;; URL, SCHEME being the scheme libcurl gives back, in lower case, through
-  ;; a PROXY-URL, FRESH_CONNECT at 1, so it joins no connection, live or
-  ;; pooled; and with USERINFO, a user or a password in the proxy URL,
-  ;; FORBID_REUSE at 1 too, so it leaves none behind. () otherwise: an
-  ;; http:// URL's request goes to the proxy by absolute form, each with its
-  ;; own credentials, and from 8.19.0 libcurl's own match keeps another
-  ;; user's request off a tunnel. 7.85.0 let a second transfer, a turn
-  ;; after the first, with another user's userinfo, a wrong password or none,
-  ;; ride the first's authenticated tunnel and get 200; Ubuntu's 8.5.0
-  ;; carries the fix, but a version cannot show a backport, so it pays for
-  ;; the new connection too (M7 slice 3's measurement). FRESH_CONNECT is
-  ;; the streamed body's too: the transfer sets it once when either asks.
-  ;; The names are request-field-options'. Pure. tests/test-proxy.sps
-  ;; writes out every answer.
+  ;; ADR-0037, as data: on a libcurl whose VERSION-NUMBER is below
+  ;; unshared-tunnel-floor, a transfer to an https:// URL, SCHEME being the
+  ;; scheme libcurl gives back, in lower case, through a PROXY-URL,
+  ;; FRESH_CONNECT at 1, so it joins no connection, live or pooled; and with
+  ;; USERINFO, a user or a password in the proxy URL, FORBID_REUSE at 1 too,
+  ;; so it leaves none behind. () otherwise: an http:// URL's request goes to
+  ;; the proxy by absolute form, each with its own credentials, and from
+  ;; 8.19.0 libcurl's own match keeps another user's request off a tunnel.
+  ;; 7.85.0 let a second transfer, a turn after the first, with another
+  ;; user's userinfo, a wrong password or none, ride the first's
+  ;; authenticated tunnel and get 200; Ubuntu's 8.5.0 carries the fix, but a
+  ;; version cannot show a backport, so it pays for the new connection too.
+  ;; FRESH_CONNECT is the streamed body's too: the transfer sets it once when
+  ;; either asks. The names are request-field-options'. Pure.
+  ;; tests/test-proxy.sps writes out every answer.
   (define (unshared-tunnel-settings version-number scheme proxy-url userinfo)
     (let ((fresh (list-ref (field-options 'body) 8))
           (forbid (list-ref (field-options 'proxy) 2)))
@@ -2611,36 +2561,34 @@
           '())))
 
   ;; stops-multiplexing? : Natural Boolean Boolean -> Boolean
-  ;; Whether a transfer stops its engine's multiplexing, by ADR-0037's
-  ;; decision 11: on a libcurl whose VERSION-NUMBER is below
-  ;; unshared-tunnel-floor, a transfer through a PROXY-URL whose USERINFO
-  ;; holds a user or a password, whatever its URL's scheme. Before 8.19.0
-  ;; libcurl matches a live proxy connection by host and port alone, so on
-  ;; 7.85.0 a transfer through proxy environment, its variable naming the
-  ;; same proxy with no userinfo, rode a named proxy's live authenticated
-  ;; tunnel as a second HTTP/2 stream and got 200 (M7 slice 3's review);
-  ;; FRESH_CONNECT keeps only the transfer that sets it off a live
-  ;; connection. An engine that does not multiplex sent that transfer's own
-  ;; CONNECT. The engine's thread acts on it, before the transfer's handle
-  ;; is added, and never resumes. Pure. tests/test-proxy.sps writes out
-  ;; every answer.
+  ;; Whether a transfer stops its engine's multiplexing, by ADR-0037: on a
+  ;; libcurl whose VERSION-NUMBER is below unshared-tunnel-floor, a
+  ;; transfer through a PROXY-URL whose USERINFO holds a user or a
+  ;; password, whatever its URL's scheme. Before 8.19.0 libcurl matches a
+  ;; live proxy connection by host and port alone, so on 7.85.0 a transfer
+  ;; through proxy environment, its variable naming the same proxy with no
+  ;; userinfo, rode a named proxy's live authenticated tunnel as a second
+  ;; HTTP/2 stream and got 200; FRESH_CONNECT keeps only the transfer that
+  ;; sets it off a live connection. An engine that does not multiplex sent
+  ;; that transfer's own CONNECT. The engine's thread acts on it, before
+  ;; the transfer's handle is added, and never resumes. Pure.
+  ;; tests/test-proxy.sps writes out every answer.
   (define (stops-multiplexing? version-number proxy-url userinfo)
     (and proxy-url userinfo (< version-number unshared-tunnel-floor) #t))
 
   ;; tls-in-tls-stalls : (Listof (List String (U String #f) (Listof (U Symbol #f))))
-  ;; The libcurls where an https:// URL through an https:// proxy stalls,
-  ;; its request sent and the origin's answer tunnelled back, until the
+  ;; The libcurls where an https:// URL through an https:// proxy stalls, its
+  ;; request sent and the origin's answer tunnelled back, until the
   ;; transfer's timeout, 28, each (VERSION BACKEND VERSIONS-ASKED): its
   ;; version, the TLS backend in use, by its name's start, #f for any, and
-  ;; the http-version values that stall there (ADR-0037, decisions 7 and
-  ;; 10). Ubuntu's 8.5.0 with GnuTLS stalled an https:// URL and an HTTP/2
-  ;; one, ten times of ten in each run, whatever was asked; 7.85.0 stalled an
-  ;; HTTP/2 one at times, 7 of 50 across five runs, and passed HTTP/1.1 50
-  ;; of 50, so it stalls for any request but one asking http/1.1, which
-  ;; keeps the server from choosing HTTP/2 (M7 slice 3's measurement).
-  ;; Keyed as the engine's multiplexing rule is, by the loaded libcurl's
-  ;; version, and by the backend as ADR-0024's table keys by more than a
-  ;; version. tests/test-proxy.sps holds it to its own copy.
+  ;; the http-version values that stall there (ADR-0037). Ubuntu's 8.5.0 with
+  ;; GnuTLS stalled an https:// URL and an HTTP/2 one, ten times of ten in
+  ;; each run, whatever was asked; 7.85.0 stalled an HTTP/2 one at times, 7
+  ;; of 50 across five runs, and passed HTTP/1.1 50 of 50, so it stalls for
+  ;; any request but one asking http/1.1, which keeps the server from
+  ;; choosing HTTP/2. Keyed as the engine's multiplexing rule is, by the
+  ;; loaded libcurl's version, and by the backend as ADR-0024's table keys by
+  ;; more than a version. tests/test-proxy.sps holds it to its own copy.
   (define tls-in-tls-stalls
     '(("7.85.0" #f (#f http/2))
       ("8.5.0" "GnuTLS" (#f http/1.1 http/2))))
@@ -2660,17 +2608,17 @@
                  tls-in-tls-stalls)
          #t))
 
-  ;; --- the cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5) -------------
+  ;; --- the cookie jar (ADR-0035) ------------------------------------------------------
 
   ;; jar-settings : (U Natural #f) -> (Listof (Pairof String (U Natural String)))
   ;; The settings a transfer's cookie jar makes, as data, in order: for
   ;; SHARE-ADDRESS, the jar's share, SHARE at it, then COOKIEFILE at "",
-  ;; which turns libcurl's cookie engine on and names no file (ADR-0035,
-  ;; decisions 1 and 2): with the share but without it, a handle stored and
-  ;; sent none of the jar's cookies; for #f, no jar, none. Either order
-  ;; stored and sent alike on the five libcurls (the slice's measurement);
-  ;; the decision's stands. The names are request-field-options'. Pure.
-  ;; tests/test-cookies.sps writes out both answers.
+  ;; which turns libcurl's cookie engine on and names no file (ADR-0035):
+  ;; with the share but without it, a handle stored and sent none of the
+  ;; jar's cookies; for #f, no jar, none. Either order stored and sent
+  ;; alike on the five libcurls; the order above stands. The names are
+  ;; request-field-options'. Pure. tests/test-cookies.sps writes out both
+  ;; answers.
   (define (jar-settings share-address)
     (let ((names (field-options 'cookie-jar)))
       (if share-address
@@ -2688,11 +2636,11 @@
   ;; What a jar's share holds: the curl_share_setopt calls its make makes,
   ;; in order, each (OPTION . VALUE), CURLSHOPT_SHARE at
   ;; CURL_LOCK_DATA_COOKIE alone, and no lock callbacks, since one thread
-  ;; alone touches it (ADR-0035, decision 1). A share that also held
+  ;; alone touches it (ADR-0035). A share that also held
   ;; CURL_LOCK_DATA_HSTS carried one transfer's Strict-Transport-Security
   ;; entry to the next, which then went out over https:// for an http://
-  ;; URL, on 8.5.0 and later; one of cookies alone carried none (the
-  ;; slice's measurement). tests/test-cookies.sps writes it out.
+  ;; URL, on 8.5.0 and later; one of cookies alone carried none.
+  ;; tests/test-cookies.sps writes it out.
   (define share-settings (list (cons curlshopt-share curl-lock-data-cookie)))
 
   ;; cookie-line-limit : Positive-Integer
@@ -2701,7 +2649,7 @@
   ;; lib/cookie.c:561-562, 8.20.0 :490-492). COOKIELIST puts none on a
   ;; loaded line, and a loaded cookie that passed the Cookie line's cap of
   ;; 8,190 bytes left every request to its host unterminated, waiting for
-  ;; its timeout, on the five (ADR-0035, amended 2026-11-04, decision 7).
+  ;; its timeout, on the five (ADR-0035).
   (define cookie-line-limit 4096)
 
   ;; expiry-limit : Positive-Integer
@@ -2732,9 +2680,8 @@
 
   ;; cookie-line-fault : String -> (U Symbol #f)
   ;; The rule LINE breaks, the first of these in order, or #f when it is a
-  ;; line a load takes: one in the form a read-out writes it (ADR-0035,
-  ;; amended 2026-11-04, decisions 7 and 8), DOMAIN TAILMATCH PATH SECURE
-  ;; EXPIRY NAME VALUE, tab-separated:
+  ;; line a load takes: one in the form a read-out writes it (ADR-0035),
+  ;; DOMAIN TAILMATCH PATH SECURE EXPIRY NAME VALUE, tab-separated:
   ;;   not-latin-1   a char above U+00FF, which has no byte;
   ;;   control-byte  a char U+0000 to U+001F, but a tab, which separates
   ;;                 the fields, or U+007F, anywhere: before 8.23.0 libcurl
@@ -2763,7 +2710,7 @@
   ;;                 read-out never holds one, since a Set-Cookie ends a
   ;;                 value at ; and a name at =, and libcurl sent a loaded
   ;;                 one as more pairs, Cookie: a=b=c; n=x; admin=1, on the
-  ;;                 five (ADR-0035, decision 12). An = in a value stays;
+  ;;                 five (ADR-0035). An = in a value stays;
   ;;   size          the name and the value more than 4,096 chars, each
   ;;                 one byte, together: cookie-line-limit;
   ;;   prefix        a name starting __Secure- or __Host-, A to Z folded,
@@ -2771,13 +2718,12 @@
   ;;                 not exactly / or a tail-match not FALSE: 7.85.0,
   ;;                 8.20.0 and Apple's 8.7.1 drop such a loaded line in
   ;;                 any case, 8.23.0 keeps one in another case than the
-  ;;                 prefix's own, and the load answers 0 either way
-  ;;                 (decision 10).
-  ;; What the slice's measurements loaded, and its review's, on the five
-  ;; libcurls: each line they hold that every rule passes loaded alike and
-  ;; read out the same, but one whose expiry has passed, which 8.20.0 and
-  ;; 8.23.0 drop at once and 7.85.0 and 8.5.0 list until the next cookie is
-  ;; added. A line no measurement held is not claimed. Pure.
+  ;;                 prefix's own, and the load answers 0 either way.
+  ;; What measurements loaded on the five libcurls: each line they hold
+  ;; that every rule passes loaded alike and read out the same, but one
+  ;; whose expiry has passed, which 8.20.0 and 8.23.0 drop at once and
+  ;; 7.85.0 and 8.5.0 list until the next cookie is added. A line no
+  ;; measurement held is not claimed. Pure.
   (define (cookie-line-fault line)
     (let ((codes (map char->integer (string->list line))))
       (cond
@@ -2820,7 +2766,7 @@
   ;; Whether NAME, a loaded line's, starts with a cookie prefix, __Secure-
   ;; or __Host-, A to Z folded alone, and its line breaks the prefix's rule:
   ;; __Secure- needs SECURE TRUE; __Host- needs SECURE TRUE, PATH exactly /
-  ;; and TAIL FALSE (ADR-0035, decision 10).
+  ;; and TAIL FALSE (ADR-0035).
   (define (prefix-broken? name tail path secure)
     (let ((folded (ascii-folded name)))
       (cond ((string-starts? folded "__secure-") (not (string=? secure "TRUE")))
@@ -2830,16 +2776,16 @@
 
   ;; cookie-line-bytes : Symbol Any -> (Listof Bytevector)
   ;; LINES, a list of strings, as the bytes a load sets, each char one byte
-  ;; (ADR-0035, decision 8), checked as WHO, before anything is loaded:
-  ;; the list is copied as it is read, walked by the count it had, and each
-  ;; string copied, and the copies are what is checked and loaded, so the
-  ;; caller's list and strings may change once this returns (AGENTS.md's
-  ;; mutable values); anything but a list of strings is an assertion
-  ;; violation from WHO, naming it by its kind; then each copy, in order,
-  ;; by cookie-line-fault, the first that breaks a rule refused, before any
-  ;; line is loaded: &curl-request-error, field lines, value its index in
-  ;; the list, from 0, reason cookie-line, its irritants the index and the
-  ;; rule, never the line, whose value is a secret.
+  ;; (ADR-0035), checked as WHO, before anything is loaded: the list is
+  ;; copied as it is read, walked by the count it had, and each string
+  ;; copied, and the copies are what is checked and loaded, so the caller's
+  ;; list and strings may change once this returns; anything but a list of
+  ;; strings is an assertion violation from WHO, naming it by its kind;
+  ;; then each copy, in order, by cookie-line-fault, the first that breaks
+  ;; a rule refused, before any line is loaded: &curl-request-error, field
+  ;; lines, value its index in the list, from 0, reason cookie-line, its
+  ;; irritants the index and the rule, never the line, whose value is a
+  ;; secret.
   (define (cookie-line-bytes who lines)
     (define (wrong)
       (assertion-violation who "the lines are a list of strings, cookie lines" (shown-value lines)))
@@ -2918,12 +2864,12 @@
             (error who "curl_easy_getinfo answered a CURLcode for CURLINFO_COOKIELIST" code)))
         lines)))
 
-  ;; --- the hatch (ADR-0009; the M4 plan, section 3.7) ---------------------------------
+  ;; --- the hatch (ADR-0009) -----------------------------------------------------------
 
   ;; hatch-types : (Listof Symbol)
   ;; The CURLOT types the hatch takes: long, enumerated values, off_t, a
   ;; string, a string list and a blob. Every other hands libcurl an object,
-  ;; a callback's pointer or a function (ADR-0009, decision 3).
+  ;; a callback's pointer or a function (ADR-0009).
   (define hatch-types '(long values off-t string slist blob))
 
   ;; A hatch setting: an option the hatch attached to a request, its name as
@@ -2981,14 +2927,14 @@
 
   ;; hatch-value : Symbol String Symbol Any -> Any
   ;; VALUE, the value of the option NAME, of the hatch type TYPE, as the
-  ;; setting keeps it: copied first, and the copy checked (ADR-0009,
-  ;; decision 3). A long or an enumerated value is an exact integer a C long
-  ;; holds; an off_t one a 64-bit signed one, each kept as it is; a string a
-  ;; fresh copy; a blob a fresh copy of a bytevector; a string list fresh
-  ;; pairs of fresh copies, walked by its count as option-pairs walks. A
-  ;; value of the wrong shape, or out of range, is an assertion violation
-  ;; from WHO; then a copied string that holds U+0000, CR or LF, the list's
-  ;; each in turn, is refused by text-fault's reason.
+  ;; setting keeps it: copied first, and the copy checked (ADR-0009). A long
+  ;; or an enumerated value is an exact integer a C long holds; an off_t one
+  ;; a 64-bit signed one, each kept as it is; a string a fresh copy; a blob
+  ;; a fresh copy of a bytevector; a string list fresh pairs of fresh
+  ;; copies, walked by its count as option-pairs walks. A value of the wrong
+  ;; shape, or out of range, is an assertion violation from WHO; then a
+  ;; copied string that holds U+0000, CR or LF, the list's each in turn, is
+  ;; refused by text-fault's reason.
   (define (hatch-value who name type value)
     (define (wrong message) (assertion-violation who message (cons name (shown-value value))))
     (define (checked text)
@@ -3107,25 +3053,23 @@
   ;; OBJECT); its response stream, #f for a whole body; the counter its
   ;; engine reads, a vector of one natural, bumped for every callable's
   ;; call that took bytes, which tells the paced poll that a turn moved
-  ;; one (the M6 plan, section 3.4); and, for a stream, the write
-  ;; callable's calls so far, which a planted fault counts, the easy
-  ;; handle the header callable reads, whether it has published the head,
-  ;; and the head's lines so far, which a planted (head N) or (mark N)
-  ;; counts; and, for
-  ;; a streamed body, its request stream, #f otherwise, whether the
-  ;; engine's rewinding seam lets the seek callable answer OK once bytes
-  ;; were handed, the read callable's calls so far, which a planted
-  ;; (read N) counts, and the engine's prereq-hold seam's HOLD, a thunk the
-  ;; prerequest callable calls at the first attempt, #f but for that seam;
-  ;; and, for every transfer, the cap's counts (ADR-0040): the header lines
-  ;; and the bytes the header callable has taken over the transfer, and
-  ;; whether its next line starts a head.
-  ;; Every field but the streams' is the engine thread's alone.
+  ;; one; and, for a stream, the write callable's calls so far, which a
+  ;; planted fault counts, the easy handle the header callable reads,
+  ;; whether it has published the head, and the head's lines so far, which
+  ;; a planted (head N) or (mark N) counts; and, for a streamed body, its
+  ;; request stream, #f otherwise, whether the engine's rewinding seam lets
+  ;; the seek callable answer OK once bytes were handed, the read
+  ;; callable's calls so far, which a planted (read N) counts, and the
+  ;; engine's prereq-hold seam's HOLD, a thunk the prerequest callable
+  ;; calls at the first attempt, #f but for that seam; and, for every
+  ;; transfer, the cap's counts (ADR-0040): the header lines and the bytes
+  ;; the header callable has taken over the transfer, and whether its next
+  ;; line starts a head. Every field but the streams' is the engine
+  ;; thread's alone.
   ;;
   ;; The log of a whole body keeps every chunk, (LENGTH THREAD VERDICT),
   ;; newest first; a stream's keeps, for each verdict, how many calls had
-  ;; it and the threads they ran on, so a long stream's log stays small
-  ;; (the M6 plan, section 3.2).
+  ;; it and the threads they ran on, so a long stream's log stays small.
   (define-record-type sink
     (fields (immutable limit) (immutable fault)
             (mutable received) (mutable chunks) (mutable log) (mutable recorded)
@@ -3212,7 +3156,7 @@
       (when (and (upload-fault? fault) (eq? (car fault) kind) (= (cadr fault) n))
         (raise (planted-upload-fault kind n)))))
 
-  ;; --- the response stream (ADR-0030; the M6 plan, sections 3.2 to 3.5) ----------------
+  ;; --- the response stream (ADR-0030) --------------------------------------------------
 
   ;; curl-head? : Any -> Boolean
   ;; curl-head-status : Head -> Integer
@@ -3223,12 +3167,11 @@
   ;; empty line, as finish-transfer reads a response's: RESPONSE_CODE;
   ;; HTTP_VERSION, by http-version-symbol; and every CURLH_HEADER header of
   ;; request -1, as Latin-1 strings in libcurl's order. It reads no length:
-  ;; 8.7.1 writes the empty line before it reads one (the M6 plan, section
-  ;; 2.2). And whether libcurl had asked for the request's body by this
-  ;; head: #t when the request streams its body and the read callable had
-  ;; been called, read in the hold that publishes the head; #f otherwise, a
-  ;; request that does not stream its body among them (the M6 plan, section
-  ;; 3.2; ADR-0032, decision 3).
+  ;; 8.7.1 writes the empty line before it reads one. And whether libcurl
+  ;; had asked for the request's body by this head: #t when the request
+  ;; streams its body and the read callable had been called, read in the
+  ;; hold that publishes the head; #f otherwise, a request that does not
+  ;; stream its body among them (ADR-0032).
   (define-record-type (curl-head make-curl-head curl-head?)
     (fields (immutable status unchecked-curl-head-status)
             (immutable http-version unchecked-curl-head-http-version)
@@ -3239,8 +3182,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-head-status
     (checked-accessor 'curl-head-status curl-head? "a head" unchecked-curl-head-status))
   (define curl-head-http-version
@@ -3251,7 +3193,7 @@
     (checked-accessor 'curl-head-body-asked? curl-head? "a head" unchecked-curl-head-body-asked?))
 
   ;; A response stream, made at submit, one per submit, with its plan
-  ;; (ADR-0030, decision 1): its mutex and its stream-buffer, LIMIT. Its
+  ;; (ADR-0030): its mutex and its stream-buffer, LIMIT. Its
   ;; pieces are a queue of pairs, (PIECE . NEXT), behind a sentinel pair.
   ;;
   ;;   - Under its mutex, the engine's thread writes the queue's tail, the
@@ -3262,12 +3204,12 @@
   ;;     the resumes carried out, with the last one's delay.
   ;;   - Under its mutex too, the flag that a resume is queued, and when:
   ;;     a look sets it, and the resume step clears it, with the bit, in
-  ;;     one hold (the M6 plan, section 3.4).
+  ;;     one hold.
   ;;   - Under its mutex, a test seam's stall: #f, or a vector of its
   ;;     milliseconds and its phase, armed, stalling or done.
   ;;   - The taker alone writes the queue's front, the pair before the next
   ;;     piece, and the bytes taken, outside any hold, the last thing a take
-  ;;     does (section 3.5). The buffer is the bytes appended less those
+  ;;     does. The buffer is the bytes appended less those
   ;;     taken: the engine reads the taker's count, and a count it reads
   ;;     late is a buffer it takes for fuller, which pauses, and a later
   ;;     look resumes.
@@ -3313,7 +3255,7 @@
   ;; MS milliseconds before anything else, in its phase stalling, holding
   ;; nothing, then sets it done. Armed while the transfer is paused, that
   ;; call is the replay inside curl_easy_pause, so a test can watch what the
-  ;; resume step holds while a replay runs long (the M6 plan, section 3.4).
+  ;; resume step holds while a replay runs long.
   (define (stream-plant-stall! stream ms)
     (unless (and (integer? ms) (exact? ms) (positive? ms))
       (assertion-violation 'stream-plant-stall! "a stall is a positive exact integer of milliseconds" ms))
@@ -3342,7 +3284,7 @@
   ;; The write callable's check for a chunk of N bytes, in one hold: #t
   ;; when the buffer is empty, or holds less than the stream-buffer with
   ;; the chunk added; else #f, with the receive bit set and the pause
-  ;; counted, in the same hold (the M6 plan, section 3.2).
+  ;; counted, in the same hold.
   (define (stream-room! stream n)
     (locked (stream-lock stream)
       (lambda ()
@@ -3372,7 +3314,7 @@
   ;; stream-look! : Stream Integer -> (List (U Pair #f) (U Bytevector #f) Boolean)
   ;; A taker's look, in one hold of the stream's mutex: the pair holding the
   ;; next piece and the piece, both left in place, or #f and #f; and whether
-  ;; this look queues a resume (the M6 plan, section 3.5): the transfer
+  ;; this look queues a resume: the transfer
   ;; paused for receiving, no resume queued, and the buffer, as the taker
   ;; will count it once this piece is removed, at or below half of the
   ;; stream-buffer. Then it sets the flag, and NOW, a monotonic time in ns,
@@ -3398,7 +3340,7 @@
   ;; its bytes counted as taken, plain writes of the taker's own fields and
   ;; nothing else, so no event check falls between them. A take calls it
   ;; last, after its hold, so an escape as that hold's critical section
-  ;; ends leaves the piece for the next take (the M6 plan, section 3.5).
+  ;; ends leaves the piece for the next take.
   (define (stream-remove! stream node piece)
     (stream-front-set! stream node)
     (stream-taken-set! stream (+ (stream-taken stream) (bytevector-length piece))))
@@ -3474,19 +3416,18 @@
 
   ;; stream-chunk! : Natural Sink Positive-Integer Natural -> Natural
   ;; The write callable's step for a streamed response's chunk of N bytes at
-  ;; DATA, for KEY's transfer (the M6 plan, section 3.2): first a test
-  ;; seam's stall, armed by stream-plant-stall!; once a reason is
-  ;; recorded against the transfer, it refuses every later call, answering
-  ;; 0, verdict refused: Apple's 8.7.1 hands a chunk the callable refused
-  ;; inside curl_easy_pause's replay to it again, after the call, and the
-  ;; stream took it, past the failure (the Mac's make test, 2026-10-30); at
-  ;; the call the request's fault names, counting every call with bytes, a
-  ;; replay's among them, it raises (planted-fault N); then, the buffer full, it
-  ;; answers CURL_WRITEFUNC_PAUSE, its check and the receive bit in one
-  ;; hold, and libcurl hands the chunk again once resumed; then, for bytes
-  ;; that would take it past its limit, it records body-limit and answers
-  ;; 0; otherwise it copies them once, by the checked copy, into a fresh
-  ;; bytevector, the piece a caller takes, appends it, and answers N.
+  ;; DATA, for KEY's transfer: first a test seam's stall, armed by
+  ;; stream-plant-stall!; once a reason is recorded against the transfer, it
+  ;; refuses every later call, answering 0, verdict refused: Apple's 8.7.1 hands
+  ;; a chunk the callable refused inside curl_easy_pause's replay to it again,
+  ;; after the call, and the stream took it, past the failure; at the call the
+  ;; request's fault names, counting every call with bytes, a replay's among
+  ;; them, it raises (planted-fault N); then, the buffer full, it answers
+  ;; CURL_WRITEFUNC_PAUSE, its check and the receive bit in one hold, and
+  ;; libcurl hands the chunk again once resumed; then, for bytes that would take
+  ;; it past its limit, it records body-limit and answers 0; otherwise it copies
+  ;; them once, by the checked copy, into a fresh bytevector, the piece a caller
+  ;; takes, appends it, and answers N.
   (define (stream-chunk! key sink data n)
     (stall-if-armed! (sink-stream sink))
     (let ((stream (sink-stream sink))
@@ -3569,11 +3510,10 @@
 
   ;; header-line-cap : Positive-Integer
   ;; header-byte-cap : Positive-Integer
-  ;; The cap on a transfer's response headers (ADR-0040, decisions 1 to 3):
-  ;; the header lines and the bytes the header callable takes over the
-  ;; whole transfer. The line that takes either count past it is refused,
-  ;; header-limit. Fixed: no key sets them. tests/test-headers.sps writes
-  ;; both out.
+  ;; The cap on a transfer's response headers (ADR-0040): the header lines
+  ;; and the bytes the header callable takes over the whole transfer. The
+  ;; line that takes either count past it is refused, header-limit. Fixed:
+  ;; no key sets them. tests/test-headers.sps writes both out.
   (define header-line-cap 1000)
   (define header-byte-cap 102400)
 
@@ -3601,7 +3541,7 @@
 
   ;; count-header-line! : Sink Positive-Integer Natural -> Boolean
   ;; The line of N bytes at DATA counted against SINK's cap, over the whole
-  ;; transfer (ADR-0040, decision 1): every byte; and a header line, unless
+  ;; transfer (ADR-0040): every byte; and a header line, unless
   ;; it is a head's empty line, "\r\n" or "\n", or, at a head's start, the
   ;; transfer's first line or the one after an empty line, its status line,
   ;; status-line?'s. So each head counts, a 1xx head's, a trailer
@@ -3638,8 +3578,7 @@
   ;; finish-transfer reads a response's, published on the stream in one
   ;; hold of its mutex, a critical section, with whether libcurl had asked
   ;; for a streamed body by then, read in that hold: a request that streams
-  ;; both ways shares the mutex with its request stream (the M6 plan,
-  ;; section 3.2).
+  ;; both ways shares the mutex with its request stream.
   (define (head-line! sink stream)
     (let* ((easy (sink-easy sink))
            (status (info-long easy curlinfo-response-code)))
@@ -3657,21 +3596,20 @@
   ;; read-head : Code
   ;; libcurl's header callback for every transfer: SIZE times NITEMS bytes
   ;; of a head's line at DATA, for the transfer KEY names. Once a reason is
-  ;; recorded against the transfer, by any callable, it refuses every
-  ;; later call, answering 0. Then it counts the line against the cap,
-  ;; count-header-line!'s, and past it records header-limit and answers 0,
-  ;; a short count. Then, for a streamed response, it reads a head's empty
+  ;; recorded against the transfer, by any callable, it refuses every later
+  ;; call, answering 0. Then it counts the line against the cap,
+  ;; count-header-line!'s, and past it records header-limit and answers 0, a
+  ;; short count. Then, for a streamed response, it reads a head's empty
   ;; line, before the head is published, where head-line! reads it, and
   ;; answers the line's length. At the line a request's private (head N)
   ;; names, counting every line it took, it raises (planted-head-fault N),
   ;; for the guard's test; at the line its (mark N) names, it records
   ;; (planted-head-mark N) as callback-raised and still answers the line, so
-  ;; the refusal of a later call can be seen.
-  ;; __collect_safe, locked where it is defined, as write-body: it fires
-  ;; inside curl_multi_perform and curl_easy_pause (ADR-0030,
-  ;; consequences). No raise leaves it: its body runs under a guard that
-  ;; records what is raised as callback-raised and answers 0, which fails
-  ;; the transfer. It runs no procedure a caller supplied.
+  ;; the refusal of a later call can be seen. __collect_safe, locked where
+  ;; it is defined, as write-body: it fires inside curl_multi_perform and
+  ;; curl_easy_pause (ADR-0030). No raise leaves it: its body runs under a
+  ;; guard that records what is raised as callback-raised and answers 0,
+  ;; which fails the transfer. It runs no procedure a caller supplied.
   (define read-head
     (foreign-callable __collect_safe
       (lambda (data size nitems key)
@@ -3706,12 +3644,11 @@
   ;; read-head-entry : Positive-Integer
   (define read-head-entry (foreign-callable-entry-point read-head))
 
-  ;; --- the request stream (ADR-0030; the M6 plan, sections 3.3 to 3.5) -----------------
+  ;; --- the request stream (ADR-0030) ---------------------------------------------------
 
   ;; upload-buffer-limit : Positive-Integer
   ;; A put waits while the request's buffer holds this many bytes or more,
-  ;; so it holds at most this, less one, and the piece put (the M6 plan,
-  ;; section 3.3).
+  ;; so it holds at most this, less one, and the piece put.
   (define upload-buffer-limit 65536)
 
   ;; upload-verdicts : (Listof Symbol)
@@ -3721,16 +3658,15 @@
   (define upload-verdicts '(gave ended paused aborted))
 
   ;; A request stream, made at submit, one per submit, with its plan
-  ;; (ADR-0030, decision 1): its mutex, the response stream's when the
-  ;; request streams both ways, and that stream, its partner, whose resume
-  ;; flag is the transfer's one flag (the M6 plan, section 3.4); and its
-  ;; body-length, LENGTH, or #f. Its pieces are a queue of pairs, (PIECE .
-  ;; NEXT), behind a sentinel pair. Every field below is read and written
-  ;; under its mutex:
+  ;; (ADR-0030): its mutex, the response stream's when the request streams
+  ;; both ways, and that stream, its partner, whose resume flag is the
+  ;; transfer's one flag; and its body-length, LENGTH, or #f. Its pieces
+  ;; are a queue of pairs, (PIECE . NEXT), behind a sentinel pair. Every
+  ;; field below is read and written under its mutex:
   ;;
   ;;   - the putter's: the queue's tail and the bytes committed, both
-  ;;     written in the hold that takes a piece, with its resume decision
-  ;;     (section 3.5); whether the body has ended; and whether a put was
+  ;;     written in the hold that takes a piece, with its resume
+  ;;     decision; whether the body has ended; and whether a put was
   ;;     refused past the length;
   ;;   - whether it is closed: the engine's thread closes it as the
   ;;     transfer's outcome is read, in the hold that reads the refusal, and
@@ -3749,7 +3685,7 @@
   ;;     verdict how many calls had it and the threads they ran on;
   ;;   - a test seam's plant, split: a put links its piece in its hold but
   ;;     commits it after, in upload-split-commit!, the timer sweep's
-  ;;     planted control (the M6 plan, section 3.5).
+  ;;     planted control.
   ;;
   ;; upload? : Any -> Boolean
   ;; upload-lock : Upload -> Mutex
@@ -3811,7 +3747,7 @@
   ;; upload-decide! : Upload Integer -> Boolean
   ;; In a hold: whether this put, or this end, queues a resume: the
   ;; transfer paused for sending and none queued; then the flag is set, at
-  ;; NOW, in the same hold (the M6 plan, section 3.3).
+  ;; NOW, in the same hold.
   (define (upload-decide! up now)
     (and (upload-paused up) (not (upload-flag up))
          (begin (upload-raise-flag! up now) #t)))
@@ -3824,7 +3760,7 @@
   ;; taken, PIECE linked at the queue's tail and committed. With each,
   ;; whether it queues a resume, decided in the same hold, for refused and
   ;; taken alone, so a read callable that paused finds the piece or the
-  ;; refusal once resumed (the M6 plan, section 3.5).
+  ;; refusal once resumed.
   (define (upload-put! up piece now)
     (locked (upload-lock up)
       (lambda ()
@@ -3929,10 +3865,9 @@
       (lambda () (upload-closed-set! up #t) (upload-refused up))))
 
   ;; clear-pauses! : Live -> (U Integer #f)
-  ;; The resume step's hold (the M6 plan, section 3.4): both directions'
-  ;; bits and the resume's flag cleared together, in one hold of the
-  ;; transfer's one stream mutex; answers when the flag was set, #f when it
-  ;; was not.
+  ;; The resume step's hold: both directions' bits and the resume's flag
+  ;; cleared together, in one hold of the transfer's one stream mutex;
+  ;; answers when the flag was set, #f when it was not.
   (define (clear-pauses! live)
     (let ((stream (live-transfer-stream live))
           (up (plan-upload (live-transfer-plan live))))
@@ -3961,7 +3896,7 @@
 
   ;; live-transfer-paused? : Live -> Boolean
   ;; Whether LIVE's transfer is paused either way: the paced poll's
-  ;; "paused" (the M6 plan, section 3.4), each bit read in a hold.
+  ;; "paused", each bit read in a hold.
   (define (live-transfer-paused? live)
     (let ((stream (live-transfer-stream live))
           (up (plan-upload (live-transfer-plan live))))
@@ -3995,18 +3930,18 @@
           (else 'gave)))
 
   ;; body-read! : Natural Sink Positive-Integer Natural -> Natural
-  ;; The read callable's step for KEY's transfer, ROOM bytes at DATA (the
-  ;; M6 plan, section 3.3), in one hold of the request stream's mutex, its
-  ;; first call marking that libcurl has asked: once a reason is recorded
-  ;; against the transfer, CURL_READFUNC_ABORT, at every later call, as
-  ;; stream-chunk! refuses; a put refused past the length,
-  ;; body-length-mismatch and ABORT; the least of ROOM, the bytes buffered
-  ;; and what the length still owes, copied by the checked copy, the
-  ;; paced poll's counter bumped; 0 once the length is given whole, or at
-  ;; the end with nothing buffered; at an end short of the length,
-  ;; body-length-mismatch and ABORT; else the send bit set, in the hold that
-  ;; found the buffer empty, and CURL_READFUNC_PAUSE. Each call is logged,
-  ;; its verdict and its thread. The reasons are recorded after the hold.
+  ;; The read callable's step for KEY's transfer, ROOM bytes at DATA, in one
+  ;; hold of the request stream's mutex, its first call marking that libcurl
+  ;; has asked: once a reason is recorded against the transfer,
+  ;; CURL_READFUNC_ABORT, at every later call, as stream-chunk! refuses; a
+  ;; put refused past the length, body-length-mismatch and ABORT; the least
+  ;; of ROOM, the bytes buffered and what the length still owes, copied by
+  ;; the checked copy, the paced poll's counter bumped; 0 once the length is
+  ;; given whole, or at the end with nothing buffered; at an end short of
+  ;; the length, body-length-mismatch and ABORT; else the send bit set, in
+  ;; the hold that found the buffer empty, and CURL_READFUNC_PAUSE. Each
+  ;; call is logged, its verdict and its thread. The reasons are recorded
+  ;; after the hold.
   (define (body-read! key sink data room)
     (let* ((up (sink-upload sink))
            (recorded (sink-recorded sink))
@@ -4042,17 +3977,16 @@
         (else (when (> answer 0) (moved! sink)) answer))))
 
   ;; read-body : Code
-  ;; libcurl's read callback for a streamed body, which alone sets it:
-  ;; SIZE times NITEMS bytes of room at DATA, for the transfer KEY names;
+  ;; libcurl's read callback for a streamed body, which alone sets it: SIZE
+  ;; times NITEMS bytes of room at DATA, for the transfer KEY names;
   ;; body-read!'s answer; at the call a request's private (read N) names,
   ;; it raises (planted-upload-fault 'read N) first, for the guard's test.
-  ;; __collect_safe, as curl_multi_perform, where it
-  ;; fires, is (ADR-0013), locked where it is defined, and handed the
-  ;; transfer's key as its READDATA, so no Scheme object crosses into C.
-  ;; No raise leaves it: its body runs under a guard that records what is
-  ;; raised as callback-raised and answers CURL_READFUNC_ABORT, which fails
-  ;; the transfer. It runs no procedure a caller supplied (ADR-0012,
-  ;; decision 4).
+  ;; __collect_safe, as curl_multi_perform, where it fires, is (ADR-0013),
+  ;; locked where it is defined, and handed the transfer's key as its
+  ;; READDATA, so no Scheme object crosses into C. No raise leaves it: its
+  ;; body runs under a guard that records what is raised as callback-raised
+  ;; and answers CURL_READFUNC_ABORT, which fails the transfer. It runs no
+  ;; procedure a caller supplied (ADR-0012).
   (define read-body
     (foreign-callable __collect_safe
       (lambda (data size nitems key)
@@ -4076,7 +4010,7 @@
 
   ;; seek-body : Code
   ;; libcurl's seek callback for a streamed body, KEY its SEEKDATA, at a
-  ;; rewind (ADR-0032, amended): CURL_SEEKFUNC_OK for an OFFSET of 0 from
+  ;; rewind (ADR-0032): CURL_SEEKFUNC_OK for an OFFSET of 0 from
   ;; SEEK_SET while the read callable has handed libcurl no byte, a rewind
   ;; then being a no-op, and while no reason is recorded; otherwise
   ;; body-not-replayable recorded, unless a reason is already, and
@@ -4116,9 +4050,9 @@
 
   ;; prereq-body : Code
   ;; libcurl's prerequest callback for a streamed body, KEY its
-  ;; PREREQDATA, before each attempt's request is sent (ADR-0032, amended):
+  ;; PREREQDATA, before each attempt's request is sent (ADR-0032):
   ;; it counts the attempt and clears the send bit, since libcurl's own
-  ;; resend starts its attempt unpaused (the M6 plan, section 3.4); then
+  ;; resend starts its attempt unpaused; then
   ;; CURL_PREREQFUNC_OK at the first attempt, and at a later one while the
   ;; read callable has handed no byte, while no reason is recorded;
   ;; otherwise body-not-replayable recorded, unless a reason is already, and
@@ -4164,15 +4098,15 @@
   ;; settings, private copies checked as they were attached, and its private
   ;; fields; and, for a request with a stream-buffer, the submit's own
   ;; response stream, made with it, so a stream operation on a token still
-  ;; queued has a stream to look at (ADR-0030, decision 1); then its
-  ;; body-length; and, for a request whose body streams, the submit's own
-  ;; request stream, beside the response stream when it streams both ways;
-  ;; its http-version; the submit's checked copy of its credentials; and its
-  ;; proxy's: the proxy, environment, #f or the URL the submit checked and
-  ;; hands PROXY, its port set; the proxy CA file's copy and its
-  ;; verification; the tunnel's settings, unshared-tunnel-settings';
-  ;; whether it stops its engine's multiplexing, stops-multiplexing?'s;
-  ;; and its cookie jar, the request's, or #f.
+  ;; queued has a stream to look at (ADR-0030); then its body-length; and,
+  ;; for a request whose body streams, the submit's own request stream,
+  ;; beside the response stream when it streams both ways; its http-version;
+  ;; the submit's checked copy of its credentials; and its proxy's: the
+  ;; proxy, environment, #f or the URL the submit checked and hands PROXY,
+  ;; its port set; the proxy CA file's copy and its verification; the
+  ;; tunnel's settings, unshared-tunnel-settings'; whether it stops its
+  ;; engine's multiplexing, stops-multiplexing?'s; and its cookie jar, the
+  ;; request's, or #f.
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
@@ -4196,23 +4130,21 @@
 
   ;; prepare-transfer : Request -> Plan
   ;; REQUEST's plan, checked on the caller's thread, before anything is
-  ;; queued (M3 plan, section 3.4): request-checks', as curl-submit, which
-  ;; curl-request-check shares (ADR-0023, amended 2026-10-28): the snapshot
-  ;; of the headers and the user agent, the CA file's copy, the CA file
-  ;; against the environment the libcurl loaded with, then the URL's copy,
-  ;; parsed and its scheme checked, its CURLU freed before this returns
-  ;; (ADR-0008, amended 2026-10-24), then prior knowledge against that
+  ;; queued: request-checks', as curl-submit, which curl-request-check
+  ;; shares (ADR-0023): the snapshot of the headers and the user agent, the
+  ;; CA file's copy, the CA file against the environment the libcurl loaded
+  ;; with, then the URL's copy, parsed and its scheme checked, its CURLU
+  ;; freed before this returns (ADR-0008), then prior knowledge against that
   ;; scheme, and the credentials' copy against its userinfo, and the proxy's
-  ;; checks, request-checks'. Each refusal raises here. Then the
-  ;; body is copied, after every check, so
-  ;; the caller's bytevector may change once this returns (ADR-0023,
-  ;; decision 4): a multipart body from the copy request-checks checked,
-  ;; each part's data copied here alone, multipart-for-plan's (the M8 plan,
-  ;; section 3.1); a request's method and the presence of its body cannot
-  ;; change, so body-not-allowed needs no second check. Last, a request with
-  ;; a stream-buffer gets a fresh stream, this submit's alone, and one whose
-  ;; body streams a fresh request stream, beside it, sharing its mutex,
-  ;; when it streams both ways. A request's fields are immutable, so
+  ;; checks, request-checks'. Each refusal raises here. Then the body is
+  ;; copied, after every check, so the caller's bytevector may change once
+  ;; this returns (ADR-0023): a multipart body from the copy request-checks
+  ;; checked, each part's data copied here alone, multipart-for-plan's; a
+  ;; request's method and the presence of its body cannot change, so
+  ;; body-not-allowed needs no second check. Last, a request with a
+  ;; stream-buffer gets a fresh stream, this submit's alone, and one whose
+  ;; body streams a fresh request stream, beside it, sharing its mutex, when
+  ;; it streams both ways. A request's fields are immutable, so
   ;; stream-with-rounds and body-length-without-stream, checked as it was
   ;; made, hold here too.
   (define (prepare-transfer request)
@@ -4242,42 +4174,40 @@
   ;;                             (Listof (Pairof String Integer)) Boolean (U List #f))
   ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
   ;; their one owner: prepare-transfer's, as WHO curl-submit, and
-  ;; curl-request-check's (ADR-0023, amended 2026-10-28). In order: what is
-  ;; no request, an assertion violation; the URL's copy; the snapshot of the
-  ;; headers and the user agent, Proxy-Authorization among its refusals; the
-  ;; CA file's copy; the credentials' copy; the proxy's copy and the proxy CA
-  ;; file's, path-copy's; an Expect header
-  ;; holding 100-continue in the snapshot's copies beside a stream-buffer,
-  ;; stream-with-rounds, by check-expect-round, since the caller's strings
-  ;; may have changed since the request was made; the credentials beside
-  ;; those copies, by check-credentials, for the same reason; a Cookie or
-  ;; Host header beside a cookie jar, by check-cookie-beside-jar, for the
-  ;; same reason; then, for a multipart body, the loaded libcurl's mime, by
-  ;; check-multipart-supported, a Content-Type header in those copies, by
-  ;; check-multipart-content-type, and the body's own copy, multipart-copy's,
-  ;; its paths checked by multipart-paths-checked without resolving, so a
-  ;; path that is not absolute is part-file; then the CA
-  ;; file against the environment the libcurl loaded with, by
-  ;; check-ca-environment; then a proxy URL, by check-proxy-url; then an
-  ;; https:// proxy URL against the features libcurl reports after its
-  ;; init, loaded-features', by check-https-proxy; then the proxy's TLS fields beside it, by
-  ;; check-proxy-tls, and the proxy CA file
+  ;; curl-request-check's (ADR-0023). In order: what is no request, an
+  ;; assertion violation; the URL's copy; the snapshot of the headers and the
+  ;; user agent, Proxy-Authorization among its refusals; the CA file's copy;
+  ;; the credentials' copy; the proxy's copy and the proxy CA file's,
+  ;; path-copy's; an Expect header holding 100-continue in the snapshot's
+  ;; copies beside a stream-buffer, stream-with-rounds, by
+  ;; check-expect-round, since the caller's strings may have changed since
+  ;; the request was made; the credentials beside those copies, by
+  ;; check-credentials, for the same reason; a Cookie or Host header beside a
+  ;; cookie jar, by check-cookie-beside-jar, for the same reason; then, for a
+  ;; multipart body, the loaded libcurl's mime, by check-multipart-supported,
+  ;; a Content-Type header in those copies, by check-multipart-content-type,
+  ;; and the body's own copy, multipart-copy's, its paths checked by
+  ;; multipart-paths-checked without resolving, so a path that is not
+  ;; absolute is part-file; then the CA file against the environment the
+  ;; libcurl loaded with, by check-ca-environment; then a proxy URL, by
+  ;; check-proxy-url; then an https:// proxy URL against the features libcurl
+  ;; reports after its init, loaded-features', by check-https-proxy; then the
+  ;; proxy's TLS fields beside it, by check-proxy-tls, and the proxy CA file
   ;; against the environment, by check-ca-environment; then the URL, parsed
   ;; by call-with-parsed-url and checked by require-http-scheme, and, with
   ;; credentials, its user and password parts read by userinfo-parts, by
-  ;; check-userinfo, its CURLU freed before this returns;
-  ;; then the http-version against the scheme it answered, by
-  ;; check-prior-knowledge, and against a proxy URL, by
-  ;; check-prior-knowledge-proxy; then the URL's scheme through an https://
-  ;; proxy URL, by check-tls-in-tls. Each refusal raises here, as WHO where
-  ;; its check names one. Answers the checked copies: the URL, the fields,
-  ;; the CA file and the credentials; the proxy, environment, #f, or the URL
-  ;; the proxy URL's check answered, which PROXY gets; the proxy CA file;
-  ;; unshared-tunnel-settings' for the loaded libcurl, the URL's scheme
-  ;; and the proxy; stops-multiplexing?'s for the loaded libcurl and the
-  ;; proxy; and a multipart body's checked copy, its data as the request
-  ;; holds it, or #f for any other body. Any other body is no check's: a
-  ;; submit copies it after.
+  ;; check-userinfo, its CURLU freed before this returns; then the
+  ;; http-version against the scheme it answered, by check-prior-knowledge,
+  ;; and against a proxy URL, by check-prior-knowledge-proxy; then the URL's
+  ;; scheme through an https:// proxy URL, by check-tls-in-tls. Each refusal
+  ;; raises here, as WHO where its check names one. Answers the checked
+  ;; copies: the URL, the fields, the CA file and the credentials; the proxy,
+  ;; environment, #f, or the URL the proxy URL's check answered, which PROXY
+  ;; gets; the proxy CA file; unshared-tunnel-settings' for the loaded
+  ;; libcurl, the URL's scheme and the proxy; stops-multiplexing?'s for the
+  ;; loaded libcurl and the proxy; and a multipart body's checked copy, its
+  ;; data as the request holds it, or #f for any other body. Any other body
+  ;; is no check's: a submit copies it after.
   (define (request-checks who request)
     (unless (curl-request? request)
       (assertion-violation who "not a request" (shown-value request)))
@@ -4330,7 +4260,7 @@
   ;; no mime, loaded-mime?'s: multipart-unsupported, field body, value
   ;; multipart, whose irritants are multipart, then what the probe found,
   ;; loaded-mime-probe's, ((formadd . CODE) (mime-init . made-or-null))
-  ;; (ADR-0039, decision 4, made exact). Every other request goes on.
+  ;; (ADR-0039). Every other request goes on.
   (define (check-multipart-supported who)
     (unless (loaded-mime?)
       (raise (condition (make-curl-request-error 'body 'multipart 'multipart-unsupported)
@@ -4342,19 +4272,17 @@
   ;; in-section : (-> Any) -> Any
   ;; THUNK's value, a URL parse of the submit's checks, run in a critical
   ;; section of its own whose guard takes every raise there and answers it
-  ;; as data, raised once the section has ended (ADR-0025, as amended after
-  ;; the branch's review). A direct caller submits with interrupts on, and a
-  ;; parse's critical wind refuses to be re-entered once its handle is
-  ;; freed: an engine's expiry inside the parse left it behind, and a
-  ;; handler's raise there that a guard declined was re-raised back inside
-  ;; it, each coming out as that refusal (research/m7/carried/review, m1).
-  ;; Inside the section no handler runs and no expiry lands, and the guard
-  ;; takes the parse's own raises alone. A parse holds Ctrl-C and other
-  ;; threads' collections for its length, which grows with its URL's, as a
-  ;; call's checks' URL does: about 29 ms a million chars there
-  ;; (research/m7/carried/guard/, the fix round's hold-rates.log). The high
-  ;; level's submits and checks run in sections of their own already,
-  ;; which this nests in.
+  ;; as data, raised once the section has ended (ADR-0025). A direct caller
+  ;; submits with interrupts on, and a parse's critical wind refuses to be
+  ;; re-entered once its handle is freed: an engine's expiry inside the
+  ;; parse left it behind, and a handler's raise there that a guard declined
+  ;; was re-raised back inside it, each coming out as that refusal. Inside
+  ;; the section no handler runs and no expiry lands, and the guard takes
+  ;; the parse's own raises alone. A parse holds Ctrl-C and other threads'
+  ;; collections for its length, which grows with its URL's, as a call's
+  ;; checks' URL does: about 29 ms a million chars there. The high level's
+  ;; submits and checks run in sections of their own already, which this
+  ;; nests in.
   (define (in-section thunk)
     (let ((r (critical-section
               (guard (e (#t (list 'raised e)))
@@ -4368,8 +4296,8 @@
   ;; A test seam's procedure, kept until disarmed, called with start at the
   ;; start of each of in-section's sections, inside it: a test blocks there
   ;; on a mutex another thread holds while that thread sends SIGINT, so a
-  ;; keyboard interrupt is made pending inside the section (traps.md). #f,
-  ;; unarmed, by default.
+  ;; keyboard interrupt is made pending inside the section. #f, unarmed, by
+  ;; default.
   (define parse-gate (vector #f))
 
   ;; transfer-parse-gate-set! : (U (Symbol -> Any) #f) -> Void
@@ -4402,8 +4330,7 @@
   ;; bytes: each % and the two hex digits after it, in either case, the byte
   ;; they name; each other char its UTF-8 bytes, a char above U+007F given
   ;; raw among them; or #f for a % not followed by two hex digits, which no
-  ;; libcurl refuses in a userinfo and each sends on as it is (M7 slice 3's
-  ;; build). Pure.
+  ;; libcurl refuses in a userinfo and each sends on as it is. Pure.
   (define (percent-decoded text)
     (let ((n (string-length text)))
       (let loop ((i 0) (chunks '()))
@@ -4436,7 +4363,7 @@
   ;; check-proxy-url : Symbol String -> (List String String Boolean)
   ;; PROXY, a request's proxy URL, a checked copy, parsed by
   ;; proxy-url-reading and checked, as WHO, each refusal raising, field
-  ;; proxy, never naming the URL (ADR-0037, amended 2026-11-03), in order:
+  ;; proxy, never naming the URL (ADR-0037), in order:
   ;;   - proxy-url, value proxy: libcurl's URL API cannot parse it, a URL
   ;;     that names no scheme, holds U+0000, or whose answer is not UTF-8
   ;;     among them, alike on every libcurl; or its user or its password,
@@ -4486,7 +4413,7 @@
   ;; check-proxy-userinfo : Symbol (U Bytevector #f) (U Bytevector #f) -> Void
   ;; Refuses, as WHO, a proxy URL's USER and PASSWORD, each percent-decoded,
   ;; #f for a part libcurl does not report, by the server credentials' rules
-  ;; (ADR-0036, decisions 5 to 7; ADR-0037, amended 2026-11-03), in order,
+  ;; (ADR-0036; ADR-0037), in order,
   ;; each a &curl-request-error, field proxy:
   ;;   - each part present, user then password: a byte from 0x00 to 0x1F,
   ;;     or 0x7F, or bytes that are not UTF-8, %FF or a lone continuation
@@ -4536,20 +4463,19 @@
   ;; failure carries (7.85.0 lib/url.c:2496, 8.20.0 lib/url.c:1994, 8.23.0
   ;; lib/peer.c:654, read in source). No lane lacks the feature. FEATURES
   ;; is the word read after the init: before it, Apple's MultiSSL 8.7.1
-  ;; reports the bit clear, and every https:// proxy was refused there (the
-  ;; Mac's run of M7 slice 3).
+  ;; reports the bit clear, so a check of the word read before it refuses
+  ;; every https:// proxy there.
   (define (check-https-proxy who https-proxy features)
     (when (and https-proxy (not (https-proxy-supported? features)))
       (refuse-proxy who 'proxy 'https-proxy-unsupported)))
 
   ;; check-proxy-tls : Symbol Boolean (U String #f) Boolean -> Void
-  ;; Refuses, as WHO, PROXY-CA-FILE, then VERIFY at #f, beside a proxy that
-  ;; is not HTTPS-PROXY, an https:// proxy URL: proxy-tls-without-https-proxy,
-  ;; field proxy-ca-file, value the path, or field proxy-verify, value #f.
-  ;; The proxy's TLS settings are an https:// proxy's alone: beside
-  ;; environment they would reach a proxy a variable names, or none, and
-  ;; beside #f or an http:// proxy nothing (the M7 plan, section 3.1).
-  ;; VERIFY at #t, the default, is never refused.
+  ;; Refuses, as WHO, PROXY-CA-FILE, then VERIFY at #f, beside a proxy that is
+  ;; not HTTPS-PROXY, an https:// proxy URL: proxy-tls-without-https-proxy,
+  ;; field proxy-ca-file, value the path, or field proxy-verify, value #f. The
+  ;; proxy's TLS settings are an https:// proxy's alone: beside environment
+  ;; they would reach a proxy a variable names, or none, and beside #f or an
+  ;; http:// proxy nothing. VERIFY at #t, the default, is never refused.
   (define (check-proxy-tls who https-proxy proxy-ca-file verify)
     (unless https-proxy
       (when proxy-ca-file
@@ -4562,7 +4488,7 @@
   ;; beside READING, a proxy URL's check: prior-knowledge-through-proxy,
   ;; field http-version. Through a proxy that does not tunnel libcurl
   ;; ignores prior knowledge, and sends HTTP/1.1 in absolute form, on every
-  ;; libcurl measured (ADR-0034, amended). Beside the environment's proxy
+  ;; libcurl measured (ADR-0034). Beside the environment's proxy
   ;; it is documented, not refused: no submit knows whether a variable
   ;; names one.
   (define (check-prior-knowledge-proxy who version reading)
@@ -4574,8 +4500,8 @@
   ;; proxy URL's check, on the loaded libcurl, with VERSION asked, when
   ;; tls-in-tls-stall? names it: proxy-tls-in-tls, field proxy, value proxy,
   ;; whose irritants are proxy, then the libcurl's version and the backend
-  ;; in use. Without a bound such a transfer would wait for ever (ADR-0037,
-  ;; decisions 7 and 10). A redirect's hop is refused as it is submitted.
+  ;; in use. Without a bound such a transfer would wait for ever (ADR-0037).
+  ;; A redirect's hop is refused as it is submitted.
   (define (check-tls-in-tls who scheme reading version)
     (when (and reading (equal? scheme "https") (string=? (cadr reading) "https"))
       (let ((libcurl (libcurl-info-version (loaded-libcurl)))
@@ -4591,7 +4517,7 @@
   ;; Refuses, as WHO, CREDENTIALS beside PARTS, the parsed URL's user and
   ;; password as userinfo-parts reads them: credentials-beside-userinfo,
   ;; field credentials, value the scheme, when either is present, "" among
-  ;; them (ADR-0036, decision 1). One credentials source per request: with
+  ;; them (ADR-0036). One credentials source per request: with
   ;; both, libcurl sent the field's and dropped the URL's on every libcurl
   ;; measured. What a version reports for an empty user or password moves:
   ;; 7.85.0 reports neither part for http://@h/ and http://:@h/, which pass
@@ -4608,12 +4534,12 @@
   ;; check-prior-knowledge : Symbol (U Symbol #f) String -> Void
   ;; Refuses, as WHO, an http-version VERSION of http/2-prior-knowledge
   ;; beside SCHEME https, the parsed URL's, which libcurl writes in lower
-  ;; case: prior-knowledge-over-https, field http-version (ADR-0034,
-  ;; decision 2). Over https:// 8.20.0 and 8.23.0 offer ALPN h2 alone, so an
-  ;; HTTP/1.1 origin refuses the handshake, 35, where 7.85.0 and 8.5.0 offer
-  ;; h2 and http/1.1; http/2 gets h2 by ALPN on every libcurl. Checked at
-  ;; submit alone, where the URL is parsed: a redirect's request is refused
-  ;; as it is submitted.
+  ;; case: prior-knowledge-over-https, field http-version (ADR-0034). Over
+  ;; https:// 8.20.0 and 8.23.0 offer ALPN h2 alone, so an HTTP/1.1 origin
+  ;; refuses the handshake, 35, where 7.85.0 and 8.5.0 offer h2 and
+  ;; http/1.1; http/2 gets h2 by ALPN on every libcurl. Checked at submit
+  ;; alone, where the URL is parsed: a redirect's request is refused as it
+  ;; is submitted.
   (define (check-prior-knowledge who version scheme)
     (when (and (eq? version 'http/2-prior-knowledge) (equal? scheme "https"))
       (refuse-field who 'http-version version 'prior-knowledge-over-https)))
@@ -4636,8 +4562,7 @@
   ;; sends-body? : Symbol (U Bytevector 'stream Multipart #f) -> Boolean
   ;; Whether a transfer of METHOD with BODY sets the body's options: post,
   ;; put and patch always, empty with no body, and delete with one alone,
-  ;; whole, streamed or multipart (M4 plan, section 3.2; the M6 plan,
-  ;; section 3.1; the M8 plan, section 3.4).
+  ;; whole, streamed or multipart.
   (define (sends-body? method body)
     (or (and (memq method '(post put patch)) #t)
         (and (eq? method 'delete) (or (bytevector? body) (eq? body 'stream) (multipart? body)))))
@@ -4653,15 +4578,14 @@
   ;; sent-header-lines : (Listof (Pairof String String)) Symbol (U Bytevector 'stream Multipart #f) -> (Listof String)
   ;; The lines a transfer of METHOD and BODY hands HTTPHEADER, in order:
   ;; header-line of each of HEADERS; then, when it sends a body, "Content-Type:"
-  ;; and "Expect:", each unless HEADERS name one of that name, in any case,
-  ;; and "Content-Type:" never beside a multipart body: beside MIMEPOST it
-  ;; sent "Content-Type: ; boundary=B", every part an attachment (ADR-0039,
-  ;; decision 1).
-  ;; "Name:" takes away libcurl's own header of that name, which it adds to
-  ;; every body, its form type, and past 1 MiB, its Expect, after which it
-  ;; waits a second for a server that never answers; a header the request
-  ;; names replaces libcurl's (measured on five libcurls, the M4 plan,
-  ;; section 4.1). tests/test-request.sps writes out its answers.
+  ;; and "Expect:", each unless HEADERS name one of that name, in any case, and
+  ;; "Content-Type:" never beside a multipart body: beside MIMEPOST it sent
+  ;; "Content-Type: ; boundary=B", every part an attachment (ADR-0039). "Name:"
+  ;; takes away libcurl's own header of that name, which it adds to every body,
+  ;; its form type, and past 1 MiB, its Expect, after which it waits a second
+  ;; for a server that never answers; a header the request names replaces
+  ;; libcurl's (measured on five libcurls). tests/test-request.sps writes out
+  ;; its answers.
   (define (sent-header-lines headers method body)
     (define (named? name)
       (exists (lambda (header) (string-ci=? (car header) name)) headers))
@@ -4701,11 +4625,10 @@
   ;; live-transfer-chunks : Live -> (Listof (List Positive-Integer Integer Symbol))
   ;; write-body's log of LIVE's chunks, oldest first: each chunk's length,
   ;; the get-thread-id of the thread it ran on, and its verdict, accepted,
-  ;; refused or raised (M3 plan, section 3.6).
-  ;; For a streamed response it is the log of each verdict instead, in
-  ;; stream-verdicts' order: (VERDICT COUNT THREADS), how many of the write
-  ;; callable's calls had it and the get-thread-ids they ran on, newest
-  ;; first, for each verdict any call had (the M6 plan, section 3.2).
+  ;; refused or raised. For a streamed response it is the log of each
+  ;; verdict instead, in stream-verdicts' order: (VERDICT COUNT THREADS),
+  ;; how many of the write callable's calls had it and the get-thread-ids
+  ;; they ran on, newest first, for each verdict any call had.
   (define (live-transfer-chunks live)
     (let ((sink (live-transfer-sink live)))
       (cond ((not sink) '())
@@ -4736,11 +4659,10 @@
   ;; mime, a placeholder set-transfer-options! sets the transfer's mime for:
   ;; the method's settings first, and the body option last, since the last
   ;; body option set wins, and UPLOAD or POST set after MIMEPOST read stdin
-  ;; (ADR-0039, context). get makes none, and post none but the body's:
-  ;; libcurl's own POST. For a streamed body, as measured (the M6
-  ;; plan, section 3.3): post, POST at 1; put, UPLOAD at 1; patch and
-  ;; delete, POST at 1 and CUSTOMREQUEST at the name; then the length,
-  ;; LENGTH, or -1 for none, chunked: INFILESIZE_LARGE for put,
+  ;; (ADR-0039). get makes none, and post none but the body's: libcurl's own
+  ;; POST. For a streamed body, as measured: post, POST at 1; put, UPLOAD at
+  ;; 1; patch and delete, POST at 1 and CUSTOMREQUEST at the name; then the
+  ;; length, LENGTH, or -1 for none, chunked: INFILESIZE_LARGE for put,
   ;; POSTFIELDSIZE_LARGE for the rest. The read callable gives the body;
   ;; set-transfer-options! sets it and its data apart, with the transfer's
   ;; key. tests/test-request.sps writes out a streamed body's answers.
@@ -4772,35 +4694,29 @@
 
   ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural (Listof (Pairof Hatch-Setting Positive-Integer)) Positive-Integer Boolean Boolean (U Positive-Integer #f) -> Void
   ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
-  ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER,
-  ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY, HEADERFUNCTION and
-  ;; HEADERDATA at KEY, on every transfer, for the cap (ADR-0040); for a
-  ;; streamed body,
-  ;; READFUNCTION and READDATA, SEEKFUNCTION and SEEKDATA, PREREQFUNCTION and
-  ;; PREREQDATA at KEY, then FRESH_CONNECT at 1 unless FRESH is #f, an
-  ;; engine's reusing seam (ADR-0032), or when the plan's tunnel settings,
-  ;; unshared-tunnel-settings', ask it, once either way, then FORBID_REUSE
-  ;; when they ask it (ADR-0037, amended 2026-11-03); then method-settings'
-  ;; for the plan's method, body and body-length, a string through a C string and the
-  ;; body through a counted copy, call-with-foreign-bytes', MIMEPOST at
-  ;; MIME, the transfer's mime, for its placeholder; and as the
-  ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
-  ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one; then
-  ;; proxy-settings' for the plan's proxy, proxy CA file and verification,
-  ;; PROXY at "" for a proxy of #f, and for a URL PROXY, NOPROXY and the
-  ;; proxy's TLS; then version-settings' for the plan's
-  ;; http-version, HTTP_VERSION when it is not #f; then
-  ;; credentials-settings' for the plan's credentials, HTTPAUTH, then
-  ;; USERNAME and PASSWORD or XOAUTH2_BEARER, each string a counted UTF-8
-  ;; copy, set-string-option!'s, when they are not #f; then jar-settings'
-  ;; for the plan's cookie jar's share, plan-share's, SHARE at it and
-  ;; COOKIEFILE at "", when it is not #f; then, always,
-  ;; tls-settings' for the plan's CA file and verification, through
-  ;; set-tls-options!; then
-  ;; FOLLOWLOCATION at 1 for the private follow field; then, last, the hatch's
-  ;; settings, in the order they were attached, through set-hatch-option!,
-  ;; a string list's from LISTS, the lists start-transfer! built (ADR-0009,
-  ;; decision 2).
+  ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER, CURLU at
+  ;; URL, WRITEFUNCTION and WRITEDATA at KEY, HEADERFUNCTION and HEADERDATA at KEY,
+  ;; on every transfer, for the cap (ADR-0040); for a streamed body, READFUNCTION and
+  ;; READDATA, SEEKFUNCTION and SEEKDATA, PREREQFUNCTION and PREREQDATA at KEY, then
+  ;; FRESH_CONNECT at 1 unless FRESH is #f, an engine's reusing seam (ADR-0032), or
+  ;; when the plan's tunnel settings, unshared-tunnel-settings', ask it, once either
+  ;; way, then FORBID_REUSE when they ask it (ADR-0037); then method-settings' for
+  ;; the plan's method, body and body-length, a string through a C string and the
+  ;; body through a counted copy, call-with-foreign-bytes', MIMEPOST at MIME, the
+  ;; transfer's mime, for its placeholder; and as the request asks, HTTPHEADER at
+  ;; HEADER-LIST, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the
+  ;; body limit plus one; then proxy-settings' for the plan's proxy, proxy CA file
+  ;; and verification, PROXY at "" for a proxy of #f, and for a URL PROXY, NOPROXY
+  ;; and the proxy's TLS; then version-settings' for the plan's http-version,
+  ;; HTTP_VERSION when it is not #f; then credentials-settings' for the plan's
+  ;; credentials, HTTPAUTH, then USERNAME and PASSWORD or XOAUTH2_BEARER, each string
+  ;; a counted UTF-8 copy, set-string-option!'s, when they are not #f; then
+  ;; jar-settings' for the plan's cookie jar's share, plan-share's, SHARE at it and
+  ;; COOKIEFILE at "", when it is not #f; then, always, tls-settings' for the plan's
+  ;; CA file and verification, through set-tls-options!; then FOLLOWLOCATION at 1 for
+  ;; the private follow field; then, last, the hatch's settings, in the order they
+  ;; were attached, through set-hatch-option!, a string list's from LISTS, the lists
+  ;; start-transfer! built (ADR-0009).
   (define (set-transfer-options! easy plan key buffer header-list lists url quick-exit fresh mime)
     (set-pinned-options! easy buffer quick-exit)
     (set-option! easy "ERRORBUFFER" buffer #f)
@@ -4872,29 +4788,26 @@
               (plan-settings plan)))
 
   ;; start-transfer! : Plan Boolean (Vector Natural) (Listof Any) -> Live
-  ;; PLAN's transfer, made on this thread, the engine's, ready for its
-  ;; multi handle: its key and sink, whose callables bump MOVES, the
-  ;; engine's counter, and which take, from SEAMS, the engine's test seams,
+  ;; PLAN's transfer, made on this thread, the engine's, ready for its multi
+  ;; handle: its key and sink, whose callables bump MOVES, the engine's
+  ;; counter, and which take, from SEAMS, the engine's test seams,
   ;; rewinding, which lets the seek callable answer OK once bytes were
   ;; handed, reusing, which leaves FRESH_CONNECT off a streamed body, and
   ;; (prereq-hold . HOLD), which the prerequest callable calls at the first
-  ;; attempt;
-  ;; its URL parsed again and its scheme
-  ;; checked again, its error buffer, zeroed, its header list, a string list
-  ;; for each hatch setting of a non-empty list, of UTF-8 copies, counted as
-  ;; slist (ADR-0009, decision 4), and its easy handle, set by
-  ;; set-transfer-options!, with QUICK_EXIT where the libcurl knows it,
-  ;; unless QUICK-EXIT is #f, an engine made without it; for a multipart
-  ;; body, after the easy handle, its mime, made with that handle, as
-  ;; 7.85.0 requires, then each part through curl-mime-add-part!, native's
-  ;; one procedure: a NULL mime, or any answer but 0, fails the transfer
-  ;; before it starts, part-file for curl_mime_filedata's answer, its code
-  ;; with it, mime-failed for the rest (the M8 plan, section 3.4). Each
-  ;; object is made, and recorded in the live record, in one critical
-  ;; section. A raise frees what was
-  ;; made, by free-transfer!, then raises again: the URL's refusal, or a
-  ;; &curl-transfer-error, setopt-failed, unknown-option, no-handle,
-  ;; part-file or mime-failed.
+  ;; attempt; its URL parsed again and its scheme checked again, its error
+  ;; buffer, zeroed, its header list, a string list for each hatch setting
+  ;; of a non-empty list, of UTF-8 copies, counted as slist (ADR-0009), and
+  ;; its easy handle, set by set-transfer-options!, with QUICK_EXIT where
+  ;; the libcurl knows it, unless QUICK-EXIT is #f, an engine made without
+  ;; it; for a multipart body, after the easy handle, its mime, made with
+  ;; that handle, as 7.85.0 requires, then each part through
+  ;; curl-mime-add-part!, native's one procedure: a NULL mime, or any answer
+  ;; but 0, fails the transfer before it starts, part-file for
+  ;; curl_mime_filedata's answer, its code with it, mime-failed for the
+  ;; rest. Each object is made, and recorded in the live record, in one
+  ;; critical section. A raise frees what was made, by free-transfer!, then
+  ;; raises again: the URL's refusal, or a &curl-transfer-error,
+  ;; setopt-failed, unknown-option, no-handle, part-file or mime-failed.
   (define (start-transfer! plan quick-exit moves seams)
     (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f #f)))
       (guard (e (#t (free-transfer! live) (raise e)))
@@ -4993,7 +4906,7 @@
   ;; that can block. It stays counted as easy, so a suite sees it. Its mime
   ;; is forgotten with it, unfreed and still counted as mime: the handle
   ;; holds it, as it holds its jar's share, and a mime freed under a live
-  ;; handle is one libcurl could still read (the M8 plan, section 3.4).
+  ;; handle is one libcurl could still read.
   (define (abandon-transfer-easy! live)
     (critical-section
      (live-transfer-easy-set! live #f)
@@ -5108,9 +5021,9 @@
   ;; outcome is: what a callable recorded; else, for a streamed body, a put
   ;; refused past its length, body-length-mismatch, which the read callable
   ;; never records once libcurl has read the length whole and calls it no
-  ;; more (the M6 plan, section 3.3); else #f. The request stream is closed
-  ;; in the hold that reads the refusal, so a later put answers done, and a
-  ;; refusal is the transfer's exactly when it came first.
+  ;; more; else #f. The request stream is closed in the hold that reads the
+  ;; refusal, so a later put answers done, and a refusal is the transfer's
+  ;; exactly when it came first.
   (define (reason-of sink)
     (let* ((up (sink-upload sink))
            (refused (and up (upload-close! up))))
@@ -5156,11 +5069,10 @@
                                (and (not (sink-stream sink)) (sink-body sink)) timings))))))
 
   ;; resume-failure : Live Integer -> Condition
-  ;; What LIVE's transfer fails with once curl_easy_pause answered CODE,
-  ;; not 0, as the engine resumed it (the M6 plan, section 3.4): a reason a
-  ;; callable recorded, inside the call or before it, or a put's refusal,
-  ;; by reason-of, wins, as in finish-transfer, the raised object for
-  ;; callback-raised; else
+  ;; What LIVE's transfer fails with once curl_easy_pause answered CODE, not
+  ;; 0, as the engine resumed it: a reason a callable recorded, inside the
+  ;; call or before it, or a put's refusal, by reason-of, wins, as in
+  ;; finish-transfer, the raised object for callback-raised; else
   ;; pause-failed, with CODE. Each with its request size, as a transfer that
   ;; ran: ran-request-size's. Read on the engine's thread, before anything
   ;; is freed.

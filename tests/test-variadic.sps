@@ -4,9 +4,8 @@
 ;;; curl_easy_getinfo, curl_multi_setopt, bound once for a long,
 ;;; curl_share_setopt, bound once for an int, and curl_formadd, bound once
 ;;; for the load's form of one field, each with (__varargs_after 2)
-;;; (ADR-0001, decision 1, amended 2026-10-25; M7 slice 4; M8 slice 3). It
-;;; imports native, so the whole load runs before its first line, as in
-;;; tests/test-native.sps.
+;;; (ADR-0001). It imports native, so the whole load runs before its first
+;;; line, as in tests/test-native.sps.
 ;;;
 ;;; Each binding must deliver its value, or a test fails by name. For the
 ;;; easy bindings no transfer runs: libcurl stores what setopt gives it, and
@@ -75,31 +74,31 @@
 ;;;            libcurls, SHARE 2, CURL_LOCK_DATA_COOKIE, is the one value of 0
 ;;;            to 9 that carries the cookie; 0, 1, 8, 9, 99 and -1 answer 1,
 ;;;            CURLSHE_BAD_OPTION; and UNSHARE 2 after it answers 0 and stops
-;;;            the carrying, which UNSHARE of no other value does (M7 slice
-;;;            4's measurement). 6, PSL, and 7, HSTS, answer by build, so
-;;;            neither is here. A binding that handed libcurl another int
-;;;            shows as 2 not carrying, or 99 not refused.
+;;;            the carrying, which UNSHARE of no other value does. 6, PSL,
+;;;            and 7, HSTS, answer by build, so neither is here. A binding
+;;;            that handed libcurl another int shows as 2 not carrying, or
+;;;            99 not refused.
 ;;;   formadd  curl_formadd through curl-formadd-code, a form of one field
 ;;;            and CURLFORM_END, its post freed: CURLFORM_COPYNAME and
 ;;;            CURLFORM_COPYCONTENTS, each with a string, answer
 ;;;            CURL_FORMADD_OK, 0, on every full libcurl, and an option no
 ;;;            libcurl knows, 9999, in the first's place answers
-;;;            CURL_FORMADD_UNKNOWN_OPTION, 4, before its value is read; with
-;;;            CURLFORM_END alone it answers 5, and 7 on a build without
-;;;            mime (ADR-0039, amended 2026-11-06, from formtell/). Every
-;;;            option and string is variadic: a binding that handed them
-;;;            where this ABI does not read them answers a code but 0 for
-;;;            the first, or reads a garbage option for the second.
+;;;            CURL_FORMADD_UNKNOWN_OPTION, 4, before its value is read;
+;;;            with CURLFORM_END alone it answers 5, and 7 on a build
+;;;            without mime (ADR-0039). Every option and string is
+;;;            variadic: a binding that handed them where this ABI does
+;;;            not read them answers a code but 0 for the first, or reads
+;;;            a garbage option for the second.
 ;;;
 ;;; Options are looked up by name, through curl-easy-option, never written
-;;; as numbers (ADR-0001, decision 2). Each one's CURLOT type code must be
+;;; as numbers (ADR-0001). Each one's CURLOT type code must be
 ;;; the one its binding passes. A multi option has no lookup by name, so
 ;;; MAX_TOTAL_CONNECTIONS comes from (curl private constants).
 ;;;
 ;;; Before each getinfo the slot it writes holds a poison, distinct from
 ;;; every sentinel, so a getinfo that writes nothing reads the poison, never
 ;;; the last answer. Each step runs in turn under let*: Chez evaluates a
-;;; call's arguments in no fixed order (AGENTS.md).
+;;; call's arguments in no fixed order.
 ;;;
 ;;; Where this suite can fail: x86-64 and Linux arm64 pass variadic integer
 ;;; and pointer arguments as they pass named ones, so a binding without
@@ -175,10 +174,9 @@
 (define drip-bytes 10)
 (define drip-gap-ms 100)
 
-;; Measured (ADR-0001, amended 2026-10-25), between the two transfers'
-;; messages, on the four Linux libcurls and under the gate's Valgrind, idle
-;; and under load: the widest gap together, and the narrowest one after
-;; the other.
+;; Measured (ADR-0001), between the two transfers' messages, on the four
+;; Linux libcurls and under the gate's Valgrind, idle and under load: the
+;; widest gap together, and the narrowest one after the other.
 (define together-widest-gap-ms 54)
 (define serial-narrowest-gap-ms 1008)
 
@@ -192,12 +190,11 @@
 (define drip-deadline-ms 10000)
 
 ;; The multi long, by its sign: what MAX_TOTAL_CONNECTIONS set to -1
-;; answers, by libcurl version, each measured (ADR-0001, amended
-;; 2026-10-25). 8.20.0 and 8.23.0 refuse a negative value with
-;; CURLM_BAD_FUNCTION_ARGUMENT, 10; 7.85.0, 8.5.0 and Apple's 8.7.1 take
-;; it, the last printed by this suite on the maintainer's Mac on
-;; 2026-10-26. A libcurl with no row here fails by name, and the suite
-;; prints the row to add.
+;; answers, by libcurl version, each measured (ADR-0001). 8.20.0 and
+;; 8.23.0 refuse a negative value with CURLM_BAD_FUNCTION_ARGUMENT, 10;
+;; 7.85.0, 8.5.0 and Apple's 8.7.1 take it, the last printed by this
+;; suite on macOS. A libcurl with no row here fails by name, and the
+;; suite prints the row to add.
 (define minus-one-rows
   '(("7.85.0" 0)
     ("8.5.0" 0)
@@ -267,7 +264,7 @@
 
 ;; in-turn : (A -> B) (Listof A) -> (Listof B)
 ;; PROC applied to each of XS, first to last, each call after the one
-;; before: map calls its procedure in no fixed order (AGENTS.md).
+;; before: map calls its procedure in no fixed order.
 (define (in-turn proc xs)
   (if (null? xs)
       '()
@@ -675,9 +672,8 @@
 ;; share-cases : (Listof (List String (Listof (Pairof Integer Integer)) (Listof Integer) Boolean))
 ;; Each case: its key on the origin, the share's curl_share_setopt calls,
 ;; (OPTION . VALUE), the CURLSHcode each answers, and whether the second
-;; transfer sent the first's cookie, alike on the five Linux libcurls (M7
-;; slice 4's measurement): SHARE V on a fresh share, then UNSHARE V after
-;; SHARE 2. Written out here.
+;; transfer sent the first's cookie, alike on the five Linux libcurls: SHARE
+;; V on a fresh share, then UNSHARE V after SHARE 2. Written out here.
 (define share-values '(0 1 2 3 4 5 8 9 99 -1))
 (define share-answers '(1 1 0 0 0 0 1 1 1 1))
 (define share-cases
@@ -755,7 +751,7 @@
  (let loop ((i 0) (n (length share-cases)) (found '()))
    (if (= i n) (reverse found) (loop (+ i 1) n (cons i found)))))
 
-;; --- the form, through curl-formadd-code (M8 slice 3) ------------------------------------------
+;; --- the form, through curl-formadd-code -------------------------------------------------------
 
 (test-equal "a form of one field, CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS, each with a string, then CURLFORM_END, through curl-formadd-code answers CURL_FORMADD_OK, 0"
   (list 'answered curl-formadd-ok)

@@ -1,12 +1,12 @@
 #!r6rs
 ;;; (auth-testing): what the auth suites compute for themselves, never read
-;;; from the test origin (M7 slice 2; the M7 plan, section 5.2): MD5 (RFC
-;;; 1321) and SHA-256 (FIPS 180-4) of a bytevector, as lower-case hex;
-;;; base64 (RFC 4648); and a Digest response, RFC 7616's arithmetic, RFC
-;;; 2069's without a qop. tests/test-auth.sps holds each to its published
-;;; vectors, and tests/test-origin.sps and tests/test-auth.sps write the
-;;; Authorization headers they expect with it, so the origin's verifier
-;;; and libcurl's arithmetic both meet a third, written here.
+;;; from the test origin: MD5 (RFC 1321) and SHA-256 (FIPS 180-4) of a
+;;; bytevector, as lower-case hex; base64 (RFC 4648); and a Digest response,
+;;; RFC 7616's arithmetic, RFC 2069's without a qop. tests/test-auth.sps holds
+;;; each to its published vectors, and tests/test-origin.sps and
+;;; tests/test-auth.sps write the Authorization headers they expect with it,
+;;; so the origin's verifier and libcurl's arithmetic both meet a third,
+;;; written here.
 ;;;
 ;;;   md5-hex          Bytevector -> String
 ;;;   sha256-hex       Bytevector -> String

@@ -1,22 +1,21 @@
 #!r6rs
 ;;; (curl private url): URLs parsed, resolved and checked by libcurl's own
-;;; URL API (ADR-0008; M2 plan, section 4.4).
+;;; URL API (ADR-0008).
 ;;;
 ;;; Every CURLU handle here is made and freed within one call, under
 ;;; dynamic-wind, on the calling thread: nothing native outlives the call
-;;; that made it (M2 plan, section 3.1), and re-entering a finished call
-;;; through a continuation raises. The one exception is an engine's
-;;; transfer, which holds its URL's handle from its start to its end, on
-;;; the engine's thread: parse-url makes it, in its caller's critical
-;;; section, and free-parsed-url! frees it (M3 plan, section 3.1). Each dynamic-wind is critical, its
-;;; critical? argument #t: a handle, or a string libcurl made, is made in
-;;; the before thunk and recorded where the after thunk frees it in one
-;;; critical section, so an interrupt that escapes, an engine's expiry say,
-;;; cannot fall between (M2 fix round 2). Each string curl_url_get hands back is
-;;; copied, then freed with curl_free. Each string handed to libcurl is a
-;;; counted, NUL-terminated UTF-8 copy, freed as soon as curl_url_set
-;;; returns: libcurl "does not have to keep content around after a
-;;; successful call" (curl_url_set(3), 7.85.0).
+;;; that made it, and re-entering a finished call through a continuation
+;;; raises. The one exception is an engine's transfer, which holds its URL's
+;;; handle from its start to its end, on the engine's thread: parse-url
+;;; makes it, in its caller's critical section, and free-parsed-url! frees
+;;; it. Each dynamic-wind is critical, its critical? argument #t: a handle,
+;;; or a string libcurl made, is made in the before thunk and recorded where
+;;; the after thunk frees it in one critical section, so an interrupt that
+;;; escapes, an engine's expiry say, cannot fall between. Each string
+;;; curl_url_get hands back is copied, then freed with curl_free. Each
+;;; string handed to libcurl is a counted, NUL-terminated UTF-8 copy, freed
+;;; as soon as curl_url_set returns: libcurl "does not have to keep content
+;;; around after a successful call" (curl_url_set(3), 7.85.0).
 ;;;
 ;;; Every refusal raises &curl-url-error (curl private conditions): with
 ;;; libcurl's CURLUcode and its name, or with one of chez-curl's own
@@ -25,19 +24,19 @@
 ;;; refused before libcurl sees it: C reads a string to its first NUL, so
 ;;; "http://a/\x0;b" would reach libcurl as http://a/. A bytevector, a
 ;;; header's bytes, is encoded into ASCII by encoded-bytes before libcurl
-;;; sees it (ADR-0029, amended), so every string libcurl gets here is
-;;; UTF-8; a refusal names the bytes read as Latin-1, as a header string
-;;; holds them. Every string curl_url_get gives back is read as UTF-8, or
-;;; refused as not-utf-8, never decoded with U+FFFD: libcurl decodes a
-;;; host's %XX, so http://caf%E9.example/ comes back holding the byte 0xE9,
-;;; on every libcurl measured (the M5 plan, section 3.1;
-;;; .plans/research/m5/url-parts/).
+;;; sees it (ADR-0029), so every string libcurl gets here is UTF-8; a
+;;; refusal names the bytes read as Latin-1, as a header string holds them.
+;;; Every string curl_url_get gives back is read as UTF-8, or refused as
+;;; not-utf-8, never decoded with U+FFFD: libcurl decodes a host's %XX, so
+;;; http://caf%E9.example/ comes back holding the byte 0xE9, on every
+;;; libcurl measured.
 ;;;
-;;; curl's verdicts vary by version (ADR-0008, amended 2026-10-19):
-;;; tests/test-url.sps holds the shared answers, and
-;;; tests/known-url-verdicts.sexp a row per libcurl for the rest;
-;;; tests/test-url-parts.sps and tests/test-url-location.sps hold the M5
-;;; functions' the same way, each with a rows file of its own.
+;;; curl's verdicts vary by version (ADR-0008): tests/test-url.sps holds the
+;;; shared answers, and tests/known-url-verdicts.sexp a row per libcurl for
+;;; the rest; tests/test-url-parts.sps and tests/test-url-location.sps hold
+;;; the verdicts of curl-url-part, curl-url-append-query, curl-url-resolve
+;;; and curl-url-with-fragment the same way, each with a rows file of its
+;;; own.
 (library (curl private url)
   (export url-normalize url-resolve call-with-parsed-url require-http-scheme userinfo-parts
           parse-url free-parsed-url! curl-url-part curl-url-append-query appended-url
@@ -54,7 +53,7 @@
   ;; curl-url-error-input gives back, but its message and irritants name
   ;; FIELD, url by default, reference, query or fragment, never the string:
   ;; a URL can hold userinfo, so ftp://u:PW@h/, refused scheme-not-http,
-  ;; printed its password (ADR-0008, amended 2026-11-03).
+  ;; printed its password (ADR-0008).
   (define (refuse input reason code message . field)
     (raise (condition (make-curl-url-error input reason code message)
                       (make-who-condition 'chez-curl)
@@ -110,10 +109,8 @@
   ;; its input the string as given, before any copy or scan: its cost then
   ;; stays the same whatever its length, where the copy, the NUL scan and
   ;; the encoding grew with it, about 22 ms a million chars, inside a call's
-  ;; checks' critical section (research/m7/carried/review, M2;
-  ;; research/m7/carried/guard/, the fix round's url-cap logs). A string of
-  ;; url-input-cap chars or fewer goes to libcurl, which refuses one whose
-  ;; UTF-8 bytes pass the cap itself.
+  ;; checks' critical section. A string of url-input-cap chars or fewer goes
+  ;; to libcurl, which refuses one whose UTF-8 bytes pass the cap itself.
   (define (checked-input who input)
     (when (and (string? input) (> (string-length input) url-input-cap))
       (refuse-code input (code-of 'malformed-input)))
@@ -245,8 +242,8 @@
 
   ;; url-resolve : String String -> String
   ;; REFERENCE resolved against BASE, by curl_url_set on BASE's handle
-  ;; (ADR-0008, decision 4), as curl_url_get gives it back. A refusal of
-  ;; either raises, naming the string refused.
+  ;; (ADR-0008), as curl_url_get gives it back. A refusal of either raises,
+  ;; naming the string refused.
   (define (url-resolve base input)
     (define reference (checked-input 'url-resolve input))
     (call-with-parsed-url base
@@ -258,10 +255,10 @@
   ;; The parsed HANDLE's scheme, as curl_url_get gives it, when it is http
   ;; or https: the one a submit's checks read prior knowledge against
   ;; (ADR-0034). Otherwise raises &curl-url-error, reason scheme-not-http,
-  ;; with the URL HANDLE holds as its input (ADR-0008, decision 2). libcurl
-  ;; writes a scheme in lower case. INPUT, the string HANDLE was parsed
-  ;; from, names the refusal of a URL libcurl gives back as bytes that are
-  ;; not UTF-8, which has no string of its own.
+  ;; with the URL HANDLE holds as its input (ADR-0008). libcurl writes a
+  ;; scheme in lower case. INPUT, the string HANDLE was parsed from, names
+  ;; the refusal of a URL libcurl gives back as bytes that are not UTF-8,
+  ;; which has no string of its own.
   (define (require-http-scheme handle input)
     (let* ((url (get-part handle curlupart-url 0 #f input))
            (scheme (get-part handle curlupart-scheme 0 #f url)))
@@ -272,12 +269,12 @@
   ;; userinfo-parts : Positive-Integer String -> (List (U String #f) (U String #f))
   ;; The parsed HANDLE's user and password parts, as curl_url_get gives
   ;; them, each #f when it answers that the URL lacks the part: what a
-  ;; submit reads credentials against (ADR-0036, decision 1). Whether an
-  ;; empty user or password is "" or #f varies by version: 7.85.0 reports
-  ;; none for http://:p@h/, and no password for http://u:@h/, where 8.5.0
-  ;; and later report "" (tests/known-url-part-verdicts.sexp). INPUT, the
-  ;; string HANDLE was parsed from, names the refusal of a part whose bytes
-  ;; are not UTF-8.
+  ;; submit reads credentials against (ADR-0036). Whether an empty user or
+  ;; password is "" or #f varies by version: 7.85.0 reports none for
+  ;; http://:p@h/, and no password for http://u:@h/, where 8.5.0 and later
+  ;; report "" (tests/known-url-part-verdicts.sexp). INPUT, the string
+  ;; HANDLE was parsed from, names the refusal of a part whose bytes are not
+  ;; UTF-8.
   (define (userinfo-parts handle input)
     ;; let*: the user is read first.
     (let* ((user (get-part handle curlupart-user 0 (code-of 'no-user) input))
@@ -290,26 +287,26 @@
 
   ;; ascii-folded-text : String -> String
   ;; S with A to Z as a to z, and nothing else changed: never string-downcase,
-  ;; which folds U+212A KELVIN SIGN to k (traps.md).
+  ;; which folds U+212A KELVIN SIGN to k.
   (define (ascii-folded-text s)
     (list->string (map (lambda (c) (if (char<=? #\A c #\Z) (integer->char (+ (char->integer c) 32)) c))
                        (string->list s))))
 
   ;; proxy-url-reading : String -> (List String (U String #f) (U String #f) String (U String #f) (U String #f) String)
-  ;; INPUT, a proxy URL, parsed by curl_url_set with CURLU_NON_SUPPORT_SCHEME,
-  ;; so that a scheme libcurl does not know parses as any other, alike on
-  ;; every libcurl: with no flags, 7.85.0 to 8.20.0 refuse socks5:// as an
-  ;; unsupported scheme and 8.23.0 parses it (M7 slice 3's build). Answers
+  ;; INPUT, a proxy URL, parsed by curl_url_set with
+  ;; CURLU_NON_SUPPORT_SCHEME, so that a scheme libcurl does not know parses
+  ;; as any other, alike on every libcurl: with no flags, 7.85.0 to 8.20.0
+  ;; refuse socks5:// as an unsupported scheme and 8.23.0 parses it. Answers
   ;; (SCHEME USER PASSWORD PATH QUERY FRAGMENT URL): each part as
   ;; curl_url_get gives it with no flags, the user and the password still
   ;; percent-encoded, #f for one the URL lacks; and URL, the whole URL as
   ;; curl_url_get gives it back once a port the URL lacks is set to its
   ;; scheme's default, 80 for http and 443 for https, A to Z folded, as
-  ;; chez-curl hands it to PROXY (ADR-0037, amended 2026-11-02): with no port,
-  ;; 7.85.0 to 8.20.0 try 1080 and 8.23.0 tries 80. Any other scheme's URL
-  ;; is given back as it is. Every refusal raises &curl-url-error, whose
-  ;; input is INPUT, and a not-utf-8 answer among them: the caller makes its
-  ;; own refusal of it, and hands INPUT, which can hold a password, nowhere.
+  ;; chez-curl hands it to PROXY (ADR-0037): with no port, 7.85.0 to 8.20.0
+  ;; try 1080 and 8.23.0 tries 80. Any other scheme's URL is given back as
+  ;; it is. Every refusal raises &curl-url-error, whose input is INPUT, and
+  ;; a not-utf-8 answer among them: the caller makes its own refusal of it,
+  ;; and hands INPUT, which can hold a password, nowhere.
   (define (proxy-url-reading input)
     (call-with-flagged-url 'proxy-url-reading input curlu-non-support-scheme
       (lambda (handle)
@@ -354,9 +351,10 @@
   ;; password, host, path, query, fragment or zoneid, a string, or #f for
   ;; one the URL lacks; or port, a natural, the scheme's default when the
   ;; URL names none. An IPv6 host comes without its zone ID, which zoneid
-  ;; gives, as written (the M5 plan, section 3.4). URL's refusal raises &curl-url-error, and so does an answer whose
-  ;; bytes are not UTF-8, as not-utf-8. Whether an empty user, password or
-  ;; query is "" or #f varies by version: tests/known-url-part-verdicts.sexp.
+  ;; gives, as written. URL's refusal raises &curl-url-error, and so does an
+  ;; answer whose bytes are not UTF-8, as not-utf-8. Whether an empty user,
+  ;; password or query is "" or #f varies by version:
+  ;; tests/known-url-part-verdicts.sexp.
   (define (curl-url-part url part)
     (define string (checked-input 'curl-url-part url))
     (let ((row (assq part url-parts)))
@@ -385,10 +383,10 @@
   ;; then ? when the query is absent or empty, & unless it ends in one, PART,
   ;; and the fragment again. Pure, so the suite drives it by tables, with
   ;; answers no libcurl measured gives: none writes a ? for an empty query,
-  ;; nor answers "" for an empty fragment it leaves out of the URL; the
-  ;; Mac's 8.7.1 is not measured. A stem ending in ? with no query loses it,
-  ;; so the part never reads back as ?part; a "" fragment WHOLE lacks adds
-  ;; no #. A non-empty fragment that is not WHOLE's end is an error.
+  ;; nor answers "" for an empty fragment it leaves out of the URL; Apple's
+  ;; 8.7.1 is not measured. A stem ending in ? with no query loses it, so
+  ;; the part never reads back as ?part; a "" fragment WHOLE lacks adds no
+  ;; #. A non-empty fragment that is not WHOLE's end is an error.
   (define (appended-url whole query fragment part)
     (let* ((old (or query ""))
            (tail (cond ((not fragment) "")
@@ -477,14 +475,14 @@
 
   ;; curl-url-resolve : String (U String Bytevector) -> String
   ;; REFERENCE resolved against BASE, by curl_url_set on BASE's handle
-  ;; (ADR-0008, decision 4), as curl_url_get gives it back, read as UTF-8.
-  ;; A string is a URL as make-curl-request takes one, sent as UTF-8. A
-  ;; bytevector, a header's bytes, is encoded by encoded-bytes first, as
-  ;; curl-url-with-fragment encodes one (ADR-0029, amended): a byte above
-  ;; 0x7F, in any part, is then followed, never refused for the answer it
-  ;; would make, but in a host, which libcurl decodes. A refusal names the
-  ;; string refused, a bytevector's bytes read as Latin-1; one 0x00 among
-  ;; them is refused as embedded-nul.
+  ;; (ADR-0008), as curl_url_get gives it back, read as UTF-8. A string is a
+  ;; URL as make-curl-request takes one, sent as UTF-8. A bytevector, a
+  ;; header's bytes, is encoded by encoded-bytes first, as
+  ;; curl-url-with-fragment encodes one (ADR-0029): a byte above 0x7F, in
+  ;; any part, is then followed, never refused for the answer it would make,
+  ;; but in a host, which libcurl decodes. A refusal names the string
+  ;; refused, a bytevector's bytes read as Latin-1; one 0x00 among them is
+  ;; refused as embedded-nul.
   (define (curl-url-resolve base reference)
     (define string (checked-input 'curl-url-resolve base))
     (if (bytevector? reference)
@@ -506,8 +504,7 @@
   ;; curl-url-with-fragment writes and a reference curl-url-resolve
   ;; resolves: each byte at or below 0x20, 0x7F and each above 0x7F as %
   ;; and two upper-case hex digits, every other byte as its char, % and #
-  ;; among them (ADR-0029, amended). Pure, so the suite drives it over every
-  ;; byte.
+  ;; among them (ADR-0029). Pure, so the suite drives it over every byte.
   (define (encoded-bytes bytes)
     (let loop ((i (- (bytevector-length bytes) 1)) (acc '()))
       (if (< i 0)

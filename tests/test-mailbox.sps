@@ -1,10 +1,8 @@
 #!r6rs
-;;; The suite for the asynchronous API (M4 plan, sections 3.3, 3.5 and 5.2):
-;;; curl-submit with a mailbox and a callback, a token's bounded wait, and
-;;; the mailbox, its take and its delivery (ADR-0021), through (curl). Each
-;;; check but the first and the last, which make and stop the suite's
-;;; engines, was watched failing on a mutant before it counted
-;;; (.plans/mailbox-mutation-log.md).
+;;; The suite for the asynchronous API: curl-submit with a mailbox and a
+;;; callback, a token's bounded wait, and the mailbox, its take and its
+;;; delivery (ADR-0021), through (curl). The first check and the last make
+;;; and stop the suite's engines.
 ;;;
 ;;;   - the refusals: at submit, a callback without a mailbox, and each
 ;;;     argument of the wrong kind; at a take, a delivery and a token's
@@ -151,7 +149,7 @@
 ;; on-own-engine : (Engine -> Any) -> Any
 ;; What PROC answers, given an engine made for it alone and stopped once
 ;; PROC returns, so a raw transfer's dead connection pools nowhere else
-;; (traps.md, 8.23.0); (raised TEXT) for anything raised.
+;; (8.23.0); (raised TEXT) for anything raised.
 (define (on-own-engine proc)
   (guard (e (#t (list 'raised (describe e))))
     (let* ((own (make-curl-engine))
@@ -289,10 +287,9 @@
           (map (lambda (bound) (refusal (lambda () (curl-token-wait t bound))))
                (list -1 1.5 #f "10")))))
 
-;; A wait inside a critical section would sleep with its thread active,
-;; holding up every collection (ADR-0013, amended 2026-10-25). Each is
-;; bounded, so a mutant that waits anyway returns, and is caught by its
-;; answer rather than by a hang.
+;; A wait inside a critical section would sleep with its thread active, holding
+;; up every collection (ADR-0013). Each is bounded, so a mutant that waits
+;; anyway returns, and is caught by its answer rather than by a hang.
 (test-equal "a take, a delivery and a token's wait, each inside critical-section, are each refused before they start, an assertion violation from its own name"
   '((assertion-violation curl-mailbox-take) (assertion-violation curl-mailbox-deliver)
     (assertion-violation curl-token-wait))
@@ -308,7 +305,7 @@
    (define (pause ms) (url-of o 'raw (string-append "/raw/pause-mid-body?ms=" (number->string ms))))
    (define status-200 '(response 200 "status 200\n"))
 
-   ;; --- a token's wait (section 3.3) ----------------------------------------------------
+   ;; --- a token's wait ------------------------------------------------------------------
 
    (test-equal "curl-token-wait answers #f for a transfer that has not ended within its bound, at the bound, and leaves it running; then #t once it ends, and await answers its response"
      (list #f 'at-the-bound #t '(response 200 "hello world"))
@@ -322,11 +319,11 @@
                (answer (awaited t)))
           (list first (if (<= 200 took 400) 'at-the-bound took) second answer)))))
 
-   ;; Each wait above runs out; these do not. A wait that slept out its
-   ;; whole bound after one empty read passed every check but these (the
-   ;; slice's review): each must return once its transfer ends, a 300 ms
-   ;; pause, long before its bound of 5000 ms. Each on an engine of its own,
-   ;; as a raw transfer leaves a dead connection pooled.
+   ;; Each wait above runs out; these do not. A wait that slept out its whole
+   ;; bound after one empty read passed every check but these: each must return
+   ;; once its transfer ends, a 300 ms pause, long before its bound of 5000 ms.
+   ;; Each on an engine of its own, as a raw transfer leaves a dead connection
+   ;; pooled.
    (test-equal "a take, a delivery and a token's wait, each bounded at 5000 ms, return once their transfer, a 300 ms pause, ends: each between 300 and 2000 ms after its submit, not at the bound"
      '((#t soon) (#t soon) (#t soon))
      (map (lambda (wait)
@@ -346,7 +343,7 @@
    ;; curl-token-outcome reads a done token's outcome as data, so a caller can
    ;; wait with curl-token-wait, with no guard around the wait, and still
    ;; tell the transfer's failure from what an interrupt handler raised
-   ;; there (M5 slice 3's review). The refused connect is to port 1.
+   ;; there. The refused connect is to port 1.
    (test-equal "curl-token-outcome answers #f while the transfer runs, inside critical-section too; once done, the response await answers, eq?, or the condition await raises, eq?, never raising it; and refuses what is no token"
      (list #f #f #t 'response #t #t #t '(assertion-violation curl-token-outcome))
      (on-own-engine
@@ -427,7 +424,7 @@
    ;; about 15.1; one that slept its whole pause would answer at the read
    ;; after, about 23.3. The fastest of three is judged, so one descheduled
    ;; sleep does not fail it. (A bound of 23 ms passed either way: its read
-   ;; at 23.3 came after it, the mutation log.)
+   ;; at 23.3 came after it.)
    (test-equal "a take's last sleep stops at its bound: of three takes bounded at 15 ms, the fastest answers #f under 19 ms, where sleeping past the bound would take about 23"
      (list '(#f #f #f) 'by-the-bound)
      (let* ((m (make-curl-mailbox))
@@ -602,13 +599,12 @@
 
    ;; --- the children ------------------------------------------------------------------------
 
-   ;; The escape at the take (ADR-0021, amended): a second thread holds the
-   ;; mailbox's mutex, so the take blocks inside its critical section, and
-   ;; SIGINT arrives meanwhile. Its handler escapes as the section ends, the
-   ;; token taken out and never returned: the notice is lost, and the
-   ;; outcome is not. quiet: no collection ran between the hold's start and
-   ;; the handler, which would have stopped this thread before the take
-   ;; (tests/mailbox-escape.sps).
+   ;; The escape at the take (ADR-0021): a second thread holds the mailbox's
+   ;; mutex, so the take blocks inside its critical section, and SIGINT arrives
+   ;; meanwhile. Its handler escapes as the section ends, the token taken out
+   ;; and never returned: the notice is lost, and the outcome is not. quiet: no
+   ;; collection ran between the hold's start and the handler, which would have
+   ;; stopped this thread before the take (tests/mailbox-escape.sps).
    (for-each
     (lambda (wait)
       (test-equal (string-append "an interrupt handler that escapes from a " (symbol->string wait)

@@ -1,6 +1,6 @@
 #!r6rs
 ;;; (curl private libcurl-info): what a loaded libcurl reports about itself
-;;; (ADR-0002, decision 4). (curl private native) builds one when it has
+;;; (ADR-0002). (curl private native) builds one when it has
 ;;; read curl_version_info. loaded-libcurl answers it, and every refusal
 ;;; made after that read carries it, as &curl-library-unavailable's library.
 ;;;
@@ -71,7 +71,7 @@
   ;; checked : Symbol (Any -> Any) -> (Any -> Any)
   ;; ACCESSOR for WHO, called on a report alone; anything else an assertion
   ;; violation from WHO naming it by shown, never the value: Chez's own check
-  ;; printed what it refused (ADR-0036, amended 2026-11-03). A procedure is
+  ;; printed what it refused (ADR-0036). A procedure is
   ;; all this makes, so the body still cannot raise.
   (define (checked who accessor)
     (lambda (x)

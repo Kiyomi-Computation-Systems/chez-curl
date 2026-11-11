@@ -1,9 +1,9 @@
 #!r6rs
-;; ADR-0013's rows, each broken: three calls that block bound plain, one
-;; through the plain wrapper and two directly, none through bind-blocking,
-;; and memcpy, which cannot block, bound __collect_safe. memcpy's u8* is the crossing its row marks, which clears
-;; it as a crossing, but not its convention: a marked row is never
-;; __collect_safe (ADR-0013's decision 4).
+;; ADR-0013's rows, each broken: three calls that block bound plain, one through
+;; the plain wrapper and two directly, none through bind-blocking, and memcpy,
+;; which cannot block, bound __collect_safe. memcpy's u8* is the crossing its
+;; row marks, which clears it as a crossing, but not its convention: a marked
+;; row is never __collect_safe (ADR-0013).
 (library (curl p)
   (export curl-multi-remove-handle curl-multi-poll curl-multi-perform memcpy)
   (import (rnrs) (only (chezscheme) foreign-procedure foreign-entry?))

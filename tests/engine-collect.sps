@@ -1,7 +1,6 @@
 #!r6rs
-;;; A child of tests/test-engine.sps: a worker's 20 collections, back to
-;;; back, beside an engine (M3 plan, section 3.2; ADR-0013, amended
-;;; 2026-10-25).
+;;; A child of tests/test-engine.sps: a worker's 20 collections, back to back,
+;;; beside an engine (ADR-0013).
 ;;;
 ;;;   engine-collect.sps MODE URL
 ;;;
