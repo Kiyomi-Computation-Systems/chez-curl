@@ -2256,12 +2256,41 @@
           (lambda (dir) (refusal-of (lambda () (certificate-text "the/cert.pem")))))
         (refusal-of (lambda () (certificate-text 5)))))
 
-(test-equal "certificate-text: the good leaf's file, read by $OPENSSL, names P-256 and ECDSA with SHA-256"
-  '(("prime256v1") ("(256 bit)") ("ecdsa-with-SHA256" "ecdsa-with-SHA256"))
+(test-equal "certificate-text: the good leaf's file, read by $OPENSSL, names P-256, as this openssl writes it, and ECDSA with SHA-256"
+  (list '("prime256v1")
+        (list (guard (e (#t (list 'raised (describe e)))) (p256-key-text)))
+        '("ecdsa-with-SHA256" "ecdsa-with-SHA256"))
   (guard (e (#t (list 'raised (describe e))))
     (let ((lines (certificate-text (pki-file "good.pem"))))
       (list (certificate-values lines "ASN1 OID:") (certificate-values lines "Public-Key:")
             (certificate-values lines "Signature Algorithm:")))))
+
+;; Each version line, through a stand-in: one of each row's, and lines that
+;; begin like a row's and are not, among them a major version of two digits.
+(test-equal "p256-key-text: what x509 -text writes of a P-256 key, by $OPENSSL version's line, and no row for any other"
+  '(("(256 bit)" ("version")) ("(256 bit)" ("version")) ("(256 bit)" ("version"))
+    ("(256 bit field, 128 bit security level)" ("version"))
+    ("(256 bit field, 128 bit security level)" ("version"))
+    (no-row-for-this-openssl ("version")) (no-row-for-this-openssl ("version"))
+    (no-row-for-this-openssl ("version")) (no-row-for-this-openssl ("version"))
+    (no-row-for-this-openssl ("version")) (no-row-for-this-openssl ("version")))
+  (map (lambda (line)
+         (with-openssl-stand-in line "" 0
+           (lambda (dir)
+             (guard (e (#t (list 'raised (describe e))))
+               (list (p256-key-text) (argv-of dir))))))
+       '("OpenSSL 3.0.22 25 Aug 2026 (Library: OpenSSL 3.0.22 25 Aug 2026)\n"
+         "OpenSSL 3.6.3 30 Sep 2026 (Library: OpenSSL 3.6.3 30 Sep 2026)\n"
+         "LibreSSL 3.3.6\n"
+         "OpenSSL 4.0.0 14 Apr 2026 (Library: OpenSSL 4.0.0 14 Apr 2026)\n"
+         "OpenSSL 4.1.0 23 Oct 2026 (Library: OpenSSL 4.1.0 23 Oct 2026)\n"
+         "OpenSSL 5.0.0 1 Jan 2027\n" "OpenSSL 30.0.0\n" "OpenSSL 40.0.0\n"
+         "OpenSSL 2.0.0\n" "BoringSSL\n" "")))
+
+(test-equal "p256-key-text raises, with its status, stdout and stderr, when openssl version does not exit 0"
+  '(p256-key-text "openssl version did not exit 0" ((status . 1) (stdout . "OpenSSL 3.0.22\n") (stderr . "no\n")))
+  (with-openssl-stand-in "OpenSSL 3.0.22\n" "no\n" 1
+    (lambda (dir) (refusal-of (lambda () (p256-key-text))))))
 
 (test-equal "certificate-values: what follows the label, trimmed, on every line that starts with it, in order, its spacing matched whole"
   '(("ecdsa-with-SHA256" "sha256WithRSAEncryption") ("Oct 20 16:47:30 2026 GMT") () () ())

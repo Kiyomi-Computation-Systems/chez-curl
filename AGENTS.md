@@ -85,8 +85,8 @@
   `openssl` (`OPENSSL`, default `openssl`). The Mac's `/usr/bin/openssl` is
   LibreSSL 3.3.6, which cannot check a hostname, so no check reads a hostname
   code (ADR-0005, amended). An `openssl` earlier on `PATH` takes its place:
-  the maintainer's Mac found OpenSSL 3.6.3. To check with LibreSSL there, pass
-  `OPENSSL=/usr/bin/openssl`.
+  the maintainer's Mac found Homebrew's OpenSSL 3.6.3, and from November 2026
+  its 4.1.0. To check with LibreSSL there, pass `OPENSSL=/usr/bin/openssl`.
 * `make check-variadic` can watch a variadic binding fail only on Apple arm64.
   Run it on the Mac whenever a variadic binding changes. It needs `NODE` too:
   `test-variadic`'s drips run on the test origin. Elsewhere it checks
@@ -237,6 +237,11 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   a failed verify, and its `req` prefers a `prompt = no` config's subject to
   `-subj`. Read verify codes, never that exit status, and give the config no
   subject.
+* OpenSSL 4 writes `x509 -text`'s P-256 key line as `Public-Key: (256 bit
+  field, 128 bit security level)`, where OpenSSL 3 and LibreSSL write
+  `(256 bit)`, and leaves out a leaf's Subject Key Identifier, which 3.0 adds.
+  Homebrew moved the Mac to 4.1.0 between two runs. A check of a tool's text
+  holds each version's line: `p256-key-text` gives it by `openssl version`.
 * macOS's poll(2) does not support devices. LibreSSL's `s_client` polls stdin,
   so with stdin at `/dev/null` it exits 1, `poll error`, once connected. Give
   it an empty pipe, as `s-client` does.

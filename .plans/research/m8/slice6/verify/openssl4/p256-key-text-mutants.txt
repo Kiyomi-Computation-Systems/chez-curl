@@ -1,0 +1,3 @@
+k1-four-as-three: 1 FAIL: FAIL p256-key-text: what x509 -text writes of a P-256 key, by $OPENSSL version's line, and no row for any other
+k2-three-no-dot: 1 FAIL: FAIL p256-key-text: what x509 -text writes of a P-256 key, by $OPENSSL version's line, and no row for any other
+k3-else-old: 1 FAIL: FAIL p256-key-text: what x509 -text writes of a P-256 key, by $OPENSSL version's line, and no row for any other

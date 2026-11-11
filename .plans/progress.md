@@ -22,7 +22,13 @@ close-out under **Close-outs**, newest first.
   them. The reader now holds the heading's level and indent, fences, the versions' order and the
   dates; sixteen mutants of it fail it but one, which is equivalent
   ([research](research/m8/slice6/verify/)). Three doc passages and README.org's Status
-  corrected. CI's main chain passed in the container.
+  corrected. CI's main chain passed in the container. The Mac's `make test` at `08eca49`: 44 of
+  46, a check in `test-curl-testing` and one in `test-origin-tls` failing on OpenSSL 4.1.0's new
+  `Public-Key:` line, Homebrew having moved the Mac from 3.6.3
+  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-openssl41.log)). Reproduced in the container
+  with a static OpenSSL 4.0.0, and fixed: `p256-key-text` gives the line by `openssl version`,
+  and its three mutants fail ([research](research/m8/slice6/verify/openssl4/)); the trap is
+  recorded. The Mac reruns `make test` on the fix.
   - **Decided by the maintainer, 2026-11-10,** the recommended option where one was given: the
     repository stays public; v0.1.0 is the tag alone, no GitHub Release and no Akku; a Linux
     arm64 lane, free in a public repository, waits past M8, so 0.1.0 claims Linux amd64 and macOS

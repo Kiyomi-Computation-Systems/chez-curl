@@ -1607,3 +1607,15 @@ it should not be a comment. (chez-cmark-gfm)
   under 20.10.0 gave 92 ([slice3 ci](research/m8/slice3/ci/)). 7.85.0 ended 92 under 20.10.0 and
   22.23.4. A cell that measures the test origin's answer holds every answer the Nodes that run it
   give: CI runs the runner's Node, and its floor job the floor's. (chez-curl, M8 slice 3)
+* **OpenSSL 4 rewrote `x509 -text`'s line for an EC key, and the Mac took it unasked.**
+  OpenSSL 3 and LibreSSL write a P-256 key as `Public-Key: (256 bit)`; OpenSSL 4 writes
+  `Public-Key: (256 bit field, 128 bit security level)` (upstream `e57f7941af`, "Expose and
+  report EC curve field degrees", 2026-01-15), and leaves out the Subject Key Identifier on a leaf
+  `x509 -req` signs, which 3.0.22 adds; no check reads that. Homebrew moved the Mac's `openssl`
+  from 3.6.3 to 4.1.0 between slice 5's run and slice 6's, and two checks that held the 3.x line
+  failed there, in `test-curl-testing` and `test-origin-tls`
+  ([slice6 mac](research/m8/slice6/mac/)). A static 4.0.0 in the Guix container failed the same
+  two, and nothing else the suites read differed from 3.0.22
+  ([slice6 verify](research/m8/slice6/verify/openssl4/)). A check of a tool's text holds each
+  version's line, and no row for the rest: `p256-key-text` reads `openssl version`.
+  (chez-curl, M8 slice 6)

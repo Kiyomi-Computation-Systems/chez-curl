@@ -51,6 +51,7 @@
 ;;;                      what a Peer holds
 ;;;   certificate-text   a certificate file's x509 -text, as trimmed lines
 ;;;   certificate-values what those lines say after a label
+;;;   p256-key-text      what this openssl's x509 -text says of a P-256 key
 ;;;   certificate-names  a Subject or Issuer line's names, read portably
 ;;;   certificate-time   an x509 -text date, as seconds since 1970, UTC
 ;;;   certificate-san    a certificate file's subjectAltName, from x509 -text
@@ -71,7 +72,8 @@
           parse-wire-probe probe-bytes probe-end probe-arrivals probe-connected probe-ended
           bounded origin-pki make-test-pki test-pki-script openssl-program
           s-client parse-s-client peer-verify-errors peer-verify-code peer-alpn peer-leaf
-          peer-chain certificate-text certificate-values certificate-names certificate-time
+          peer-chain certificate-text certificate-values p256-key-text certificate-names
+          certificate-time
           certificate-san
           pem-certificate)
   (import (rnrs)
@@ -1513,11 +1515,31 @@
   ;; its lines, each trimmed of spaces and tabs at both ends. OpenSSL 3 and
   ;; LibreSSL 3.3.6 indent the text differently, and agree on the trimmed
   ;; lines the checks read: Signature Algorithm, Public-Key, ASN1 OID, Not
-  ;; Before and Not After (measured on 3.5.7, 3.0.11 and 3.3.6). They differ
-  ;; on Subject and Issuer, CN=x or CN = x, which no check reads. It raises,
-  ;; with the status, stdout and stderr, when the status is not 0.
+  ;; Before and Not After (measured on 3.5.7, 3.0.11 and 3.3.6). OpenSSL 4
+  ;; writes another Public-Key line, which p256-key-text gives (measured on
+  ;; 4.0.0 and 4.1.0). They differ on Subject and Issuer, CN=x or CN = x,
+  ;; which no check reads. It raises, with the status, stdout and stderr,
+  ;; when the status is not 0.
   (define (certificate-text file)
     (map trim (text-lines (cadr (run-x509 'certificate-text file)))))
+
+  ;; p256-key-text : -> (U String Symbol)
+  ;; What $OPENSSL x509 -text writes after "Public-Key:" for a P-256 key, by
+  ;; its version line: "(256 bit)" from LibreSSL and OpenSSL 3 (measured on
+  ;; LibreSSL 3.3.6 and OpenSSL 3.0.11, 3.0.22, 3.5.7 and 3.6.3), and
+  ;; "(256 bit field, 128 bit security level)" from OpenSSL 4 (4.0.0 and
+  ;; 4.1.0). Any other version line has no row, and gets
+  ;; no-row-for-this-openssl, which no openssl writes, so a check held to it
+  ;; fails, printing what this one wrote. It raises, with the status, stdout
+  ;; and stderr, when openssl version does not exit 0.
+  (define (p256-key-text)
+    (let ((ran (bounded (openssl-program) "version")))
+      (unless (zero? (car ran))
+        (raise (checker-failure 'p256-key-text "openssl version did not exit 0" ran)))
+      (let ((line (cadr ran)))
+        (cond ((or (prefix? "OpenSSL 3." line) (prefix? "LibreSSL " line)) "(256 bit)")
+              ((prefix? "OpenSSL 4." line) "(256 bit field, 128 bit security level)")
+              (else 'no-row-for-this-openssl)))))
 
   ;; certificate-values : (Listof String) String -> (Listof String)
   ;; For each of LINES that starts with LABEL, what follows LABEL, trimmed,
