@@ -1,0 +1,106 @@
+== ca
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN = chez-curl test CA
+Not Before: Nov 11 00:59:28 2026 GMT
+Not After : Nov 13 00:59:28 2026 GMT
+Subject: CN = chez-curl test CA
+Public-Key: (256 bit)
+ASN1 OID: prime256v1
+NIST CURVE: P-256
+X509v3 extensions:
+X509v3 Basic Constraints: critical
+CA:TRUE
+X509v3 Key Usage: critical
+X509v3 Subject Key Identifier: 
+Signature Algorithm: ecdsa-with-SHA256
+== other-ca
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN = chez-curl untrusted CA
+Not Before: Nov 11 00:59:28 2026 GMT
+Not After : Nov 13 00:59:28 2026 GMT
+Subject: CN = chez-curl untrusted CA
+Public-Key: (256 bit)
+ASN1 OID: prime256v1
+NIST CURVE: P-256
+X509v3 extensions:
+X509v3 Basic Constraints: critical
+CA:TRUE
+X509v3 Key Usage: critical
+X509v3 Subject Key Identifier: 
+Signature Algorithm: ecdsa-with-SHA256
+== good
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN = chez-curl test CA
+Not Before: Nov 11 00:59:28 2026 GMT
+Not After : Nov 13 00:59:28 2026 GMT
+Subject: CN = chez-curl test leaf
+Public-Key: (256 bit)
+ASN1 OID: prime256v1
+NIST CURVE: P-256
+X509v3 extensions:
+X509v3 Basic Constraints: critical
+CA:FALSE
+X509v3 Key Usage: critical
+X509v3 Extended Key Usage: 
+X509v3 Subject Alternative Name: 
+DNS:localhost, IP Address:127.0.0.1, IP Address:0:0:0:0:0:0:0:1
+X509v3 Authority Key Identifier: 
+X509v3 Subject Key Identifier: 
+Signature Algorithm: ecdsa-with-SHA256
+== expired
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN = chez-curl test CA
+Not Before: Jan  1 00:00:00 2000 GMT
+Not After : Jan  2 00:00:00 2000 GMT
+Subject: CN = chez-curl test leaf
+Public-Key: (256 bit)
+ASN1 OID: prime256v1
+NIST CURVE: P-256
+X509v3 extensions:
+X509v3 Basic Constraints: critical
+CA:FALSE
+X509v3 Key Usage: critical
+X509v3 Extended Key Usage: 
+X509v3 Subject Alternative Name: 
+DNS:localhost, IP Address:127.0.0.1, IP Address:0:0:0:0:0:0:0:1
+X509v3 Authority Key Identifier: 
+X509v3 Subject Key Identifier: 
+Signature Algorithm: ecdsa-with-SHA256
+== wrong-host
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN = chez-curl test CA
+Not Before: Nov 11 00:59:28 2026 GMT
+Not After : Nov 13 00:59:28 2026 GMT
+Subject: CN = chez-curl test leaf
+Public-Key: (256 bit)
+ASN1 OID: prime256v1
+NIST CURVE: P-256
+X509v3 extensions:
+X509v3 Basic Constraints: critical
+CA:FALSE
+X509v3 Key Usage: critical
+X509v3 Extended Key Usage: 
+X509v3 Subject Alternative Name: 
+DNS:wrong-host.invalid
+X509v3 Authority Key Identifier: 
+X509v3 Subject Key Identifier: 
+Signature Algorithm: ecdsa-with-SHA256
+== untrusted
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN = chez-curl untrusted CA
+Not Before: Nov 11 00:59:28 2026 GMT
+Not After : Nov 13 00:59:28 2026 GMT
+Subject: CN = chez-curl test leaf
+Public-Key: (256 bit)
+ASN1 OID: prime256v1
+NIST CURVE: P-256
+X509v3 extensions:
+X509v3 Basic Constraints: critical
+CA:FALSE
+X509v3 Key Usage: critical
+X509v3 Extended Key Usage: 
+X509v3 Subject Alternative Name: 
+DNS:localhost, IP Address:127.0.0.1, IP Address:0:0:0:0:0:0:0:1
+X509v3 Authority Key Identifier: 
+X509v3 Subject Key Identifier: 
+Signature Algorithm: ecdsa-with-SHA256

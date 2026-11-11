@@ -167,7 +167,7 @@
    ;; Basic or Bearer alone, digest-with-stream, proxy-ca-file and
    ;; proxy-verify; a call's value replaces its session's, but a call that
    ;; names its own proxy drops the session's proxy-ca-file and
-   ;; proxy-verify; and three of the high level's own:
+   ;; proxy-verify; and four of the high level's own:
    ;;   redirects        the most redirects a call follows, an exact
    ;;                    natural; or #f, which follows none and answers the
    ;;                    redirect; 20

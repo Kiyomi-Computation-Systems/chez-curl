@@ -1,0 +1,4 @@
+%%%% Starting test origin-tls
+FAIL the material: every CA and leaf has an EC P-256 key, and its issuer's one signature, read twice, in the signed part and outside it, is ECDSA with SHA-256
+# of expected passes      200
+# of unexpected failures  1

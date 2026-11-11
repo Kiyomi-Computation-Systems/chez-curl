@@ -1,6 +1,7 @@
 # ADR-0038: M8's scope
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-11-08: where the docs keep the records' promises;
+  amended 2026-11-10: the repository is public, and v0.1.0 is its tag alone
 - **Date:** 2026-11-06
 - **Scope:** chez-curl v1, M8: multipart/form-data, docs and the v0.1.0 release (the brief, §8),
   and the cap on response headers carried into M8's plan
@@ -131,3 +132,22 @@ those sections into `docs/`.
 **A record's "documented in README.org", or "the README says", is kept by the docs:** README.org
 or a page of `docs/` that README.org links. `** Requirements` stays in README.org, which
 `check-floors` holds (ADR-0016). The lines themselves are not rewritten.
+
+## Amendment, 2026-11-10: the repository is public
+
+The maintainer made the repository public on 2026-11-08, after `main`'s push run for `d6ca0ba`
+failed all nine jobs on the account's billing (progress.md, M8 slice 5's close-out). It stays
+public. The maintainer chose on 2026-11-10, the recommended option where one was given:
+
+- **Decision 4 is amended: v0.1.0 is a tag in the public repository, and nothing more.** The
+  CHANGELOG.md entry, `Akku.manifest` at 0.1.0 held to it, and the `v0.1.0` tag on the tested
+  squash, as before. No GitHub Release and no Akku: each, and what a release archive leaves out,
+  is still a later decision of its own. GitHub serves the public tag's source archive, which
+  carries `.plans/`, its submodules empty.
+- **Decision 5 stands:** v0.1.0 claims Linux amd64 and macOS arm64. The rejected Linux arm64
+  lane's reasons no longer hold, since GitHub's `ubuntu-24.04-arm` runners are free in public
+  repositories. The lane is carried past M8, so the release's scope stays as planned: a later
+  release claims Linux arm64 once the suites have run there.
+- **Rejected, "public alone,"** is what the maintainer has now done, by an act of their own. Its
+  reason, that a publish cannot be taken back, stands for a GitHub Release and for Akku.
+- **Every commit pushed is public,** the history's too.

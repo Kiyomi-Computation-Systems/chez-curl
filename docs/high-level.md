@@ -120,7 +120,8 @@ frames it, and writes its `Content-Type` and boundary.
 - **A part is `(NAME SOURCE OPTION ...)`:** SOURCE a string, sent as UTF-8, a
   bytevector, or `(file PATH)`; each OPTION `filename STRING` or
   `type STRING`, at most once. A file part's filename is its path's last
-  component unless you give one.
+  component unless you give one. No part streams, nests parts, is encoded,
+  or takes headers of its own.
 - **Its strings are checked:** a name, filename or type holding a control
   char, U+0000 to U+001F or U+007F, or a name or filename holding `"`, is
   refused, `part-bytes`; an empty one, `part-empty`; no part at all,

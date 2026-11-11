@@ -283,15 +283,19 @@
 
 ;; The facts the script's header claims, from x509 -text's trimmed lines as
 ;; certificate-text reads them: OpenSSL 3.5.7 and 3.0.11 and LibreSSL 3.3.6
-;; write them alike (measured). Never a Subject or Issuer line: OpenSSL 3.0
-;; writes CN = x, and 3.5 and LibreSSL CN=x.
+;; write them alike (measured), and OpenSSL 4 its own Public-Key line, which
+;; p256-key-text gives by version. Never a Subject or Issuer line: OpenSSL
+;; 3.0 writes CN = x, and 3.5 and LibreSSL CN=x.
 (define certificates '("ca" "other-ca" "good" "expired" "wrong-host" "untrusted"))
+
+;; Under a guard: SRFI-64 catches no raise in an expected value.
+(define p256-key (guard (e (#t (list 'raised (describe e)))) (p256-key-text)))
 
 ;; certificate-lines : String -> (Listof String)
 (define (certificate-lines name) (certificate-text (pki-file (string-append name ".pem"))))
 
-(test-equal "the material: every CA and leaf has an EC P-256 key, and its issuer's one signature, read twice, in the signed part and outside it, is ECDSA with SHA-256"
-  (map (lambda (name) (list name '("prime256v1") '("(256 bit)") '("ecdsa-with-SHA256" "ecdsa-with-SHA256")))
+(test-equal "the material: every CA and leaf has an EC P-256 key, as this openssl writes it, and its issuer's one signature, read twice, in the signed part and outside it, is ECDSA with SHA-256"
+  (map (lambda (name) (list name '("prime256v1") (list p256-key) '("ecdsa-with-SHA256" "ecdsa-with-SHA256")))
        certificates)
   (map (lambda (name)
          (guard (e (#t (list name 'raised (describe e))))

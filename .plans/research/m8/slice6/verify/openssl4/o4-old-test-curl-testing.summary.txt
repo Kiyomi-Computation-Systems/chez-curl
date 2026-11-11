@@ -1,0 +1,4 @@
+%%%% Starting test curl-testing
+FAIL certificate-text: the good leaf's file, read by $OPENSSL, names P-256 and ECDSA with SHA-256
+# of expected passes      285
+# of unexpected failures  1

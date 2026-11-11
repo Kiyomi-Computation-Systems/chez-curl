@@ -9,33 +9,40 @@ close-out under **Close-outs**, newest first.
 - **M8, multipart, the header cap, the docs and v0.1.0:** in progress. The
   [M8 plan](2026-11-06-m8-plan.md) merged as PR #49 (`74d7aca`), CI passing all eight jobs on it.
   Six slices now: the memory job in two; the header cap; multipart; the docs; headers and JSON;
-  the release. Slices 1 to 4 are merged: the memory job in two as PR #50 (`9fdb9f3`), the header
-  cap as PR #51 (`bd54721`), multipart as PR #52 (`fb62a0b`), the docs as PR #53 (`9d2f573`);
-  their close-outs are below. Slice 5, headers and JSON, is in progress on
-  `feat/m8-headers-json`. The Mac needs `git submodule update --init --recursive` once there
-  before `make test`: `make deps` now links jsonparse too (ADR-0041). Built: jsonparse at
-  `2e3ae12b` and its links and pins; the origin's `/json` route; `examples/json-api.sps`;
-  `docs/headers-and-json.md`; `test-examples` holding imports and run lines by example, each
-  child run with its run line's path; `test-docs` holding every run line a page writes, and
-  every reason a Reason table names. Reviewed (Opus, read-only): no blocker; one major, eight of
-  its nine route mutants passing `test-origin`, reproduced and fixed; six wrong or partial page
-  claims, read against the code and fixed; the records corrected. The CI main chain passed in
-  the container, 46 of 46, `check-memory-gate`'s 45 cases, and three suites under the gate; the
-  two changed suites on the four Docker libcurls under Node 20.10.0 and 22.23.4
-  ([research](research/m8/slice5/)). The example's media-type helper's parameter rule is held
-  by no test: the route sends the bare type. The Mac's `make test` at `8779295`: 44 of 46 in a
-  run the laptop slept through, a raw-face exchange and an h2c probe each past its 10 s or 30 s
-  deadline ([log](research/m8/slice5/mac/mac-8.7.1-make-test-slept.log)); then, kept awake by
-  `caffeinate -i`, 46 of 46, `test-examples` 49 and `test-origin` 437
-  ([log](research/m8/slice5/mac/mac-8.7.1-make-test-2.log)).
+  the release. Slices 1 to 5 are merged: the memory job in two as PR #50 (`9fdb9f3`), the header
+  cap as PR #51 (`bd54721`), multipart as PR #52 (`fb62a0b`), the docs as PR #53 (`9d2f573`),
+  headers and JSON as PR #54 (`d6ca0ba`); their close-outs are below. Slice 6, the release, is in
+  progress on `feat/m8-release`. The maintainer made the repository public on 2026-11-08, after
+  `main`'s push run for `d6ca0ba` was stopped by the account's billing: the records that say it is
+  private are amended on this slice. Built: CHANGELOG.md's 0.1.0 entry, `Akku.manifest` at 0.1.0,
+  and `test-manifest` holding it to the changelog's latest release. Reviewed (Opus, read-only):
+  no blocker; three majors, each reproduced or read against the suites' rows, and fixed: a
+  refused URL's reason moves with the version, a head can meet libcurl's own limit before the
+  cap, and seven changelog shapes passed the reader, a release appended below an older one among
+  them. The reader now holds the heading's level and indent, fences, the versions' order and the
+  dates; sixteen mutants of it fail it but one, which is equivalent
+  ([research](research/m8/slice6/verify/)). Three doc passages and README.org's Status
+  corrected. CI's main chain passed in the container. The Mac's `make test` at `08eca49`: 44 of
+  46, a check in `test-curl-testing` and one in `test-origin-tls` failing on OpenSSL 4.1.0's new
+  `Public-Key:` line, Homebrew having moved the Mac from 3.6.3
+  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-openssl41.log)). Reproduced in the container
+  with a static OpenSSL 4.0.0, and fixed: `p256-key-text` gives the line by `openssl version`,
+  and its three mutants fail ([research](research/m8/slice6/verify/openssl4/)); the trap is
+  recorded. The Mac's rerun at `f59f7ef`, under OpenSSL 4.1.0: 46 of 46
+  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-2.log)), the multipart reset race answering
+  55 this time, which its row holds.
+  - **Decided by the maintainer, 2026-11-10,** the recommended option where one was given: the
+    repository stays public; v0.1.0 is the tag alone, no GitHub Release and no Akku; a Linux
+    arm64 lane, free in a public repository, waits past M8, so 0.1.0 claims Linux amd64 and macOS
+    arm64 as planned (ADR-0038, amended 2026-11-10).
   - **Decided by the maintainer, 2026-11-08,** each the recommended option: a slice before the
     release, headers and a JSON API, so 0.1.0's docs hold it; jsonparse as one pinned submodule,
     byte-machine nested in it, a dependency of one example alone; one page, Headers and JSON.
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
-      fixed cap of chez-curl's own; the siblings' docs, no site; a tag in the private repository;
-      the platforms that ran;
+      fixed cap of chez-curl's own; the siblings' docs, no site; a tag in the private repository,
+      amended 2026-11-10, now that it is public; the platforms that ran;
     - the memory job split in two, each gating every pull request (ADR-0014, amended);
     - libcurl's form type, a caller's refused; strict part bytes, `MIME_OPTIONS` owned; regular
       files, resolved at submit; mime probed at load
@@ -268,6 +275,54 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-08 — M8 slice 5: headers and a JSON API, with jsonparse (PR #54, `d6ca0ba`)
+
+- **Decided by the maintainer, 2026-11-08,** each the recommended option: a slice before the
+  release; jsonparse as one pinned submodule, byte-machine nested in it, a dependency of one
+  example alone; one page, Headers and JSON (ADR-0041).
+- **Built** (the plan, §3.10): `docs/headers-and-json.md`; `examples/json-api.sps` and its
+  expected output; jsonparse at `2e3ae12b`, byte-machine v0.8.0 inside it; `make deps` linking
+  both, refusing with the host's command when either is missing; `make check-pins` holding each
+  checkout to its gitlink; the origin's `/json` route, held rule by rule by `test-origin` with
+  whole answers; `test-examples` letting `json-api` alone import `(jsonparse easy)`, and running
+  each example with the library path its own run line names; `test-docs` holding every run line a
+  page writes, and every reason a Reason table names; `check-clean` checking jsonparse's links.
+- **Watched failing:** my mutants on `check-pins` (three), the import and run-line rules (two),
+  `check-clean` (one) and `test-docs`' new checks (three); the builder's 26 on the route, 2 on
+  the example and 1 on the page.
+- **Reviewed** (Opus, read-only): no blocker; one major, 8 of its 9 route mutants passing
+  `test-origin`, of which I reproduced three: all 9 are caught now. Six page claims wrong or
+  partial, each read against the code and fixed, among them a session's `Content-Type` winning
+  over a form's, and a 303 dropping a JSON body's headers. The records corrected: jsonparse is
+  tested upstream on Chez 10.4.1, here on 10.4.0.
+- **Accepted:** the example's media-type helper takes `application/json; charset=utf-8`, a rule
+  no test holds, since the route sends the bare type.
+- **Checked:** CI's main chain in the container, 46 of 46, `check-test-fails`, `check-variadic`,
+  `check-dev`, `check-clean`, `check-memory-gate`, three suites under the gate; the two changed
+  suites on the four Docker libcurls under Node 20.10.0 and 22.23.4; a probe of what each call
+  sends, the page's claims holding on all five Linux libcurls. The Mac at `8779295`: 44 of 46 in a
+  run the laptop slept through ([log](research/m8/slice5/mac/mac-8.7.1-make-test-slept.log)),
+  then 46 of 46 under `caffeinate -i` ([log](research/m8/slice5/mac/mac-8.7.1-make-test-2.log)).
+- **CI:** at `fb5b156`, all nine passed ([jobs](research/m8/slice5/ci/pr54-run-42543146811-jobs.txt)):
+  `memory-1` 18 min 16 s, `memory-2` 21 min 4 s. `main`'s push run for `d6ca0ba` (42545976587)
+  first failed all nine in 3 s on the account's billing; the maintainer made the repository public
+  on 2026-11-08, and its rerun passed all nine
+  ([jobs](research/m8/slice5/ci/main-run-42545976587-jobs.txt)): `memory-1` 21 min 20 s,
+  `memory-2` 21 min 42 s.
+- **Subagents,** each Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | builder | 325k | 33 min |
+  | adversarial review | 315k | 23 min |
+  | fix round, the builder resumed | 424k, the resume's line | 20 min |
+- **Learned:**
+  - an isolated worktree has neither the uncommitted changes nor the submodules: the builder's
+    first launch went there, and was stopped at once;
+  - a test origin's route is held by its mutants, not its tests' count: 8 of 9 passed the
+    builder's own;
+  - a laptop that sleeps fails socket deadlines: the Mac runs under `caffeinate -i`.
 
 ### 2026-11-08 — M8 slice 4: the user docs (PR #53, `9d2f573`)
 
