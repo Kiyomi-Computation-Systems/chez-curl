@@ -28,7 +28,9 @@ close-out under **Close-outs**, newest first.
   ([log](research/m8/slice6/mac/mac-8.7.1-make-test-openssl41.log)). Reproduced in the container
   with a static OpenSSL 4.0.0, and fixed: `p256-key-text` gives the line by `openssl version`,
   and its three mutants fail ([research](research/m8/slice6/verify/openssl4/)); the trap is
-  recorded. The Mac reruns `make test` on the fix.
+  recorded. The Mac's rerun at `f59f7ef`, under OpenSSL 4.1.0: 46 of 46
+  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-2.log)), the multipart reset race answering
+  55 this time, which its row holds.
   - **Decided by the maintainer, 2026-11-10,** the recommended option where one was given: the
     repository stays public; v0.1.0 is the tag alone, no GitHub Release and no Akku; a Linux
     arm64 lane, free in a public repository, waits past M8, so 0.1.0 claims Linux amd64 and macOS
