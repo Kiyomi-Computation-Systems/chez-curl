@@ -1,0 +1,12 @@
+gh run view 42545976587 (main's push run for d6ca0ba), jobs: name, conclusion, started, completed
+attempt 1, 2026-11-09T01:31Z: every job failed in 3 s, not started: "recent account payments have failed or your spending limit needs to be increased". The maintainer made the repository public; attempt 2:
+success
+gnutls (the suites against the runner's GnuTLS libcurl)	success	2026-11-09T01:35:08Z	2026-11-09T01:45:52Z
+nothreads (every public library is refused on a Chez without threads)	success	2026-11-09T01:35:08Z	2026-11-09T01:35:25Z
+floor-disabled-api (options API disabled, make build must refuse it)	success	2026-11-09T01:35:08Z	2026-11-09T01:35:36Z
+memory-2 (the Valgrind gate, shard 2 of 2)	success	2026-11-09T01:35:09Z	2026-11-09T01:56:51Z
+floor-disabled-api (header API disabled, make build must refuse it)	success	2026-11-09T01:35:09Z	2026-11-09T01:35:37Z
+memory-1 (the Valgrind gate, shard 1 of 2)	success	2026-11-09T01:35:09Z	2026-11-09T01:56:29Z
+current (the suites against the current libcurl, built from source)	success	2026-11-09T01:35:09Z	2026-11-09T01:45:16Z
+main (checks and suites, Chez built from source)	success	2026-11-09T01:35:09Z	2026-11-09T01:47:32Z
+floor (the suites against libcurl at its floor)	success	2026-11-09T01:35:09Z	2026-11-09T01:44:56Z

@@ -1,0 +1,82 @@
+a00-control exit=0 passes=32 fails=0
+a01-manifest-alone exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a02-changelog-alone exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a03-both-bumped exit=0 passes=32 fails=0
+a04-no-unreleased exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a05-newer-no-date exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a06-yanked-latest exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a07-yanked-older exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a08-h3-new-release exit=0 passes=32 fails=0
+a09-indented-heading exit=0 passes=32 fails=0
+a10-appended-at-bottom exit=0 passes=32 fails=0
+a11-duplicate-version exit=0 passes=32 fails=0
+a12-version-goes-down exit=0 passes=32 fails=0
+a13-date-not-a-date exit=0 passes=32 fails=0
+a14-crlf exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a15-bom exit=0 passes=32 fails=0
+a16-empty exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a17-missing exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a18-prerelease exit=1 passes=31 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a19-fenced-example exit=0 passes=32 fails=0
+b01-last-release exit=1 passes=31 fails=1
+    FAIL a changelog's latest release is its first release heading
+b02-skip-malformed exit=1 passes=11 fails=21
+    FAIL a changelog refuses the heading ## 0.2.0 - 2026-12-01
+    FAIL a changelog refuses the heading ## [v0.2.0] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.0]
+    FAIL a changelog refuses the heading ## [0.2] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.0.1] - 2026-12-01
+    FAIL a changelog refuses the heading ## [.2.0] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.x] - 2026-12-01
+    FAIL a changelog refuses the heading ## [00.2.0] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.02.0] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.00] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.0]- 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.0] -2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.0] – 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.0] - 2026-12-1
+    FAIL a changelog refuses the heading ## [0.2.0] - 2026/12/01
+    FAIL a changelog refuses the heading ## [0.2.0] - 2026-12-01 
+    FAIL a changelog refuses the heading ## [0.2.0] - 2026-12-01x
+    FAIL a changelog refuses the heading ## [0.2.0] - ٣026-12-01
+    FAIL a changelog refuses the heading ## [0.2.0]] - 2026-12-01
+    FAIL a changelog refuses the heading ## [Unreleased]
+b03-no-unreleased-check exit=1 passes=31 fails=1
+    FAIL a changelog whose first section is a release, not [Unreleased], is refused
+b04-date-skips-8-9 exit=0 passes=32 fails=0
+b05-date-skips-7 exit=0 passes=32 fails=0
+b06-version-char-numeric exit=0 passes=32 fails=0
+b07-leading-zero-ok exit=1 passes=29 fails=3
+    FAIL a changelog refuses the heading ## [00.2.0] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.02.0] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.00] - 2026-12-01
+b08-no-separator-check exit=1 passes=30 fails=2
+    FAIL a changelog refuses the heading ## [0.2.0]
+    FAIL a changelog refuses the heading ## [0.2.0] – 2026-12-01
+b09-unreleased-only-is-false exit=1 passes=31 fails=1
+    FAIL a changelog whose only section is [Unreleased] names no release
+b10-last-heading-unchecked exit=0 passes=32 fails=0
+b11-filter-on-bracket exit=1 passes=31 fails=1
+    FAIL a changelog refuses the heading ## 0.2.0 - 2026-12-01
+b12-cut-drops-empty exit=1 passes=31 fails=1
+    FAIL a changelog refuses the heading ## [0.2.0]] - 2026-12-01
+b13-version-takes-empty exit=1 passes=30 fails=2
+    FAIL a changelog refuses the heading ## [.2.0] - 2026-12-01
+    FAIL a changelog refuses the heading ## [0.2.] - 2026-12-01
+b14-heading-filter-two-hashes exit=1 passes=29 fails=3
+    FAIL a changelog's latest release is its first release heading
+    FAIL a changelog whose only section is [Unreleased] names no release
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+b15-max-version exit=0 passes=32 fails=0
+run-plants: done

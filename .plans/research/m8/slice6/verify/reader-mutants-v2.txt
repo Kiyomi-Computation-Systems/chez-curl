@@ -1,0 +1,16 @@
+n01-date-skips-8-9	2 FAIL
+n02-date-skips-7	2 FAIL
+n03-version-char-numeric	3 FAIL
+n04-no-month-day-range	4 FAIL
+n05-fence-never-closes	2 FAIL
+n06-fence-any-char-closes	1 FAIL
+n07-no-fences	1 FAIL
+n08-indent-any	1 FAIL
+n09-no-release-like-check	5 FAIL
+n10-order-first-pair-only	1 FAIL
+n11-order-as-text	1 FAIL
+n12-no-date-order	1 FAIL
+n13-dates-strict	1 FAIL
+n14-last-heading-unchecked	1 FAIL
+n15-max-version	0 FAIL
+n16-version-lte-ok	1 FAIL

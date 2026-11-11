@@ -104,8 +104,8 @@ an `Expect`.
 - **Every transfer caps its response headers** at 1,000 lines or 102,400
   bytes, else it raises `&curl-too-large`, reason `header-limit`
   ([The high level](high-level.md#timeouts-and-limits)).
-- At the low level, `curl-response-headers` is the same list. On libcurl
-  8.5.0 an empty value comes as a lone CR
+- At the low level, `curl-response-headers` is the same list.
+- On libcurl 8.5.0 an empty value comes as a lone CR, in both lists
   ([What varies by libcurl](libcurl-versions.md#responses-and-requests)).
 
 ## A JSON API

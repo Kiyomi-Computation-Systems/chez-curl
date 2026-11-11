@@ -37,6 +37,9 @@ Linux on arm64 and macOS on amd64 have not run them. Windows is not
 supported. [[file:docs/libcurl-versions.md][What varies by libcurl]] lists each behaviour that differs by
 version.
 
+The API may change in any release before 1.0. [[file:CHANGELOG.md][CHANGELOG.md]] lists what each
+release changes.
+
 ** Requirements
 
 - Chez Scheme 10.4.0 or later, built with threads

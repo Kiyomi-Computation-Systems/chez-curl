@@ -35,7 +35,8 @@ the cap; and when it met a redirect it will not follow.
 
 ## The types
 
-Every chez-curl condition is a `&curl-error`, under R6RS's `&error`:
+Every chez-curl condition type but `&http-exchange` is a `&curl-error`, under
+R6RS's `&error`:
 
 ```text
 &curl-error
@@ -64,14 +65,17 @@ made. A low-level condition passes through a call so compounded, so catch
 ## Handling one
 
 - **Read the reason, a symbol.** It is chez-curl's, and alike on every
-  libcurl. A failed transfer's code is libcurl's, and moves with the version,
-  and its class moves with the code: a refused `CONNECT` fails 56,
-  `&curl-send-receive-error`, on 7.85.0, 8.5.0 and 8.7.1, and 7,
-  `&curl-connect-error`, on 8.20.0 and 8.23.0; prior knowledge to an HTTP/1.1
-  server is a send-receive or a protocol failure, by version and by race.
-  So to catch a failed transfer, catch `&curl-transfer-error`, then read its
-  reason, and its connect code for a proxy. Never match a code, a class or a
-  message alone.
+  libcurl, but for two: a refused URL's reason is libcurl's code's name, which
+  moves with the version ([What varies](libcurl-versions.md#urls)), and the
+  hatch names an owned option this libcurl does not know `unknown-option` on
+  7.85.0 ([What varies](libcurl-versions.md#the-hatch)). A failed transfer's
+  code is libcurl's, and moves with the version, and its class moves with the
+  code: a refused `CONNECT` fails 56, `&curl-send-receive-error`, on 7.85.0,
+  8.5.0 and 8.7.1, and 7, `&curl-connect-error`, on 8.20.0 and 8.23.0; prior
+  knowledge to an HTTP/1.1 server is a send-receive or a protocol failure, by
+  version and by race. So to catch a failed transfer, catch
+  `&curl-transfer-error`, then read its reason, and its connect code for a
+  proxy. Never match a code, a class or a message alone.
 - **Every refusal names a field, a kind or an index, never your secret.** A
   string where a key, a request or a response belongs is named by its kind,
   `(kind string)`; a refused URL by its field, `url`; a header's value by its

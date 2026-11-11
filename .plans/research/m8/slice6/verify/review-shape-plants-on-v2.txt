@@ -1,0 +1,37 @@
+a00-control exit=0 passes=68 fails=0
+a01-manifest-alone exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a02-changelog-alone exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a03-both-bumped exit=0 passes=68 fails=0
+a04-no-unreleased exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a05-newer-no-date exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a06-yanked-latest exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a07-yanked-older exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a08-h3-new-release exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a09-indented-heading exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a10-appended-at-bottom exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a11-duplicate-version exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a12-version-goes-down exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a13-date-not-a-date exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a14-crlf exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a15-bom exit=0 passes=68 fails=0
+a16-empty exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a17-missing exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a18-prerelease exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release
+a19-fenced-example exit=1 passes=67 fails=1
+    FAIL Akku.manifest's version is CHANGELOG.md's latest release

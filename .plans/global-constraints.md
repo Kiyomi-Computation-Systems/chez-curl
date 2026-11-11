@@ -942,9 +942,10 @@ provisional. They bind until that record is accepted or amended.
 ## M8: multipart, the header cap, the docs and the release
 
 - **M8's scope** is a multipart body of parts in memory and files by path, at both levels; a cap
-  of chez-curl's own on response headers; the siblings' docs without a site; and a `v0.1.0` tag in
-  the private repository, claiming Linux amd64 and macOS arm64 (ADR-0038). No streamed, nested or
-  encoded part, no part headers, no key for the cap, no publishing.
+  of chez-curl's own on response headers; the siblings' docs without a site; and a `v0.1.0` tag,
+  the repository public from 2026-11-08, claiming Linux amd64 and macOS arm64 (ADR-0038, amended
+  2026-11-10). No streamed, nested or encoded part, no part headers, no key for the cap, nothing
+  published beyond the tag: no GitHub Release, no Akku.
 - **A multipart body's type is libcurl's:** a multipart transfer leaves `Content-Type:` out of its
   blanks and keeps `Expect:`, and refuses a caller's `Content-Type` header. A part's name, filename
   and type hold no character U+0000 to U+001F or U+007F, a name and filename no `"`, and a name is
