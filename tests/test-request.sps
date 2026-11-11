@@ -1,7 +1,7 @@
 #!r6rs
-;;; The suite for the public request (ADR-0023; the M4 plan, sections 3.2 to
-;;; 3.4 and 4.2): its keys, its checks and its bodies, its connect timeout,
-;;; the response's timings and a failure's request size.
+;;; The suite for the public request (ADR-0023): its keys, its checks and its
+;;; bodies, its connect timeout, the response's timings and a failure's request
+;;; size.
 ;;;
 ;;;   - the keys, written out, their defaults, and each one read back;
 ;;;   - the keys' refusals, unknown-key, missing-value and repeated-key, by
@@ -22,7 +22,7 @@
 ;;;   - a failure's class and request size: 0 when nothing was sent, the
 ;;;     head's length when it was; #f, unknown, for one that ran on 8.7.0 or
 ;;;     8.7.1, whose count is broken, and the library's table of them held to
-;;;     this suite's copy (ADR-0022, amended 2026-10-27);
+;;;     this suite's copy (ADR-0022);
 ;;;   - no redirect followed, but through the private follow field.
 ;;;
 ;;; Each transfer's native counts are the engine's alone after it, and all
@@ -175,7 +175,7 @@
 ;; then-counts : (Listof Any) -> (Listof Any)
 ;; ANSWERS with the native counts read after them, last: ANSWERS is an
 ;; argument, so every action in it has run before the counts are read,
-;; whatever order a list's arguments are evaluated in (AGENTS.md).
+;; whatever order a list's arguments are evaluated in.
 (define (then-counts answers) (append answers (list (native-counts))))
 
 ;; url-of : Origin Symbol String -> String
@@ -368,7 +368,7 @@
         (failed (lambda () (make-curl-request "http://a/" 'method 'put
                                               'headers '(("transfer-encoding" . "chunked")))))))
 
-;; --- the stream-buffer key (ADR-0030; the M6 plan, section 3.1) -------------------------
+;; --- the stream-buffer key (ADR-0030) ---------------------------------------------------
 
 (test-equal "stream-buffer takes a positive exact integer, kept, or #f, the default, the whole body; curl-request-with replaces it either way and keeps it when not given; any other value is an assertion violation, from make-curl-request or curl-request-with, with nothing native made: 0, -1, 1.5, 65536.0, \"10\", #t and stream"
   (list '(1 65536 #f 7 #f 3)
@@ -388,7 +388,7 @@
               (list 0 -1 1.5 65536.0 "10" #t 'stream))
          (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'stream-buffer 0))))))
 
-;; --- the proxy field (ADR-0024, decision 1) ---------------------------------------------
+;; --- the proxy field (ADR-0024) ---------------------------------------------------------
 
 (test-equal "proxy takes environment and #f, each kept, and a URL string, kept as a copy, \"environment\" among them, which a submit parses; curl-request-with replaces it either way and keeps it when not given; any other value is an assertion violation, from make-curl-request or curl-request-with, with nothing native made: #t, none, Environment, () and 0"
   (list '(environment #f environment #f #f "environment")
@@ -408,7 +408,7 @@
               (list #t 'none 'Environment '() 0))
          (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'proxy 'direct))))))
 
-;; --- the http-version key (ADR-0034; the M7 plan, section 3.1) ---------------------------
+;; --- the http-version key (ADR-0034) -----------------------------------------------------
 
 (test-equal "http-version takes http/1.1, http/2 and http/2-prior-knowledge, each kept, or #f, the default, none; curl-request-with replaces it either way and keeps it when not given; any other value is an assertion violation, from make-curl-request or curl-request-with, with nothing native made: http/1.0, http/3, HTTP/2, \"http/2\", h2, 2, #t and ()"
   (list '(http/1.1 http/2 http/2-prior-knowledge #f http/2 #f http/1.1)
@@ -434,7 +434,7 @@
   (list (curl-request-http-version (make-curl-request "https://a/" 'http-version 'http/2-prior-knowledge))
         (curl-request-http-version (curl-request-with (make-curl-request "https://a/") 'http-version 'http/2-prior-knowledge))))
 
-;; --- body stream and body-length (ADR-0030; the M6 plan, section 3.1) --------------------
+;; --- body stream and body-length (ADR-0030) ----------------------------------------------
 
 (test-equal "body takes stream with post, put, patch and delete, and body-length sets its own field beside it: a natural, 0 and 2^63 - 2 among them, or #f, the default, kept by curl-request-with when not given and replaced when given; the other fields keep their defaults; nothing native made"
   (list '((post stream 7) (put stream 0) (patch stream 9223372036854775806) (delete stream #f))
@@ -512,7 +512,7 @@
         (sends-body? 'get #f) (sends-body? 'head #f)))
 
 ;; A multipart body's plan holds (multipart #(PART) ...); method-settings and
-;; sends-body? read its head alone (the M8 plan, section 3.4).
+;; sends-body? read its head alone.
 (define plan-multipart '(multipart #("a" data #vu8(98) #f #f)))
 
 (test-equal "method-settings for a multipart body, written out: the method's own first, CUSTOMREQUEST for put, patch and delete, then MIMEPOST alone, last, at the mime's placeholder, in place of POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; post, libcurl's own POST, MIMEPOST alone; and sends-body? takes it for every method that sends one, a delete's among them"
@@ -536,9 +536,9 @@
   (list (request-fields (curl-request-with base 'connect-timeout-ms 10 'method 'patch 'body #vu8(4)))
         (request-fields (curl-request-with base))))
 
-;; url is one key more of curl-request-with's, a new URL (ADR-0023, after
-;; slice 3's review): tests/test-multipart.sps holds its refusals beside
-;; make-curl-request's. uri is none.
+;; url is one key more of curl-request-with's, a new URL (ADR-0023):
+;; tests/test-multipart.sps holds its refusals beside make-curl-request's. uri
+;; is none.
 (test-equal "curl-request-with refuses as make-curl-request does, as curl-request-with: an unknown key, a missing value, a repeated key, a wrong type, a body kept with get, and what is no request"
   '((request-refused key uri unknown-key)
     (request-refused key body missing-value)
@@ -600,8 +600,8 @@
         (sent-header-lines '(("Content-Type" . "text/plain")) 'put 'stream)))
 
 ;; Beside MIMEPOST the Content-Type: blank sent Content-Type: ; boundary=B,
-;; every part an attachment (ADR-0039, decision 1): a multipart transfer
-;; leaves it out, and keeps Expect:, unless a header of that name is given.
+;; every part an attachment (ADR-0039): a multipart transfer leaves it out, and
+;; keeps Expect:, unless a header of that name is given.
 (test-equal "sent-header-lines for a multipart body: each header as its line, then Expect: alone, for post, put, patch and delete, unless an Expect header, in any case, is given; never Content-Type:"
   '(("Expect:")
     ("X-A: 1" "Expect:")
@@ -763,10 +763,9 @@
   ;; A failure's class and request size.
   ;; Each on an engine of its own, its connection pool empty: curl 8.23.0
   ;; reuses, unchecked, a connection that went back to its pool under 1 s
-  ;; before, and the raw face closes after each script without saying so, so
-  ;; a head sent on a dead connection, then again on a fresh one, counts
-  ;; twice (ADR-0020; ADR-0022, amended 2026-10-26). let*, so each runs
-  ;; after the last.
+  ;; before, and the raw face closes after each script without saying so, so a
+  ;; head sent on a dead connection, then again on a fresh one, counts twice
+  ;; (ADR-0020; ADR-0022). let*, so each runs after the last.
   (record! 'failures
     (let* ((refused (on-own-engine (make-curl-request "http://127.0.0.1:1/" 'timeout-ms 20000)))
            (untrusted (on-own-engine (make-curl-request (tls-url-of o 'https-untrusted "/status/200")
@@ -876,7 +875,7 @@
 ;; This suite's copy of the library's request-size-unreliable, written
 ;; apart: the libcurl versions whose CURLINFO_REQUEST_SIZE answers 0 for
 ;; every transfer, measured on upstream 8.7.0 and 8.7.1, where 8.6.0 and
-;; 8.8.0 answered each request's length (ADR-0022, amended 2026-10-27).
+;; 8.8.0 answered each request's length (ADR-0022).
 (define request-size-broken '("8.7.0" "8.7.1"))
 
 ;; size-broken? : Boolean

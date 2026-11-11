@@ -1,8 +1,7 @@
 #!r6rs
-;;; The suite for (curl unsupported), the hatch (ADR-0009; the M4 plan,
-;;; sections 3.7 and 7.2): options chez-curl does not wrap, attached to a
-;;; request by name, checked as they are attached, and set by the engine
-;;; last.
+;;; The suite for (curl unsupported), the hatch (ADR-0009): options
+;;; chez-curl does not wrap, attached to a request by name, checked as
+;;; they are attached, and set by the engine last.
 ;;;
 ;;;   - the surface: (curl unsupported) exports curl-request-with-options
 ;;;     alone, and (curl) does not export it;
@@ -242,11 +241,10 @@
         (guard (e (#t (list 'raised (describe e))))
           (>= (length (library-exports '(curl))) 100))))
 
-;; curl-request-check, (curl)'s export from M5 slice 4's fix round (ADR-0023,
-;; amended 2026-10-28), runs a submit's checks alone. A request's options
-;; were checked as they were attached, and are private copies: the check
-;; has nothing of theirs to read, applies none, and leaves nothing native:
-;; the CURLU it parses is freed before it returns.
+;; curl-request-check, (curl)'s export (ADR-0023), runs a submit's checks
+;; alone. A request's options were checked as they were attached, and are
+;; private copies: the check has nothing of theirs to read, applies none, and
+;; leaves nothing native: the CURLU it parses is freed before it returns.
 (test-equal "curl-request-check, among (curl)'s exports and no binding of the hatch, takes a request carrying the hatch's options, as a submit's checks do, applying none: nothing native is left, the CURLU it parses freed"
   (list #t '() taken)
   (list (and (memq 'curl-request-check (library-exports '(curl))) #t)
@@ -292,25 +290,21 @@
 
 ;; owned-names : (Listof String)
 ;; Every option chez-curl owns, and every owned setting's twin, written out
-;; here (ADR-0009, amended): the options the transfer always sets and the
-;; pins' bitmasks; each request field's, stream-buffer's header callable and
-;; its data among them (the M6 plan, section 3.3), and a streamed body's
-;; read, seek and prerequest callables, their data and FRESH_CONNECT (M6
-;; slice 2), and http-version's HTTP_VERSION (M7 slice 1), and credentials'
-;; HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER (M7 slice 2), with
-;; MAXREDIRS, which every transfer sets; the twins; the
-;; options slice 4's review found, twins and the hazards kept from the
-;; hatch (amended 2026-10-27); the version's twins, SSL_ENABLE_ALPN, ALTSVC
-;; and ALTSVC_CTRL (amended 2026-11-02); the credentials' twin AWS_SIGV4
-;; (ADR-0036, amended 2026-11-02); the proxy field's NOPROXY and
+;; here (ADR-0009): the options the transfer always sets and the pins'
+;; bitmasks; each request field's, stream-buffer's header callable and its
+;; data among them, and a streamed body's read, seek and prerequest
+;; callables, their data and FRESH_CONNECT, and http-version's HTTP_VERSION,
+;; and credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, with
+;; MAXREDIRS, which every transfer sets; the twins and the hazards kept from
+;; the hatch; the version's twins, SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL;
+;; the credentials' twin AWS_SIGV4 (ADR-0036); the proxy field's NOPROXY and
 ;; FORBID_REUSE, and its twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME,
 ;; PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP,
-;; which 7.85.0 does not know (ADR-0037, amended 2026-11-03); the
-;; cookie-jar field's SHARE and COOKIEFILE, and its twins COOKIE,
-;; COOKIELIST and COOKIESESSION (ADR-0035, amended 2026-11-04); the header
-;; callable's twin SUPPRESS_CONNECT_HEADERS (ADR-0040, amended 2026-11-06);
-;; a multipart body's MIME_OPTIONS, owned and never set, MIMEPOST the body
-;; field's now (ADR-0039, decision 2; M8 slice 3); every proxy TLS option.
+;; which 7.85.0 does not know (ADR-0037); the cookie-jar field's SHARE and
+;; COOKIEFILE, and its twins COOKIE, COOKIELIST and COOKIESESSION
+;; (ADR-0035); the header callable's twin SUPPRESS_CONNECT_HEADERS
+;; (ADR-0040); a multipart body's MIME_OPTIONS, owned and never set,
+;; MIMEPOST the body field's (ADR-0039); every proxy TLS option.
 (define owned-names
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
@@ -353,11 +347,11 @@
        owned-names)
   (map (lambda (name) (attach (list (cons name (value-for name))))) owned-names))
 
-;; M8 slice 3 (ADR-0039, decision 2): MIME_OPTIONS at CURLMIMEOPT_FORMESCAPE
-;; sends a name's CR and LF raw on 7.85.0 to 8.20.0, and 8.23.0 refuses the
-;; transfer, so it is owned, never set; MIMEPOST, the body field's, too.
-;; EXPECT_100_TIMEOUT_MS stays the hatch's: beside the Expect: blank it waits
-;; on nothing unless a caller asks for Expect.
+;; ADR-0039: MIME_OPTIONS at CURLMIMEOPT_FORMESCAPE sends a name's CR and LF
+;; raw on 7.85.0 to 8.20.0, and 8.23.0 refuses the transfer, so it is owned,
+;; never set; MIMEPOST, the body field's, too. EXPECT_100_TIMEOUT_MS stays
+;; the hatch's: beside the Expect: blank it waits on nothing unless a caller
+;; asks for Expect.
 (test-equal "MIMEPOST, the body field's, and MIME_OPTIONS, owned and never set, are refused as owned-option, with values their types take, before anything native; their neighbour EXPECT_100_TIMEOUT_MS is taken, and kept as attached"
   (list (refused-as "MIMEPOST" 'owned-option) (refused-as "MIME_OPTIONS" 'owned-option)
         taken '(("EXPECT_100_TIMEOUT_MS" long 2000)))
@@ -367,16 +361,15 @@
         (guard (e (#t (list 'raised (describe e))))
           (hatch-settings-of (curl-request-with-options base '(("EXPECT_100_TIMEOUT_MS" . 2000)))))))
 
-;; M7 slice 1 (ADR-0009, amended 2026-11-02): the http-version field's
-;; HTTP_VERSION, and its three twins, each seen to undo what the field
-;; sets: SSL_ENABLE_ALPN at 0 read HTTP/1.1 where 2TLS read HTTP/2; an
-;; ALTSVC file moved later transfers to another host and version; and
-;; ALTSVC_CTRL alone, an in-memory cache, moved a transfer's own 417 resend
-;; to the first response's alternative (the slice's review). Their
-;; neighbours stay the hatch's: HSTS_CTRL, whose cache an http:// URL never
-;; fills and an https:// one never needs, within one transfer; PIPEWAIT,
-;; HTTP09_ALLOWED, HTTP200ALIASES and CONNECT_TO. HTTPPROXYTUNNEL was one
-;; until M7 slice 3 owned it, below. Each is attached, and kept.
+;; ADR-0009: the http-version field's HTTP_VERSION, and its three twins,
+;; each seen to undo what the field sets: SSL_ENABLE_ALPN at 0 read
+;; HTTP/1.1 where 2TLS read HTTP/2; an ALTSVC file moved later transfers to
+;; another host and version; and ALTSVC_CTRL alone, an in-memory cache,
+;; moved a transfer's own 417 resend to the first response's alternative.
+;; Their neighbours stay the hatch's: HSTS_CTRL, whose cache an http:// URL
+;; never fills and an https:// one never needs, within one transfer;
+;; PIPEWAIT, HTTP09_ALLOWED, HTTP200ALIASES and CONNECT_TO. HTTPPROXYTUNNEL
+;; is owned, below, as the proxy field's twin. Each is attached, and kept.
 (test-equal "HTTP_VERSION, the http-version field's, and its twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL are refused as owned-option, with values their types take, before anything native; their neighbours HSTS_CTRL, PIPEWAIT, HTTP09_ALLOWED, HTTP200ALIASES and CONNECT_TO are taken, each kept as attached"
   (list (refused-as "HTTP_VERSION" 'owned-option) (refused-as "SSL_ENABLE_ALPN" 'owned-option)
         (refused-as "ALTSVC" 'owned-option) (refused-as "ALTSVC_CTRL" 'owned-option)
@@ -393,20 +386,19 @@
                                                      ("HTTP200ALIASES" "ICY 200 OK")
                                                      ("CONNECT_TO" "::127.0.0.1:1"))))))))
 
-;; M7 slice 2 (ADR-0036, amended 2026-11-02): the credentials field's
-;; HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; its twin AWS_SIGV4, which
-;; set after HTTPAUTH replaced every scheme's header with a signature
-;; (twins5); and MAXREDIRS, which every transfer sets at 30, so no hatch can
-;; unbound the follows libcurl makes inside a transfer, 7.85.0's default.
-;; Their neighbours
-;; stay the hatch's, each measured through the engine on five libcurls:
-;; FAILONERROR, which makes a wrong password's 401 code 22; AUTOREFERER,
-;; which adds a Referer to Digest's second request; KEEP_SENDING_ON_ERROR;
-;; UNRESTRICTED_AUTH, which reaches libcurl's own follow alone, which
-;; nothing public sets; DISALLOW_USERNAME_IN_URL; and LOGIN_OPTIONS,
-;; SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE, which changed
-;; nothing sent. PROXYAUTH was one until M7 slice 3 owned it, below. Each
-;; is attached, and kept.
+;; ADR-0036: the credentials field's HTTPAUTH, USERNAME, PASSWORD and
+;; XOAUTH2_BEARER; its twin AWS_SIGV4, which set after HTTPAUTH replaced
+;; every scheme's header with a signature; and MAXREDIRS, which
+;; every transfer sets at 30, so no hatch can unbound the follows libcurl
+;; makes inside a transfer, 7.85.0's default. Their neighbours stay the
+;; hatch's, each measured through the engine on five libcurls: FAILONERROR,
+;; which makes a wrong password's 401 code 22; AUTOREFERER, which adds a
+;; Referer to Digest's second request; KEEP_SENDING_ON_ERROR;
+;; UNRESTRICTED_AUTH, which reaches libcurl's own follow alone, which nothing
+;; public sets; DISALLOW_USERNAME_IN_URL; and LOGIN_OPTIONS, SASL_AUTHZID,
+;; SASL_IR, SERVICE_NAME and NETRC_FILE, which changed nothing sent.
+;; PROXYAUTH is owned, below, as the proxy field's twin. Each is attached,
+;; and kept.
 (test-equal "HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, the credentials field's, its twin AWS_SIGV4, and MAXREDIRS, every transfer's, are refused as owned-option, with values their types take, before anything native; their neighbours FAILONERROR, AUTOREFERER, KEEP_SENDING_ON_ERROR, UNRESTRICTED_AUTH, DISALLOW_USERNAME_IN_URL, LOGIN_OPTIONS, SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE are taken, each kept as attached"
   (list (refused-as "HTTPAUTH" 'owned-option) (refused-as "USERNAME" 'owned-option)
         (refused-as "PASSWORD" 'owned-option) (refused-as "XOAUTH2_BEARER" 'owned-option)
@@ -432,21 +424,20 @@
                                                      ("SASL_IR" . 1) ("SERVICE_NAME" . "s")
                                                      ("NETRC_FILE" . "netrc"))))))))
 
-;; M7 slice 3 (ADR-0037, amended 2026-11-03): the proxy field's PROXY,
-;; NOPROXY, no longer a twin, and FORBID_REUSE, which it sets before
-;; 8.19.0 beside proxy userinfo; the proxy CA file's PROXY_CAINFO and
-;; PROXY_CAPATH and the proxy verification's PROXY_SSL_VERIFYPEER and
-;; PROXY_SSL_VERIFYHOST; and their twins, each measured through the engine
-;; on five libcurls: PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME and
-;; PROXYPASSWORD, a proxy's credentials another way than its URL's;
-;; HTTPPROXYTUNNEL, which moved an http:// URL's request into a tunnel, with
-;; every caller header; HAPROXYPROTOCOL, which wrote a PROXY line to the
-;; proxy, or inside a tunnel to the origin; and HAPROXY_CLIENT_IP, which
-;; rewrote that line, and which 7.85.0 does not know, so there the hatch
-;; refuses it as unknown-option, by name, first. Their neighbours stay the
-;; hatch's: PROXY_SERVICE_NAME and SOCKS5_AUTH changed no byte either side
-;; got. SUPPRESS_CONNECT_HEADERS was among them until M8 slice 2 made it the
-;; header callable's twin, below. Each is attached, and kept.
+;; ADR-0037: the proxy field's PROXY, NOPROXY and FORBID_REUSE, which it
+;; sets before 8.19.0 beside proxy userinfo; the proxy CA file's
+;; PROXY_CAINFO and PROXY_CAPATH and the proxy verification's
+;; PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST; and their twins, each
+;; measured through the engine on five libcurls: PROXYAUTH, PROXYUSERPWD,
+;; PROXYUSERNAME and PROXYPASSWORD, a proxy's credentials another way than
+;; its URL's; HTTPPROXYTUNNEL, which moved an http:// URL's request into a
+;; tunnel, with every caller header; HAPROXYPROTOCOL, which wrote a PROXY
+;; line to the proxy, or inside a tunnel to the origin; and
+;; HAPROXY_CLIENT_IP, which rewrote that line, and which 7.85.0 does not
+;; know, so there the hatch refuses it as unknown-option, by name, first.
+;; Their neighbours stay the hatch's: PROXY_SERVICE_NAME and SOCKS5_AUTH
+;; changed no byte either side got. SUPPRESS_CONNECT_HEADERS is the header
+;; callable's twin, below. Each is attached, and kept.
 (test-equal "PROXY, NOPROXY, FORBID_REUSE, PROXY_CAINFO, PROXY_CAPATH, PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST, the proxy fields', and their twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP are refused as owned-option where the libcurl knows each, with values their types take; their neighbours PROXY_SERVICE_NAME and SOCKS5_AUTH are taken, each kept as attached"
   (append (map (lambda (name) (refused-as name (if (curl-easy-option name) 'owned-option 'unknown-option)))
                '("PROXY" "NOPROXY" "FORBID_REUSE" "PROXY_CAINFO" "PROXY_CAPATH" "PROXY_SSL_VERIFYPEER"
@@ -466,15 +457,14 @@
                    (curl-request-with-options base '(("PROXY_SERVICE_NAME" . "proxy")
                                                      ("SOCKS5_AUTH" . 1))))))))
 
-;; The header callable's (M8 slice 2; ADR-0040, amended 2026-11-06, decided
-;; by the maintainer): every transfer sets HEADERFUNCTION and HEADERDATA,
-;; for the cap on response headers, and SUPPRESS_CONNECT_HEADERS, which
-;; hides a CONNECT answer from the callable on every libcurl, so the cap
-;; would never count it, is their twin. Its neighbours stay the hatch's:
-;; HTTP_TRANSFER_DECODING, whose 0 moves trailers to the body, which
-;; body-limit bounds; HTTP200ALIASES, whose alias status line the cap counts
-;; as a header line; and HTTP09_ALLOWED, a response with no head. Each is
-;; attached, and kept.
+;; The header callable's (ADR-0040): every transfer sets HEADERFUNCTION and
+;; HEADERDATA, for the cap on response headers, and
+;; SUPPRESS_CONNECT_HEADERS, which hides a CONNECT answer from the callable
+;; on every libcurl, so the cap would never count it, is their twin. Its
+;; neighbours stay the hatch's: HTTP_TRANSFER_DECODING, whose 0 moves
+;; trailers to the body, which body-limit bounds; HTTP200ALIASES, whose
+;; alias status line the cap counts as a header line; and HTTP09_ALLOWED, a
+;; response with no head. Each is attached, and kept.
 (test-equal "HEADERFUNCTION and HEADERDATA, the header callable's, and their twin SUPPRESS_CONNECT_HEADERS are refused as owned-option, with values their types take; their neighbours HTTP_TRANSFER_DECODING, HTTP200ALIASES and HTTP09_ALLOWED are taken, each kept as attached"
   (append (map (lambda (name) (refused-as name 'owned-option)) '("HEADERFUNCTION" "HEADERDATA" "SUPPRESS_CONNECT_HEADERS"))
           (list taken taken taken
@@ -490,15 +480,14 @@
                                                      ("HTTP200ALIASES" . ("ICY 200 OK"))
                                                      ("HTTP09_ALLOWED" . 1))))))))
 
-;; The cookie jar's (M7 slice 4; ADR-0035, amended 2026-11-04): SHARE and
-;; COOKIEFILE are the cookie-jar field's, SHARE refused by its type before,
-;; an object's; COOKIE joins its own line to the jar's, and beside a
-;; caller's Cookie header is dropped; COOKIELIST reaches past its
-;; transfer, clearing the jar for every holder or loading a line past the
-;; load's rules; COOKIESESSION is the jar's to own; COOKIEJAR stays kept.
-;; Their neighbours stay the hatch's: HSTS_CTRL changed nothing the jar
-;; held, and REFERER, the string option the copies' tests use, touches no
-;; cookie. Each is attached, and kept.
+;; The cookie jar's (ADR-0035): SHARE and COOKIEFILE are the cookie-jar
+;; field's; COOKIE joins its own line to the jar's, and beside a caller's
+;; Cookie header is dropped;
+;; COOKIELIST reaches past its transfer, clearing the jar for every holder
+;; or loading a line past the load's rules; COOKIESESSION is the jar's to
+;; own; COOKIEJAR stays kept. Their neighbours stay the hatch's: HSTS_CTRL
+;; changed nothing the jar held, and REFERER, the string option the copies'
+;; tests use, touches no cookie. Each is attached, and kept.
 (test-equal "SHARE and COOKIEFILE, the cookie-jar field's, its twins COOKIE, COOKIELIST and COOKIESESSION, and COOKIEJAR, kept, are refused as owned-option, with values their types take, before anything native; their neighbours HSTS_CTRL and REFERER are taken, each kept as attached"
   (append (map (lambda (name) (refused-as name 'owned-option))
                '("SHARE" "COOKIEFILE" "COOKIE" "COOKIELIST" "COOKIESESSION" "COOKIEJAR"))
@@ -778,11 +767,10 @@
                 ;; the next attach can read the flipper's same CR: under
                 ;; Valgrind, which runs one thread at a time, every one of
                 ;; the 300 was refused, the flipper never seen at its char,
-                ;; in 6 of 20 runs of the memory gate on main's tree and 5
-                ;; of 20 on the branch's after M7, the list's string's test
-                ;; each time (research/m7/carried/verify/flip/), as
+                ;; in 11 of 40 runs of the memory gate, over two builds, the
+                ;; list's string's test each time, as
                 ;; test-transfer's flip tests did. A refusal sleeps 1 ms, so
-                ;; the flipper moves on (traps.md).
+                ;; the flipper moves on.
                 (when (eq? k 'refused) (pause-ms 1))
                 (loop (+ i 1)
                       (if k odd (cons a odd))
@@ -896,15 +884,14 @@
 
 ;; blob-rows : (Listof (Pairof (Pairof String String) (Listof Answer)))
 ;; What each libcurl, by its version and TLS backend, makes of three blobs
-;; (the M4 plan, section 7.1, measured): ISSUERCERT_BLOB at the run CA,
-;; then at the other CA, then SSLCERT_BLOB at bytes that are no
-;; certificate. OpenSSL reads all three: 83, CURLE_SSL_ISSUER_ERROR, for the
-;; wrong issuer, and 58, CURLE_SSL_CERTPROBLEM, for the certificate. GnuTLS
-;; takes SSLCERT_BLOB and ignores it; 8.5.0's ignores ISSUERCERT_BLOB too,
-;; and 8.20.0's setopt refuses it, CURLE_NOT_BUILT_IN. Apple's 8.7.1 on
-;; SecureTransport, which make test selects on macOS, ignores ISSUERCERT_BLOB
-;; and refuses the certificate, 58 (the Mac's make test, 2026-10-27,
-;; .plans/research/m4/slice4/results/mac-8.7.1-make-test.log).
+;; (measured): ISSUERCERT_BLOB at the run CA, then at the other CA, then
+;; SSLCERT_BLOB at bytes that are no certificate. OpenSSL reads all three:
+;; 83, CURLE_SSL_ISSUER_ERROR, for the wrong issuer, and 58,
+;; CURLE_SSL_CERTPROBLEM, for the certificate. GnuTLS takes SSLCERT_BLOB and
+;; ignores it; 8.5.0's ignores ISSUERCERT_BLOB too, and 8.20.0's setopt
+;; refuses it, CURLE_NOT_BUILT_IN. Apple's 8.7.1 on SecureTransport, which
+;; make test selects on macOS, ignores ISSUERCERT_BLOB and refuses the
+;; certificate, 58.
 (define blob-rows
   '((("7.85.0" . "OpenSSL") (response 200) (refused perform-failed 83 #f) (refused perform-failed 58 #f))
     (("8.5.0" . "OpenSSL") (response 200) (refused perform-failed 83 #f) (refused perform-failed 58 #f))

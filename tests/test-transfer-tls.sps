@@ -1,19 +1,18 @@
 #!r6rs
-;;; The suite for a request's TLS fields (M2 plan, section 6; ADR-0018):
-;;; (curl private transfer), each request submitted to the suite's one
-;;; engine and awaited (M3 plan, section 5.2), against the test origin's
-;;; TLS faces, with one PKI per run, made by make-test-pki, which the origin
-;;; serves.
+;;; The suite for a request's TLS fields (ADR-0018): (curl private
+;;; transfer), each request submitted to the suite's one engine and awaited,
+;;; against the test origin's TLS faces, with one PKI per run, made by
+;;; make-test-pki, which the origin serves.
 ;;;
 ;;; Every transfer is asserted whole: the status, the HTTP version, every
 ;;; header in libcurl's order and the body, or the &curl-transfer-error's
 ;;; reason and CURLcode, with the native counts after it, which must be the
 ;;; engine's multi handle alone; once the engine has stopped, at the end,
-;;; all zero. The expected bytes are this suite's own copies, never read from
-;;; the origin. Every URL's host is 127.0.0.1, which the good leaf names.
-;;; The four recorded Linux libcurls gave section 6's verdicts alike (plan,
-;;; section 6.1), so the answers are shared, and there is no row file. The
-;;; h2 face's headers were read on 8.20.0 alone.
+;;; all zero. The expected bytes are this suite's own copies, never read
+;;; from the origin. Every URL's host is 127.0.0.1, which the good leaf
+;;; names. The four recorded Linux libcurls gave these verdicts alike, so
+;;; the answers are shared, and there is no row file. The h2 face's headers
+;;; were read on 8.20.0 alone.
 ;;;
 ;;; It holds:
 ;;;
@@ -39,12 +38,11 @@
 ;;;     the snapshot a submit takes, with nothing native at the raise; one
 ;;;     beginning pkcs11: in each of its sixteen ASCII cases, as pkcs11-url,
 ;;;     by both, its near misses taken, two Unicode folds among them, and a
-;;;     file named pkcs11:ca.pem reached by its absolute path (ADR-0024,
-;;;     decision 4); wrong
-;;;     types; a change after the request was made, sent as changed; and a
-;;;     CA file another thread flips to U+0000 while transfers run, refused
-;;;     or sent whole, which a transfer that checked the caller's string,
-;;;     not its own copy, fails in a native run;
+;;;     file named pkcs11:ca.pem reached by its absolute path (ADR-0024);
+;;;     wrong types; a change after the request was made, sent as changed;
+;;;     and a CA file another thread flips to U+0000 while transfers run,
+;;;     refused or sent whole, which a transfer that checked the caller's
+;;;     string, not its own copy, fails in a native run;
 ;;;   - the settings, as data: tls-settings' answers, written out, for each
 ;;;     CA file and verification; setopt-accepted? against every code from
 ;;;     -1 to 300; and, read from transfer.sls and held whole, every
@@ -58,12 +56,12 @@
 ;;;     after the request's other settings and before the hatch's; and
 ;;;     the six TLS option names, standing in transfer.sls only as data in
 ;;;     its two tables;
-;;;   - the Mac's keychain (ADR-0024, amended 2026-10-27): keychain-fallback?
-;;;     by synthetic inputs; this process's own backend, which on macOS make
-;;;     test sets to SecureTransport; loaded-tls-backend and loaded-on-macos?
-;;;     against this suite's readings; and two children given
-;;;     CURL_SSL_BACKEND at openssl and secure-transport, refused and run on
-;;;     macOS, both run elsewhere;
+;;;   - macOS's keychain (ADR-0024): keychain-fallback? by synthetic inputs;
+;;;     this process's own backend, which on macOS make test sets to
+;;;     SecureTransport; loaded-tls-backend and loaded-on-macos? against
+;;;     this suite's readings; and two children given CURL_SSL_BACKEND at
+;;;     openssl and secure-transport, refused and run on macOS, both run
+;;;     elsewhere;
 ;;;   - the Guix pin, in a child, tests/transfer-tls-env.sps, given
 ;;;     SSL_CERT_FILE or SSL_CERT_DIR through its command alone, or set or
 ;;;     emptied after the load, nine cases: by the file the libcurl is
@@ -72,24 +70,23 @@
 ;;;     submit, naming each variable set at the load, and curl-request-check
 ;;;     refuses the same request alike, before it is submitted; elsewhere
 ;;;     both are ignored, the check passes, and the transfer answers by its
-;;;     CA file. The library's
-;;;     table, guix-ca-overrides, is held to this suite's copy, and
-;;;     ca-overridden? by file, path and version; a Guix libcurl with no
-;;;     row fails, named, its override unmeasured (ADR-0018, decision 5;
-;;;     ADR-0024, decision 2, amended 2026-10-26).
+;;;     CA file. The library's table, guix-ca-overrides, is held to this
+;;;     suite's copy, and ca-overridden? by file, path and version; a Guix
+;;;     libcurl with no row fails, named, its override unmeasured (ADR-0018
+;;;     and ADR-0024).
 ;;;
-;;; Its limit (ADR-0018, consequences): no lane can show CAPATH's clear by
-;;; behaviour. No lane's system store, nor any default CA directory, trusts
-;;; the run CA, so a transfer that left CAPATH set would pass every case
-;;; here. The clear is held as data alone, by tls-settings' answers and
-;;; set-tls-options!' form; the Docker measurement ADR-0018 records is the
-;;; behavioural evidence. Nor can a Linux lane show the CURLE_NOT_BUILT_IN
-;;; a backend with no CA directory answers the clear: none answers it. So
-;;; each definition on the way from the request to the setopt binding is
-;;; held whole, and setopt-accepted? as a function too: a rewrite of any
-;;; of them could drop the clear, or refuse CURLE_NOT_BUILT_IN for it, and
-;;; pass every transfer here. Past option-named, the bindings are native's,
-;;; held by its own suites.
+;;; Its limit (ADR-0018): no lane can show CAPATH's clear by behaviour. No
+;;; lane's system store, nor any default CA directory, trusts the run CA, so
+;;; a transfer that left CAPATH set would pass every case here. The clear is
+;;; held as data alone, by tls-settings' answers and set-tls-options!' form;
+;;; the Docker measurement ADR-0018 records is the behavioural evidence. Nor
+;;; can a Linux lane show the CURLE_NOT_BUILT_IN a backend with no CA
+;;; directory answers the clear: none answers it. So each definition on the
+;;; way from the request to the setopt binding is held whole, and
+;;; setopt-accepted? as a function too: a rewrite of any of them could drop
+;;; the clear, or refuse CURLE_NOT_BUILT_IN for it, and pass every transfer
+;;; here. Past option-named, the bindings are native's, held by its own
+;;; suites.
 ;;;
 ;;; Importing (curl) runs the load before this suite's first line, on this
 ;;; thread, and the suite's top level reaches (curl private transfer), then
@@ -301,11 +298,10 @@
     (call-with-port (open-file-output-port to)
       (lambda (p) (put-bytevector p bytes)))))
 
-;; The answers, this suite's own copies of the origin's bytes. The https
-;; faces serve the http face's routes; h2 serves the HTTP/2 ones, and
-;; curl_easy_nextheader gives an HTTP/2 response's headers as sent, in
-;; lower case, with no :status pseudo-header (measured on 8.20.0,
-;; build/verify/m2s3/work/h2-headers.sps).
+;; The answers, this suite's own copies of the origin's bytes. The https faces
+;; serve the http face's routes; h2 serves the HTTP/2 ones, and
+;; curl_easy_nextheader gives an HTTP/2 response's headers as sent, in lower
+;; case, with no :status pseudo-header (measured on 8.20.0).
 (define good-answer
   '(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "status 200\n"))
 (define h2-answer
@@ -452,8 +448,7 @@
 
 ;; pkcs11-cases : (Listof String)
 ;; pkcs11: in each of its sixteen ASCII cases, p, k, c and s each lower or
-;; upper: 1, 1 and : have none. GnuTLS reads each as a PKCS#11 URL
-;; (ADR-0024, amended 2026-10-26).
+;; upper: 1, 1 and : have none. GnuTLS reads each as a PKCS#11 URL (ADR-0024).
 (define pkcs11-cases
   (map (lambda (i)
          (string (if (odd? i) #\P #\p) (if (odd? (div i 2)) #\K #\k) (if (odd? (div i 4)) #\C #\c)
@@ -473,11 +468,11 @@
 
 ;; pkcs11-near-misses : (Listof String)
 ;; Paths GnuTLS reads as files, each measured on GnuTLS 3.8.3, 3.8.9 and
-;; 3.8.13 (research/m4/slice3/, x/pkcs11: for /x/pkcs11:): the prefix cut
-;; short, lengthened, spaced or moved; each of its seven chars made the
-;; next one; and two chars that a Unicode fold makes ASCII, U+212A KELVIN
-;; SIGN, which char-downcase and char-foldcase make k, and U+017F LATIN
-;; SMALL LETTER LONG S, which char-foldcase, and so string-ci=?, makes s.
+;; 3.8.13 (/x/pkcs11: measured as x/pkcs11:): the prefix cut short,
+;; lengthened, spaced or moved; each of its seven chars made the next one;
+;; and two chars that a Unicode fold makes ASCII, U+212A KELVIN SIGN, which
+;; char-downcase and char-foldcase make k, and U+017F LATIN SMALL LETTER
+;; LONG S, which char-foldcase, and so string-ci=?, makes s.
 (define pkcs11-near-misses
   (list "pkcs11" "pkcs1:" "pkcs111:" " pkcs11:" "pkcs11 :" "./pkcs11:" "xpkcs11:" "/x/pkcs11:"
         "qkcs11:" "plcs11:" "pkds11:" "pkct11:" "pkcs21:" "pkcs12:" "pkcs11;"
@@ -729,13 +724,12 @@
     (if d (cdr (or (assq 'fields (cddr d)) '(fields no-fields))) (list 'no-plan-record transfer-library))))
 
 ;; The way from a request to set-tls-options!: request-checks, the submit's
-;; checks, which prepare-transfer calls as curl-submit and
-;; curl-request-check as itself (ADR-0023, amended 2026-10-28), copies the CA
-;; file, on the caller's thread, checks that copy and answers it;
-;; prepare-transfer puts it in the plan's ninth field, and the verification
-;; in its tenth; set-transfer-options! hands set-tls-options! those two
-;; fields. A plan handed the caller's own string would be sent whatever
-;; another thread made it after the check.
+;; checks, which prepare-transfer calls as curl-submit and curl-request-check
+;; as itself (ADR-0023), copies the CA file, on the caller's thread, checks
+;; that copy and answers it; prepare-transfer puts it in the plan's ninth
+;; field, and the verification in its tenth; set-transfer-options! hands
+;; set-tls-options! those two fields. A plan handed the caller's own string
+;; would be sent whatever another thread made it after the check.
 (test-equal "the checks hand the plan their snapshot: request-checks' let* binds ca-file to (ca-file-copy who (curl-request-ca-file request)), checks that copy, first, as (check-ca-environment who 'ca-file ca-file (curl-request-verify request)) and answers it, ca-file standing four times there, the field's name among them; prepare-transfer takes it from (request-checks 'curl-submit request), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, ca-file standing twice there, and the plan's ninth and tenth fields are ca-file and verify"
   '((ca-file (ca-file-copy who (curl-request-ca-file request)))
     (check-ca-environment who 'ca-file ca-file (curl-request-verify request))
@@ -874,9 +868,8 @@
 ;; checked-as : Answer -> Answer
 ;; What the child's curl-request-check answers beside a transfer that
 ;; answered ANSWER: the same refusal when a submit's check refused it,
-;; (request-refused ...), since the two share their checks (ADR-0023,
-;; amended 2026-10-28); else (checked), the check having passed, whatever
-;; the transfer then met.
+;; (request-refused ...), since the two share their checks (ADR-0023); else
+;; (checked), the check having passed, whatever the transfer then met.
 (define (checked-as answer)
   (if (and (pair? answer) (eq? (car answer) 'request-refused))
       answer
@@ -989,22 +982,22 @@
                 'variables-kept
                 (list 'variables (loaded-ca-variables)))))))
 
-;; The library's table and rule, and this suite's copy of each, written
-;; apart (ADR-0024, decision 2; amended 2026-10-26): Guix's libcurls, by
-;; version, and what each one's environment patch does to a request's CA
-;; file. 8.20.0's writes SSL_CERT_FILE over CAINFO and SSL_CERT_DIR over
-;; CAPATH when a transfer starts, after every setopt: overrides. Any other
-;; Guix libcurl is taken to override, 8.6.0 among them, whose older patch
-;; does not (measured, research/m4/slice3/); a libcurl outside the store
-;; never does. A Guix libcurl with no row fails the pin, named: measure it
-;; with research/m4/slice3/run.sh's when set, and add its row to both.
+;; The library's table and rule, and this suite's copy of each, written apart
+;; (ADR-0024): Guix's libcurls, by version, and what each one's environment
+;; patch does to a request's CA file. 8.20.0's writes SSL_CERT_FILE over
+;; CAINFO and SSL_CERT_DIR over CAPATH when a transfer starts, after every
+;; setopt: overrides. Any other Guix libcurl is taken to override, 8.6.0 among
+;; them, whose older patch does not (measured); a libcurl outside the store
+;; never does. A Guix libcurl with no row fails the pin, named: measure what
+;; its patch does to a CA file, the variables set as it loads, and add its
+;; row to both.
 (define guix-pin-verdicts '(("8.20.0" . overrides)))
 
 ;; pin-refuses? : (U String #f) Any Any -> Boolean
 ;; Whether a submit on the libcurl mapped from FILE, at VERSION, its file
 ;; holding Guix's patch's literal when PATCHED is #t, refuses a CA file with
 ;; SSL_CERT_FILE or SSL_CERT_DIR set as it loaded: FILE under /gnu/store/,
-;; or PATCHED, whatever its version (ADR-0024, amended 2026-10-26: the key).
+;; or PATCHED, whatever its version: the literal is the key (ADR-0024).
 (define (pin-refuses? file version patched)
   (or (eq? patched #t)
       (and (string? file) (>= (string-length file) 11) (string=? (substring file 0 11) "/gnu/store/"))))
@@ -1183,7 +1176,7 @@
   ;; --- the control: the system store. It shows a refusal above is the run
   ;; CA's absence, not a broken TLS stack. A machine with no system CA
   ;; store answers 77 on OpenSSL builds, whose default CA file is missing
-  ;; (ADR-0018, consequences): the failure names that cause.
+  ;; (ADR-0018): the failure names that cause.
   (test-equal "the control, the system store, no CA file, verification on: https is refused, 60, since no system store trusts the run CA; 77 would be a machine with no system CA store; the counts back to the engine's alone"
     (list peer-refused running-counts)
     (let ((a (get 'https)))
@@ -1207,8 +1200,8 @@
                                                      ".pem"))))
 
   ;; --- a setopt libcurl refuses: a string past CURL_MAX_INPUT_LENGTH,
-  ;; 8000000 bytes, is CURLE_BAD_FUNCTION_ARGUMENT on all four recorded
-  ;; Linux libcurls (measured in M2 slice 3's review)
+  ;; 8000000 bytes, is CURLE_BAD_FUNCTION_ARGUMENT on all four recorded Linux
+  ;; libcurls.
   (test-equal "a CA file of 8000001 bytes, past libcurl's string limit of 8000000, is refused by curl_easy_setopt: setopt-failed, 43, CURLE_BAD_FUNCTION_ARGUMENT, naming CAINFO, with a request size of 0, and the counts back to the engine's alone"
     (list '(setopt-failed 43 "CAINFO" 0) running-counts)
     (list (guard (e ((curl-transfer-error? e)
@@ -1221,7 +1214,7 @@
           (native-counts)))
 
   ;; --- a file really named pkcs11:..., reached by a path that does not
-  ;; begin so (ADR-0024, decision 4)
+  ;; begin so (ADR-0024)
   (test-equal "a copy of ca.pem named pkcs11:ca.pem, reached by its absolute path, which does not begin pkcs11:, answers 200, whole; the counts back to the engine's alone"
     (list good-answer running-counts)
     (with-counts (get 'https 'ca-file pkcs11-named)))
@@ -1293,20 +1286,19 @@
                           (if (and k (not (memq k seen))) (cons k seen) seen))))))
           (lambda () (set! stop #t) (thread-join flipper))))))
 
-  ;; --- the Guix pin, in a child (ADR-0018, decision 5; ADR-0024, decision
-  ;; 2). Guix's 8.20.0 writes SSL_CERT_FILE over CAINFO and SSL_CERT_DIR
-  ;; over CAPATH when a transfer starts, as they were at curl_global_init;
-  ;; any other libcurl ignores both. So on a libcurl mapped from the store,
-  ;; a submit refuses a CA file, verification on, when either was set as it
-  ;; loaded, naming each set; elsewhere the transfer runs, and answers by
-  ;; its CA file. The child is handed the variables through its command, so
-  ;; this process's environment stays hermetic, and it prints the libcurl it
-  ;; loaded, its file, the variables it started with and those native
-  ;; recorded. Each case answers one way where it refuses and another
-  ;; where it does not: the SSL_CERT_FILE ones mirrored, so that ignored is
-  ;; told from added, and two that set or empty the variable after the
-  ;; load, so that what native read at the load is told from what a submit
-  ;; could read later.
+  ;; --- the Guix pin, in a child (ADR-0018 and ADR-0024). Guix's 8.20.0
+  ;; writes SSL_CERT_FILE over CAINFO and SSL_CERT_DIR over CAPATH when a
+  ;; transfer starts, as they were at curl_global_init; any other libcurl
+  ;; ignores both. So on a libcurl mapped from the store, a submit refuses a
+  ;; CA file, verification on, when either was set as it loaded, naming each
+  ;; set; elsewhere the transfer runs, and answers by its CA file. The child
+  ;; is handed the variables through its command, so this process's
+  ;; environment stays hermetic, and it prints the libcurl it loaded, its
+  ;; file, the variables it started with and those native recorded. Each case
+  ;; answers one way where it refuses and another where it does not: the
+  ;; SSL_CERT_FILE ones mirrored, so that ignored is told from added, and two
+  ;; that set or empty the variable after the load, so that what native read
+  ;; at the load is told from what a submit could read later.
   (let ((store-answer (get 'https))
         (overridden (lambda names (list 'request-refused 'ca-file 'environment-override names))))
     (for-each
@@ -1376,12 +1368,12 @@
                       libcurl-copy))
           '()))))
 
-  ;; --- the Mac's keychain (ADR-0024, amended 2026-10-27), in a child given
-  ;; CURL_SSL_BACKEND through its command. Apple's libcurl puts the backend
-  ;; it names in use at its init; a libcurl with one backend ignores it. On
-  ;; macOS, with LibreSSL, whose keychain undoes a CA file, a submit refuses
-  ;; a CA file, naming the backend; with SecureTransport the transfer runs,
-  ;; and answers by its CA file. Elsewhere both run, on this backend.
+  ;; --- macOS's keychain (ADR-0024), in a child given CURL_SSL_BACKEND
+  ;; through its command. Apple's libcurl puts the backend it names in use at
+  ;; its init; a libcurl with one backend ignores it. On macOS, with LibreSSL,
+  ;; whose keychain undoes a CA file, a submit refuses a CA file, naming the
+  ;; backend; with SecureTransport the transfer runs, and answers by its CA
+  ;; file. Elsewhere both run, on this backend.
   (for-each
    (lambda (row)
      (let* ((value (car row)) (name (cadr row))

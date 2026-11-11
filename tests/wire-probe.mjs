@@ -1,8 +1,7 @@
-// tests/wire-probe.mjs: the byte probe (M1 plan, sections 5 and 8.3;
-// ADR-0005, amended). It knows no HTTP: it sends the bytes it is given and
-// reports every byte it receives, so nothing between the origin and a suite
-// normalises framing. Node's standard library only, for Node 20 and later
-// (measured on 20.10.0 and 24.18.0).
+// tests/wire-probe.mjs: the byte probe (ADR-0005). It knows no HTTP: it sends
+// the bytes it is given and reports every byte it receives, so nothing between
+// the origin and a suite normalises framing. Node's standard library only, for
+// Node 20 and later (measured on 20.10.0 and 24.18.0).
 //
 //   node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]]
 //                             [--split OFFSET:MS] [--deadline MS] HOST PORT HEX IDLE-MS

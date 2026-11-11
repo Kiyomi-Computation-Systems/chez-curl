@@ -1,7 +1,6 @@
 #!/bin/sh
 # tests/make-test-pki.sh: the test origin's TLS material, made per run with
-# the openssl command line, so nothing in the repository can expire (ADR-0005;
-# M1 plan, section 8).
+# the openssl command line, so nothing in the repository can expire (ADR-0005).
 #
 #   tests/make-test-pki.sh DIR
 #
@@ -26,10 +25,10 @@
 # instead, one that is never trusted.
 #
 # It runs $OPENSSL, else openssl. The same commands were measured on OpenSSL
-# 3.5.7, 3.0.13 and 3.0.11, and on LibreSSL 3.3.6, the Mac's /usr/bin/openssl
-# (2026-10-18). LibreSSL's req takes a subject from the config's
-# distinguished_name section over -subj when the config says prompt = no, so
-# that section is empty here and every subject comes from -subj.
+# 3.5.7, 3.0.13 and 3.0.11, and on LibreSSL 3.3.6, macOS's /usr/bin/openssl.
+# LibreSSL's req takes a subject from the config's distinguished_name section
+# over -subj when the config says prompt = no, so that section is empty here and
+# every subject comes from -subj.
 #
 # A wrong argument exits 2. A failing openssl command exits 1, with what
 # openssl wrote on stderr; DIR may then hold some of the files, and the caller

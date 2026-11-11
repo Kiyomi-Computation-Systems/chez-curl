@@ -260,7 +260,7 @@
   (libcurl-world (string-append fhs-maps
                                 (maps-line "/opt/gnu/store/ddd-glibc/lib/libc.so.6"))))
 
-;; --- the loaded library's file (ADR-0024, amended 2026-10-26) --------------------
+;; --- the loaded library's file (ADR-0024) ----------------------------------------
 
 ;; curl-maps : String
 ;; Two libcurl mappings, its text and its data, beside libc's, a heap with

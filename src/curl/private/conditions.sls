@@ -7,21 +7,18 @@
 ;;;   &curl-wrong-thread          an engine-owned handle used from another
 ;;;                               thread (ADR-0012)
 ;;;   &curl-embedded-nul          a string C would read short: it holds
-;;;                               U+0000 (M2 plan, section 3.3)
+;;;                               U+0000
 ;;;   &curl-url-error             a URL refused: by libcurl's URL API, or by
 ;;;                               chez-curl's own checks (ADR-0008)
 ;;;   &curl-request-error         a request's field refused, before anything
-;;;                               native is made (M2 plan, section 5.3); or
-;;;                               a piece put past a streamed body's length,
-;;;                               on a token live (the M6 plan, section 3.3)
+;;;                               native is made; or a piece put past a
+;;;                               streamed body's length, on a token live
 ;;;   &curl-transfer-error        a transfer that failed: libcurl's code and
 ;;;                               texts, what the write callable recorded,
-;;;                               the bytes of request sent (M2 plan,
-;;;                               sections 3.7 and 5.3), and the status a
-;;;                               proxy refused its CONNECT with (ADR-0037,
-;;;                               amended 2026-11-03), or one cancelled or
-;;;                               stopped (M3 plan, section 3.4); and under
-;;;                               it, its classes (ADR-0022):
+;;;                               the bytes of request sent, and the status a
+;;;                               proxy refused its CONNECT with (ADR-0037),
+;;;                               or one cancelled or stopped; and under it,
+;;;                               its classes (ADR-0022):
 ;;;     &curl-timeout             28
 ;;;     &curl-connect-error       5, 6, 7, 45, 96, 97
 ;;;     &curl-send-receive-error  18, 52, 55, 56
@@ -30,8 +27,7 @@
 ;;;     &curl-protocol-error      1, 8, 16, 61, 92, 95
 ;;;     &curl-too-large           63, 100, the body limit and the header cap
 ;;;   &curl-engine-error          an engine that has stopped, or failed, and
-;;;                               the condition it failed with (M3 plan,
-;;;                               sections 3.4 and 3.7)
+;;;                               the condition it failed with
 ;;;
 ;;; A raise may compound one with &who, &message and &irritants, so that
 ;;; the default handler prints readable text. Tests assert the reason symbol
@@ -119,8 +115,7 @@
   ;; policy's statuses or methods; else (kind K), K its kind-of, never the
   ;; value: a string, or a list holding one, can be a URL, a header,
   ;; credentials or a body. A proxy URL or a credentials list handed where
-  ;; a key or another value belongs was printed whole (M7 slice 3's
-  ;; review). Pure.
+  ;; a key or another value belongs was printed whole. Pure.
   (define (shown-value x)
     (if (or (shown-atom? x) (and (list? x) (for-all shown-atom? x)))
         x
@@ -137,7 +132,7 @@
   ;; PREDICATE holds; anything else an assertion violation from WHO, "not
   ;; WHAT", naming it by shown-value, never the value. Chez's own check
   ;; named what it refused, so (curl-request-url "http://u:PW@h/") printed
-  ;; the password (ADR-0036, amended 2026-11-03).
+  ;; the password (ADR-0036).
   (define (checked-accessor who predicate what accessor)
     (lambda (x)
       (unless (predicate x)
@@ -175,7 +170,7 @@
   ;;               (below-floor, no-ssl, missing-api for any entry point
   ;;               but curl_version_info, and load-failed from
   ;;               curl_global_init or curl_easy_init); #f before that
-  ;;               (ADR-0002, decision 4)
+  ;;               (ADR-0002)
   (define-condition-type &curl-library-unavailable &curl-error
     unchecked-make-curl-library-unavailable curl-library-unavailable?
     (reason unchecked-curl-library-unavailable-reason)
@@ -187,8 +182,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-library-unavailable-reason
     (checked-accessor 'curl-library-unavailable-reason curl-library-unavailable? "a &curl-library-unavailable" unchecked-curl-library-unavailable-reason))
   (define curl-library-unavailable-path
@@ -248,8 +242,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-wrong-thread-who
     (checked-accessor 'curl-wrong-thread-who curl-wrong-thread? "a &curl-wrong-thread" unchecked-curl-wrong-thread-who))
   (define curl-wrong-thread-expected
@@ -263,16 +256,14 @@
   ;; curl-embedded-nul? : Any -> Boolean
   ;; curl-embedded-nul-string : &curl-embedded-nul -> String
   ;; STRING holds U+0000, so C, which reads a string to its first NUL, would
-  ;; read it short. Refused before anything is allocated (M2 plan, section
-  ;; 3.3).
+  ;; read it short. Refused before anything is allocated.
   (define-condition-type &curl-embedded-nul &curl-error
     make-curl-embedded-nul curl-embedded-nul?
     (string unchecked-curl-embedded-nul-string))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-embedded-nul-string
     (checked-accessor 'curl-embedded-nul-string curl-embedded-nul? "a &curl-embedded-nul" unchecked-curl-embedded-nul-string))
 
@@ -286,14 +277,14 @@
   ;;            others, or #f for a code that list lacks, a later libcurl's;
   ;;            for chez-curl's own, one of its four reasons:
   ;;              scheme-not-http  the URL parsed, but its scheme is neither
-  ;;                               http nor https (ADR-0008, decision 2)
+  ;;                               http nor https (ADR-0008)
   ;;              embedded-nul     the input holds U+0000, or a bytevector
   ;;                               0x00, which libcurl would read as its
   ;;                               end; a bytevector's input is its bytes
   ;;                               read as Latin-1
   ;;              not-utf-8        libcurl gave back a URL, or a part of one,
   ;;                               whose bytes are not UTF-8: it decodes a
-  ;;                               host's %XX (the M5 plan, section 3.1)
+  ;;                               host's %XX
   ;;              query-not-kept   a query part appended did not come back
   ;;                               as written, one holding # among them
   ;;                               (ADR-0028); the input is the part
@@ -304,7 +295,7 @@
   ;; Tests assert the reason and the code, never the message. The input is
   ;; this field's alone: a refusal's message and irritants name its field,
   ;; url, reference, query or fragment, never the string, which can hold
-  ;; userinfo (ADR-0008, amended 2026-11-03; (curl private url)'s refuse).
+  ;; userinfo (ADR-0008; (curl private url)'s refuse).
   ;;
   ;; make-curl-url-error : Any Any Any Any -> &curl-url-error
   ;; curl-url-error? : Any -> Boolean
@@ -323,8 +314,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-url-error-input
     (checked-accessor 'curl-url-error-input curl-url-error? "a &curl-url-error" unchecked-curl-url-error-input))
   (define curl-url-error-reason
@@ -337,7 +327,7 @@
   ;; --- &curl-request-error -------------------------------------------------------
 
   ;; curl-request-error-reasons : (Listof Symbol)
-  ;; Why a request's field is refused (M2 plan, section 5.3):
+  ;; Why a request's field is refused:
   ;;
   ;;   embedded-nul  a value holds U+0000, which C would read as its end: a
   ;;                 header's, a CA file's path, or a hatch option's name or
@@ -346,8 +336,7 @@
   ;;                 or a line libcurl sends: a header's, or a hatch
   ;;                 option's string
   ;;   not-latin-1   a value holds a char above U+00FF, which has no byte:
-  ;;                 header strings are Latin-1, both ways (ADR-0001,
-  ;;                 amended 2026-10-23)
+  ;;                 header strings are Latin-1, both ways (ADR-0001)
   ;;   not-a-token   a header name is empty, or holds a char that is no
   ;;                 tchar (RFC 9110, section 5.6.2)
   ;;   surrounding-whitespace
@@ -366,14 +355,14 @@
   ;;   owned-option  an option the hatch may not attach: chez-curl sets it,
   ;;                 a request field sets it, it is the twin of one that
   ;;                 does, or chez-curl keeps it from the hatch, compared by
-  ;;                 id (ADR-0009, amended 2026-10-23 and 2026-10-27)
+  ;;                 id (ADR-0009)
   ;;   unsupported-type
   ;;                 an option the hatch may not attach for its type: only
   ;;                 long, enumerated values, off_t, a string, a string list
   ;;                 and a blob, so no address of the caller's passes
   ;;   unknown-option
   ;;                 an option's name the loaded libcurl does not know
-  ;;                 (ADR-0009, decision 3)
+  ;;                 (ADR-0009)
   ;;   repeated-option
   ;;                 an option the request carries already, or one attached
   ;;                 earlier in the same call, by any of its names: its id
@@ -382,22 +371,20 @@
   ;;   repeated-key  a key given twice to one call
   ;;   missing-value a key given last, with no value after it
   ;;   body-not-allowed
-  ;;                 a body with get or head, which send none (the M4 plan,
-  ;;                 section 3.2)
+  ;;                 a body with get or head, which send none
   ;;   pkcs11-url    a CA file's path that begins pkcs11:, in any ASCII case,
-  ;;                 which GnuTLS reads as a PKCS#11 URL, not a file
-  ;;                 (ADR-0024, decision 4)
+  ;;                 which GnuTLS reads as a PKCS#11 URL, not a file (ADR-0024)
   ;;   environment-override
   ;;                 a CA file, verification on, on a libcurl that is Guix's,
   ;;                 every one of which is taken to write SSL_CERT_FILE over
   ;;                 it or add SSL_CERT_DIR beside it, with either set when
-  ;;                 libcurl loaded (ADR-0024, decision 2); the irritants
+  ;;                 libcurl loaded (ADR-0024); the irritants
   ;;                 name each one set
   ;;   keychain-fallback
   ;;                 a CA file, verification on, on macOS with Apple's
   ;;                 LibreSSL the TLS backend in use, which checks the
-  ;;                 keychain when a CA file fails (ADR-0024, amended
-  ;;                 2026-10-27); the irritants name the backend
+  ;;                 keychain when a CA file fails (ADR-0024); the
+  ;;                 irritants name the backend
   ;;   stream-with-rounds
   ;;                 a request that streams its response, stream-buffer,
   ;;                 beside a second request inside its transfer: the
@@ -406,57 +393,54 @@
   ;;                 100-continue, in any ASCII case, refused whatever the
   ;;                 method: a request that sends a body is sent again on a
   ;;                 417. Each would publish the head of the round before
-  ;;                 the last (the M6 plan, section 3.2)
+  ;;                 the last
   ;;   body-length-without-stream
   ;;                 a body-length beside a body that does not stream, a
   ;;                 bytevector or none: libcurl frames a whole body from
-  ;;                 its own length (the M6 plan, section 3.1)
+  ;;                 its own length
   ;;   body-length-mismatch
   ;;                 a piece put past a streamed body's body-length, not
   ;;                 taken; the transfer then fails with the same reason,
   ;;                 unless another came first: by the read callable's abort
   ;;                 while libcurl still reads the body, else as its outcome
-  ;;                 is read (the M6 plan, section 3.3; ADR-0030, amended
-  ;;                 2026-10-31)
+  ;;                 is read (ADR-0030)
   ;;   prior-knowledge-over-https
   ;;                 an http-version of http/2-prior-knowledge beside an
   ;;                 https:// URL, refused at submit, where the URL is
   ;;                 parsed: HTTP/2 by prior knowledge is for http:// alone,
-  ;;                 and over https:// http/2 gets HTTP/2 by ALPN (ADR-0034,
-  ;;                 decision 2)
+  ;;                 and over https:// http/2 gets HTTP/2 by ALPN (ADR-0034)
   ;;   credentials-bytes
   ;;                 a credentials string, a user, a password or a token,
   ;;                 holding a control char, U+0000 to U+001F or U+007F,
   ;;                 which libcurl writes into its header unescaped; or a
   ;;                 Basic user holding a colon, where RFC 7617 ends the
-  ;;                 user (ADR-0036, amended 2026-11-02, decision 6)
+  ;;                 user (ADR-0036)
   ;;   credentials-empty
   ;;                 credentials with nothing to send: a Bearer token "", or
   ;;                 a Basic or Digest user and password both "", which
-  ;;                 8.23.0 sends no header for (ADR-0036, decision 7)
+  ;;                 8.23.0 sends no header for (ADR-0036)
   ;;   credentials-beside-userinfo
   ;;                 credentials beside a URL whose user or password part
   ;;                 libcurl's URL API reports, "" among them, refused at
-  ;;                 submit, where the URL is parsed (ADR-0036, decision 1)
+  ;;                 submit, where the URL is parsed (ADR-0036)
   ;;   credentials-beside-authorization
   ;;                 credentials beside a header named Authorization, A to Z
   ;;                 folded: libcurl drops its own Basic and Bearer for the
-  ;;                 caller's, and sends both beside Digest (ADR-0036,
-  ;;                 decision 4)
+  ;;                 caller's, and sends both beside Digest (ADR-0036)
   ;;   digest-with-stream
   ;;                 Digest credentials beside a streamed body or a streamed
   ;;                 response: Digest's second request inside the transfer
   ;;                 would publish the probe's 401 head, and its body rides a
-  ;;                 pooled connection (ADR-0036, decision 3)
+  ;;                 pooled connection (ADR-0036)
   ;;   prior-knowledge-through-proxy
   ;;                 an http-version of http/2-prior-knowledge beside a proxy
   ;;                 URL, refused at submit: libcurl ignores prior knowledge
   ;;                 through a proxy that does not tunnel, and sends HTTP/1.1
-  ;;                 (ADR-0034, amended; the M7 plan, section 3.2)
+  ;;                 (ADR-0034)
   ;;   proxy-url     a proxy URL libcurl's URL API cannot parse, one that
   ;;                 names no scheme among them, or whose user or password
   ;;                 holds a % not followed by two hex digits, refused at
-  ;;                 submit (ADR-0037, amended 2026-11-03)
+  ;;                 submit (ADR-0037)
   ;;   proxy-scheme  a proxy URL whose scheme is neither http nor https, A to
   ;;                 Z folded, judged by chez-curl alike on every libcurl
   ;;   proxy-url-parts
@@ -465,7 +449,7 @@
   ;;                 a header named Proxy-Authorization, A to Z folded,
   ;;                 whatever proxy the request names: inside a tunnel libcurl
   ;;                 sends it to the origin; a proxy's credentials are its
-  ;;                 URL's userinfo (ADR-0037, decision 4)
+  ;;                 URL's userinfo (ADR-0037)
   ;;   proxy-tls-without-https-proxy
   ;;                 a proxy-ca-file, or proxy-verify #f, beside any proxy but
   ;;                 an https:// URL, refused at submit: the proxy's TLS
@@ -474,25 +458,22 @@
   ;;                 an https:// URL through an https:// proxy URL on a
   ;;                 libcurl where TLS inside TLS stalls until its timeout:
   ;;                 Ubuntu's 8.5.0 with GnuTLS, whatever the http-version,
-  ;;                 and 7.85.0 unless the request asks http/1.1 (ADR-0037,
-  ;;                 decisions 7 and 10)
+  ;;                 and 7.85.0 unless the request asks http/1.1 (ADR-0037)
   ;;   https-proxy-unsupported
   ;;                 an https:// proxy URL on a libcurl whose features lack
   ;;                 CURL_VERSION_HTTPS_PROXY: libcurl would refuse it, and
   ;;                 write the whole URL, its password with it, into its
-  ;;                 error buffer (M7 slice 3's review, read in source)
+  ;;                 error buffer (read in source)
   ;;   cookie-line   a line a cookie jar's load refuses, every line checked
   ;;                 before any is loaded: one not in the form a read-out
   ;;                 writes, seven tab-separated fields with no control
   ;;                 byte, TRUE or FALSE, the domain's dot beside TRUE, an
   ;;                 absolute path, an expiry of decimal digits, a name, a
   ;;                 name and value of 4,096 bytes at most; or holding a char
-  ;;                 above U+00FF, which has no byte (ADR-0035, amended
-  ;;                 2026-11-04, decisions 7 and 8)
+  ;;                 above U+00FF, which has no byte (ADR-0035)
   ;;   cookie-jar-engine
   ;;                 a request whose cookie-jar is another engine's than the
   ;;                 one it is submitted to: a jar is its engine's alone
-  ;;                 (the M7 plan, section 3.5)
   ;;   cookie-jar-closed
   ;;                 a request whose cookie-jar is closed, or closing,
   ;;                 refused at submit, or, a close crossing the submit, as
@@ -502,12 +483,12 @@
   ;;                 a header named Cookie or Host, A to Z folded, any value,
   ;;                 beside a cookie jar: libcurl sends a caller's Cookie
   ;;                 beside the jar's, and matches the jar's cookies against
-  ;;                 a caller's Host (ADR-0035, decision 6)
+  ;;                 a caller's Host (ADR-0035)
   ;;   part-bytes    a multipart part's name, filename or type holding a
   ;;                 control char, U+0000 to U+001F or U+007F, or its name or
   ;;                 filename a ", a file part's default filename, its path's
   ;;                 last component, among them: libcurl would escape some
-  ;;                 and send the rest raw, by version (ADR-0039, decision 2)
+  ;;                 and send the rest raw, by version (ADR-0039)
   ;;   part-empty    a multipart part's name, filename or type that is ""
   ;;   multipart-empty
   ;;                 a multipart body with no part: libcurl would send a
@@ -515,17 +496,17 @@
   ;;   multipart-content-type
   ;;                 a header named Content-Type, A to Z folded, beside a
   ;;                 multipart body: libcurl writes the body's type, its
-  ;;                 boundary with it (ADR-0039, decision 1)
+  ;;                 boundary with it (ADR-0039)
   ;;   part-file     a file part's path that is empty, holds U+0000, or names
   ;;                 no regular file by stat, symlinks followed, as the
   ;;                 request is made or at submit; or, at submit, a path that
   ;;                 is not absolute, which only a fault can bring there
-  ;;                 (ADR-0039, amended 2026-11-07)
+  ;;                 (ADR-0039)
   ;;   multipart-unsupported
   ;;                 a multipart body, at submit, on a libcurl whose load's
   ;;                 probe found no mime: curl_formadd answered other than 0,
-  ;;                 or curl_mime_init made none (ADR-0039, amended
-  ;;                 2026-11-06); the irritants hold the probe's answer
+  ;;                 or curl_mime_init made none (ADR-0039); the irritants
+  ;;                 hold the probe's answer
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -565,8 +546,8 @@
   ;;           value, named by its header's name, as given; the key, as
   ;;           given, for a key's refusal, but a key that is no symbol,
   ;;           named by its kind, (kind K), shown-key's: a proxy URL or a
-  ;;           credentials list handed where a key belongs was printed whole
-  ;;           (M7 slice 3's review); the method, for body-not-allowed;
+  ;;           credentials list handed where a key belongs was printed whole;
+  ;;           the method, for body-not-allowed;
   ;;           the stream-buffer, for stream-with-rounds; the body-length,
   ;;           for body-length-without-stream and body-length-mismatch; the
   ;;           http-version, for prior-knowledge-over-https and
@@ -591,7 +572,7 @@
   ;;           multipart-empty and multipart-unsupported. A cookie's value is a secret,
   ;;           as a password is. No
   ;;           credentials string is ever a value or an irritant: a refusal
-  ;;           names a secret by its part (the M7 plan, section 3.1)
+  ;;           names a secret by its part
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error
     unchecked-make-curl-request-error curl-request-error?
@@ -601,8 +582,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-request-error-field
     (checked-accessor 'curl-request-error-field curl-request-error? "a &curl-request-error" unchecked-curl-request-error-field))
   (define curl-request-error-value
@@ -628,7 +608,7 @@
   ;; --- &curl-transfer-error ------------------------------------------------------
 
   ;; curl-transfer-error-reasons : (Listof Symbol)
-  ;; Why a transfer failed (M2 plan, section 5.3; M3 plan, section 3.4):
+  ;; Why a transfer failed:
   ;;
   ;;   perform-failed   the transfer ended with a CURLcode, which
   ;;                    curl_multi_info_read gave the engine, and the write
@@ -645,22 +625,20 @@
   ;;   setopt-failed    curl_easy_setopt answered a code, for the option named
   ;;   unknown-option   the loaded libcurl does not know the option named
   ;;   no-handle        curl_easy_init answered NULL
-  ;;   cancelled        the caller cancelled it before it ended (M3 plan,
-  ;;                    section 3.5)
+  ;;   cancelled        the caller cancelled it before it ended
   ;;   stopped          its engine stopped before it ended
   ;;   pause-failed     curl_easy_pause answered other than 0 when the engine
   ;;                    resumed a streamed transfer, and no callable recorded
   ;;                    a reason inside the call, which would win; the code
-  ;;                    is the call's (ADR-0012, amended 2026-10-29)
+  ;;                    is the call's (ADR-0012)
   ;;   body-length-mismatch
   ;;                    a streamed body ended short of its body-length, or a
-  ;;                    piece was put past it, alike on every libcurl (the M6
-  ;;                    plan, section 3.3): the read callable recorded it and
-  ;;                    aborted the transfer, the code 42; or, for a piece
-  ;;                    put once libcurl had read the length whole, and
-  ;;                    called the read callable no more, the outcome reads
-  ;;                    the put's refusal, the code libcurl's own, 0 among
-  ;;                    them (ADR-0030, amended 2026-10-31)
+  ;;                    piece was put past it, alike on every libcurl: the read
+  ;;                    callable recorded it and aborted the transfer, the code
+  ;;                    42; or, for a piece put once libcurl had read the length
+  ;;                    whole, and called the read callable no more, the outcome
+  ;;                    reads the put's refusal, the code libcurl's own, 0 among
+  ;;                    them (ADR-0030)
   ;;   body-not-replayable
   ;;                    libcurl wanted to send a streamed body again, by a
   ;;                    rewind or a later attempt, once the read callable had
@@ -670,7 +648,7 @@
   ;;                    check, on its thread, before the transfer was set up:
   ;;                    no regular file there by stat, or one that does not
   ;;                    open, with no code; or curl_mime_filedata answered
-  ;;                    one, its code (ADR-0039, amended 2026-11-06)
+  ;;                    one, its code (ADR-0039)
   ;;   mime-failed      curl_mime_init answered NULL, with no code, or another
   ;;                    call making the mime's parts answered one, its code
   ;; A reason a callable recorded wins over libcurl's code, which the code
@@ -702,17 +680,16 @@
   ;;                 them, summed over every attempt it made, a resend on a
   ;;                 fresh connection after a dead one included, and 0 when
   ;;                 it sent none, or #f on a libcurl whose count is known
-  ;;                 broken, 8.7.0 and 8.7.1 (ADR-0022, amended
-  ;;                 2026-10-27); for a multipart body, on 7.85.0 and 8.5.0,
-  ;;                 the head alone, whatever of the body went, and on 8.20.0
-  ;;                 and 8.23.0 the head and the body's bytes sent (the M8
-  ;;                 plan, section 3.8); 0 for one refused while it was set up,
+  ;;                 broken, 8.7.0 and 8.7.1 (ADR-0022); for a multipart body,
+  ;;                 on 7.85.0 and 8.5.0, the head alone, whatever of the body
+  ;;                 went, and on 8.20.0 and 8.23.0 the head and the body's
+  ;;                 bytes sent; 0 for one refused while it was set up,
   ;;                 setopt-failed, unknown-option, no-handle, part-file or
-  ;;                 mime-failed, which sent nothing; #f for one cancelled or stopped, taken apart
-  ;;                 unread. Whether it is 0 is what M5's retry policy reads
-  ;;                 to tell whether a request was sent: a failure's timings
-  ;;                 move with the version, and this does not (ADR-0022,
-  ;;                 amended 2026-10-26)
+  ;;                 mime-failed, which sent nothing; #f for one cancelled or
+  ;;                 stopped, taken apart unread. Whether it is 0 is what the
+  ;;                 retry policy reads to tell whether a request was sent: a
+  ;;                 failure's timings move with the version, and this does not
+  ;;                 (ADR-0022)
   ;;   connect-code  (U Positive-Integer #f): the status a proxy answered the
   ;;                 transfer's CONNECT with, CURLINFO_HTTP_CONNECTCODE, when
   ;;                 it is no 2xx: a proxy refused the tunnel, 403, 407, 502,
@@ -722,7 +699,7 @@
   ;;                 stopped. Such a failure's code moves with the version, 56
   ;;                 on 7.85.0 and 8.5.0 and 7 on 8.20.0 and 8.23.0, and its
   ;;                 status does not, so the high level's retry reads it
-  ;;                 (ADR-0037 and ADR-0026, amended 2026-11-03)
+  ;;                 (ADR-0037 and ADR-0026)
   ;;
   ;; Tests assert the reason, the code, the option, the recorded object, the
   ;; request size and the CONNECT's status, and a text only where a version
@@ -740,8 +717,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-transfer-error-reason
     (checked-accessor 'curl-transfer-error-reason curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-reason))
   (define curl-transfer-error-code
@@ -794,7 +770,7 @@
   ;; Each class, with the CURLcodes it names, by their names in (curl
   ;; private constants). A class is described in curl's words for its
   ;; codes, from libcurl-errors, never by a cause: one failure's code moves
-  ;; with the version (ADR-0022, amended 2026-10-26).
+  ;; with the version (ADR-0022).
   ;;
   ;;   timeout       the operation timed out
   ;;   connect       a proxy or host was not resolved, connect() to the host
@@ -909,7 +885,7 @@
   ;; make-classed-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
   ;;                               (U String #f) Any (U Natural #f) (U Positive-Integer #f)
   ;;                               -> &curl-transfer-error
-  ;; What a failed transfer raises (ADR-0022, amended 2026-10-26): for
+  ;; What a failed transfer raises (ADR-0022): for
   ;; perform-failed, the class its CODE has, or the base type for a code no
   ;; class names; for body-limit and header-limit, too-large, whatever its
   ;; code; for every other reason, the base type, a setopt-failed whose code
@@ -933,8 +909,7 @@
   ;; --- &curl-engine-error -------------------------------------------------------
 
   ;; curl-engine-error-reasons : (Listof Symbol)
-  ;; Why an engine refused a message, or failed a transfer (M3 plan, sections
-  ;; 3.4 and 3.7):
+  ;; Why an engine refused a message, or failed a transfer:
   ;;
   ;;   stopped  the engine was stopped: a submit after its stop
   ;;   failed   something raised inside the engine's loop: every transfer it
@@ -954,8 +929,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define curl-engine-error-reason
     (checked-accessor 'curl-engine-error-reason curl-engine-error? "a &curl-engine-error" unchecked-curl-engine-error-reason))
   (define curl-engine-error-condition

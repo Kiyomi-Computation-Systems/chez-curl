@@ -6,7 +6,7 @@
 ;;; and hands their answers here, so tests/test-verify.sps can make every
 ;;; decision on synthetic inputs. Both checks come after curl_version_info
 ;;; is read, so each takes the library's report too, and every refusal
-;;; carries it (ADR-0002, decision 4). In load order:
+;;; carries it (ADR-0002). In load order:
 ;;;
 ;;;   1. check-version: version_num at least the floor, 7.85.0, else
 ;;;      below-floor; then CURL_VERSION_SSL set, else no-ssl.

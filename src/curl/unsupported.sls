@@ -1,10 +1,9 @@
 #!r6rs
-;;; (curl unsupported): the escape hatch (ADR-0009; the M4 plan, section
-;;; 3.7). It attaches libcurl options chez-curl does not wrap to a request,
-;;; by name, and the engine sets them last, after every option chez-curl
-;;; sets itself. It is unsupported surface: it carries no compatibility
-;;; promise, and an option set through it can change behaviour chez-curl
-;;; does not test.
+;;; (curl unsupported): the escape hatch (ADR-0009). It attaches libcurl
+;;; options chez-curl does not wrap to a request, by name, and the engine
+;;; sets them last, after every option chez-curl sets itself. It is
+;;; unsupported surface: it carries no compatibility promise, and an option
+;;; set through it can change behaviour chez-curl does not test.
 ;;;
 ;;; Each option is checked as it is attached, against the loaded libcurl's
 ;;; own table, and the request keeps a copy of its value, the one checked:

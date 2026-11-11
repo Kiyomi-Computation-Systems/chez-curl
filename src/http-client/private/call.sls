@@ -1,35 +1,33 @@
 #!r6rs
 ;;; (http-client private call): a session's and a call's keys, checked; the
-;;; session's record, with its jitter generator; the retry policy, made
-;;; from its keys; the merge of a call's keys with its session's; the form
+;;; session's record, with its jitter generator; the retry policy, made from
+;;; its keys; the merge of a call's keys with its session's; the form
 ;;; encoding; a call made into its first request, with its redirect and
-;;; retry policies; and a request group's limit (the M5 plan, sections 3.2,
-;;; 3.4, 3.5 and 3.7; ADR-0025, ADR-0026, ADR-0027).
+;;; retry policies; and a request group's limit (ADR-0025, ADR-0026,
+;;; ADR-0027).
 ;;;
 ;;; Every check of a caller's string or list runs on a private copy, and the
-;;; copy is what is used (ADR-0001, amended): headers, the user agent, the
-;;; CA file's path, a body, a form, params, and a policy's statuses and
-;;; methods are copied before anything reads them, and a multipart body's
-;;; parts by the low level, each part's data copied here once, as the call
-;;; starts (ADR-0039, amended 2026-11-07). The keys are refused by
-;;; name first, as the low level refuses its own; then the high level's own
-;;; values, a body, a form, params, redirects, allow-downgrade and retry;
-;;; then the low level's, by building a request from them, whose refusal
-;;; passes through as it was raised.
+;;; copy is what is used (ADR-0001): headers, the user agent, the CA file's
+;;; path, a body, a form, params, and a policy's statuses and methods are
+;;; copied before anything reads them, and a multipart body's parts by the
+;;; low level, each part's data copied here once, as the call starts
+;;; (ADR-0039). The keys are refused by name first, as the low level refuses
+;;; its own; then the high level's own values, a body, a form, params,
+;;; redirects, allow-downgrade and retry; then the low level's, by building
+;;; a request from them, whose refusal passes through as it was raised.
 ;;;
 ;;; A session's one mutable part, beside its engine, is its jitter
 ;;; generator, a make-pseudo-random-generator of its own, time-seeded, never
-;;; Chez's random, which draws the same sequence in every process (the M5
-;;; plan, section 2). Chez 10.4.0 seeds each from the UTC time, (time-second
-;;; + time-nanosecond) & 0xFFFFFFFF (its s/5_3.ss). Each draw holds the
-;;; session's own mutex, inside a critical section around with-mutex, so an
-;;; escape cannot leave the mutex held (traps.md), and threads that share
-;;; the session draw one at a time: two threads drawing at once from a bare
-;;; generator lose and repeat draws (the slice's review).
+;;; Chez's random, which draws the same sequence in every process. Chez
+;;; 10.4.0 seeds each from the UTC time, (time-second + time-nanosecond) &
+;;; 0xFFFFFFFF (its s/5_3.ss). Each draw holds the session's own mutex,
+;;; inside a critical section around with-mutex, so an escape cannot leave
+;;; the mutex held, and threads that share the session draw one at a time:
+;;; two threads drawing at once from a bare generator lose and repeat draws.
 ;;;
 ;;; Header names are compared with A to Z folded alone, never char-downcase
 ;;; or char-foldcase, which fold U+212A KELVIN SIGN to k and U+017F LONG S
-;;; to s (traps.md): libcurl and a server compare bytes.
+;;; to s: libcurl and a server compare bytes.
 (library (http-client private call)
   (export session-keys call-keys port-keys retry-keys key-settings string-pairs string-pairs-within
           ascii-ci=? form-encode form-type with-form-type merge-fields
@@ -60,8 +58,8 @@
 
   ;; request-session-keys : (Listof Symbol)
   ;; The session's keys that are make-curl-request's, each with the low
-  ;; level's default (the M5 plan, section 3.2), http-version, credentials,
-  ;; proxy-ca-file and proxy-verify among them (the M7 plan, section 3.1).
+  ;; level's default, http-version, credentials, proxy-ca-file and
+  ;; proxy-verify among them.
   (define request-session-keys
     '(headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
       http-version credentials proxy-ca-file proxy-verify))
@@ -76,8 +74,8 @@
 
   ;; session-only-keys : (Listof Symbol)
   ;; The session's keys no call takes: cookies, whether the session keeps a
-  ;; cookie jar, #f by default, which every call of the session carries (the
-  ;; M7 plan, section 3.1; ADR-0035): a call cannot make or drop one.
+  ;; cookie jar, #f by default, which every call of the session carries
+  ;; (ADR-0035): a call cannot make or drop one.
   (define session-only-keys '(cookies))
 
   ;; session-keys : (Listof Symbol)
@@ -88,25 +86,24 @@
   ;; call-keys : (Listof Symbol)
   ;; The keys a call takes: the session's request and policy keys, each
   ;; replacing the session's value, then body, form, params and
-  ;; body-length, a producer's length (ADR-0031, decision 2), and
-  ;; multipart, a multipart body's parts (ADR-0039; the M8 plan, section
-  ;; 3.1). Not cookies: the session's jar is every call's.
+  ;; body-length, a producer's length (ADR-0031), and multipart, a multipart
+  ;; body's parts (ADR-0039). Not cookies: the session's jar is every call's.
   (define call-keys
     (append request-session-keys policy-keys '(body form params body-length multipart)))
 
   ;; port-keys : (Listof Symbol)
   ;; The keys call-with-response-port takes: a call's, then stream-buffer,
-  ;; its own (ADR-0031, decision 1).
+  ;; its own (ADR-0031).
   (define port-keys (append call-keys '(stream-buffer)))
 
   ;; default-redirects : Natural
-  ;; The most redirects a call follows when neither the session nor the
-  ;; call names a bound: 20, after the browsers' (the M5 plan, section 3.2).
+  ;; The most redirects a call follows when neither the session nor the call
+  ;; names a bound: 20, after the browsers'.
   (define default-redirects 20)
 
   ;; default-stream-buffer : Positive-Integer
-  ;; The bytes of a streamed response's body a call's token buffers when
-  ;; the call names no stream-buffer: 65,536 (the M6 plan, section 3.1).
+  ;; The bytes of a streamed response's body a call's token buffers when the
+  ;; call names no stream-buffer: 65,536.
   (define default-stream-buffer 65536)
 
   ;; key-settings : Symbol (Listof Symbol) List -> (Listof (Pairof Symbol Any))
@@ -145,8 +142,8 @@
   ;; own (curl private transfer): another thread's set-cdr! that makes X
   ;; longer, shorter or cyclic after the measure answers #f, never a loop.
   ;; No list? walks it first: a set-cdr! between the two walks made length
-  ;; raise "circular" where list? had passed (the slice's second review:
-  ;; once in 20,000 calls on a 3000-pair list).
+  ;; raise "circular" where list? had passed (once in 20,000 calls on a
+  ;; 3000-pair list).
   (define (string-pairs x)
     (let ((n (guard (e ((assertion-violation? e) #f)) (length x))))
       (and n (string-pairs-within x n))))
@@ -210,10 +207,9 @@
   ;; merge-fields : (Listof (Pairof String String)) (U String #f)
   ;;                (Listof (Pairof String String)) (U '() (List (U String #f)))
   ;;                -> (List (Listof (Pairof String String)) (U String #f))
-  ;; A call's headers and user agent merged with its session's (the M5
-  ;; plan, section 3.2): the merged headers, and the merged user-agent
-  ;; field. CALL-AGENT is () when the call gives no user-agent, and (A)
-  ;; when it gives A.
+  ;; A call's headers and user agent merged with its session's: the merged
+  ;; headers, and the merged user-agent field. CALL-AGENT is () when the
+  ;; call gives no user-agent, and (A) when it gives A.
   ;;   - A call's header replaces every session header of its name, A to Z
   ;;     folded: the session's other headers come first, in their order,
   ;;     then the call's, in theirs.
@@ -351,7 +347,7 @@
             v)
           #f)))
 
-  ;; --- a request group's keys (the M5 plan, section 3.7) ---------------------------
+  ;; --- a request group's keys ------------------------------------------------------
 
   ;; group-keys : (Listof Symbol)
   ;; The keys call-with-request-group and http-parallel take: limit alone.
@@ -374,7 +370,7 @@
             v)
           #f)))
 
-  ;; --- the retry policy (ADR-0026; the M5 plan, section 3.5) -----------------------
+  ;; --- the retry policy (ADR-0026) -------------------------------------------------
 
   ;; A policy, data alone: what exchange-step reads to retry.
   ;; http-retry? : Any -> Boolean
@@ -427,9 +423,9 @@
                       (and (ok? v) (loop (cdr rest) (- left 1) (cons v copied))))))))))
 
   ;; status? : Any -> Boolean
-  ;; Whether X is an exact integer from 400 to 599, a client's or a
-  ;; server's error: a 3xx a policy could retry would also be a redirect,
-  ;; and a 2xx is a success (decided by the maintainer, 2026-10-28).
+  ;; Whether X is an exact integer from 400 to 599, a client's or a server's
+  ;; error: a 3xx a policy could retry would also be a redirect, and a 2xx
+  ;; is a success.
   (define (status? x) (and (integer? x) (exact? x) (<= 400 x 599)))
 
   ;; make-http-retry : Any ... -> Retry
@@ -485,10 +481,9 @@
 
   ;; A session: its engine; DEFAULTS, a request of the session's request
   ;; keys, checked by make-curl-request, whose URL nothing reads, its
-  ;; cookie-jar the session's jar; its redirect and retry policies,
-  ;; checked; its jitter generator, with the mutex every draw holds; and its
-  ;; cookie jar, a jar of its engine's, or #f for none (the M7 plan, section
-  ;; 3.1).
+  ;; cookie-jar the session's jar; its redirect and retry policies, checked;
+  ;; its jitter generator, with the mutex every draw holds; and its cookie
+  ;; jar, a jar of its engine's, or #f for none.
   ;; new-http-session : Engine Request (U Natural #f) Boolean (U Retry #f) (U Jar #f) -> Session
   ;;   a fresh generator, and a fresh mutex
   ;; http-session-jar : Session -> (U Jar #f)
@@ -564,8 +559,8 @@
 
   ;; call-body : Symbol Any -> (U Bytevector Procedure)
   ;; A copy of a call's body: a bytevector's bytes, or a string's UTF-8
-  ;; bytes; a procedure, a producer, as it is (ADR-0031, decision 2);
-  ;; anything else is not-a-body, as WHO.
+  ;; bytes; a procedure, a producer, as it is (ADR-0031); anything else is
+  ;; not-a-body, as WHO.
   (define (call-body who value)
     (cond ((bytevector? value) (bytevector-copy value))
           ((string? value) (string->utf8 value))
@@ -579,7 +574,7 @@
   ;; string's chars, a bytevector's bytes. The one copy a call makes of the
   ;; data, as it starts, as call-body copies a body: a retry or a redirect's
   ;; hop then sends the bytes the call began with, and each submit copies
-  ;; them again, the low level's own (ADR-0039, amended 2026-11-07).
+  ;; them again, the low level's own (ADR-0039).
   (define (multipart-data-copied body)
     (cons 'multipart
           (map (lambda (part)
@@ -626,10 +621,9 @@
   ;;   3. body and form together, body-and-form; multipart beside either,
   ;;      multipart-beside-body; any of the three with get or head,
   ;;      body-not-allowed, field the one given, body, then form, then
-  ;;      multipart; a producer in a group's
-  ;;      call, stream-in-group, field body, before anything is submitted
-  ;;      (the M6 plan, section 3.6); a port's stream-buffer of #f, an
-  ;;      assertion violation, since every response of its streams;
+  ;;      multipart; a producer in a group's call, stream-in-group, field
+  ;;      body, before anything is submitted; a port's stream-buffer of #f,
+  ;;      an assertion violation, since every response of its streams;
   ;;   4. the method and the call's own request keys, by make-curl-request,
   ;;      with the body, its body-length and its stream-buffer: the low
   ;;      level's refusal, body-length-without-stream beside a body that is
@@ -644,23 +638,21 @@
   ;; multipart-data-copied, with the session's Content-Type headers
   ;; dropped, as a call's user-agent drops the session's User-Agent: libcurl
   ;; writes the body's type, and the low level refuses a call's own,
-  ;; multipart-content-type (the M8 plan, section 3.1). A
-  ;; producer's request has body stream, and body-length as the call gives
-  ;; it; it streams its response too, by the call's stream-buffer for a
-  ;; port, 65,536 by default, and by 65,536 for http-request, which reads
-  ;; the response's body whole. Every other request key is the call's, or
-  ;; else the session's, credentials among them: a call's #f sends none
-  ;; over a session's; but a call that names its own proxy drops the
-  ;; session's proxy-ca-file and proxy-verify, each then the call's or its
-  ;; default, #f and #t, so a session's https:// proxy's TLS settings never
-  ;; meet a call's other proxy (the M7 plan, section 3.1). make-curl-request
-  ;; checks the merge, so a session's
-  ;; credentials beside a call's Authorization header, or a session's
-  ;; Digest beside a call's stream, is refused as the request is built,
-  ;; as the low level raises it; a Proxy-Authorization header, a session's
-  ;; or a call's, is refused so too; and the session's cookie jar is the
-  ;; request's, so a call's Cookie or Host header beside it is refused,
-  ;; cookie-beside-jar.
+  ;; multipart-content-type. A producer's request has body stream, and
+  ;; body-length as the call gives it; it streams its response too, by the
+  ;; call's stream-buffer for a port, 65,536 by default, and by 65,536 for
+  ;; http-request, which reads the response's body whole. Every other
+  ;; request key is the call's, or else the session's, credentials among
+  ;; them: a call's #f sends none over a session's; but a call that names
+  ;; its own proxy drops the session's proxy-ca-file and proxy-verify, each
+  ;; then the call's or its default, #f and #t, so a session's https://
+  ;; proxy's TLS settings never meet a call's other proxy. make-curl-request
+  ;; checks the merge, so a session's credentials beside a call's
+  ;; Authorization header, or a session's Digest beside a call's stream, is
+  ;; refused as the request is built, as the low level raises it; a
+  ;; Proxy-Authorization header, a session's or a call's, is refused so too;
+  ;; and the session's cookie jar is the request's, so a call's Cookie or
+  ;; Host header beside it is refused, cookie-beside-jar.
   (define (call-request-of who mode session method url plist)
     (let* ((settings (key-settings who (if (eq? mode 'port) port-keys call-keys) plist))
            (body-given (assq 'body settings))

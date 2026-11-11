@@ -1,45 +1,43 @@
 #!r6rs
 ;;; The suite for (curl private transfer): a request, submitted to an
-;;; engine and awaited, against the test origin's plaintext faces (M2 plan,
-;;; section 5; M3 plan, sections 3.6 and 5.2). Every transfer runs on the
-;;; suite's one engine, made near the top.
+;;; engine and awaited, against the test origin's plaintext faces. Every
+;;; transfer runs on the suite's one engine, made near the top.
 ;;;
 ;;; Every scenario is asserted whole: the status, the HTTP version, every
 ;;; header in libcurl's order, and the body, or the &curl-transfer-error's
 ;;; reason and CURLcode, with the native counts after it, which must be the
 ;;; engine's multi handle alone, refusals included; once the engine has
-;;; stopped, at the end, all zero. curl's verdicts vary by version (plan,
-;;; section 5.1.1), so, as test-url does:
+;;; stopped, at the end, all zero. curl's verdicts vary by version, so, as
+;;; test-url does:
 ;;;
 ;;;   - shared answers hold what every recorded libcurl answers, 7.85.0,
 ;;;     8.5.0 (OpenSSL and GnuTLS) and 8.20.0, measured through C, and
-;;;     Apple's 8.7.1, through this suite on the Mac;
+;;;     Apple's 8.7.1, through this suite on macOS;
 ;;;   - tests/known-transfer-verdicts.sexp holds a row per libcurl version
 ;;;     for the scenarios that vary. A libcurl with no row fails, and the
 ;;;     suite prints the row it would need on the error port.
 ;;;
 ;;; Each answer that raises a &curl-transfer-error, a shared answer's, this
 ;;; libcurl's row's or a test's own, is also asserted of its class
-;;; (ADR-0022; M4 plan, section 3.4): the rows stay codes, and the suite
-;;; derives each one's class through a table of its own, code-classes, and
-;;; the rule for reasons written out beside it, then asserts the raised
-;;; condition is of that class, by the six predicates, and of no other. A
-;;; cancelled and a stopped transfer, and a refusal while a transfer was
-;;; set up, are of none.
+;;; (ADR-0022): the rows stay codes, and the suite derives each one's class
+;;; through a table of its own, code-classes, and the rule for reasons
+;;; written out beside it, then asserts the raised condition is of that
+;;; class, by the six predicates, and of no other. A cancelled and a stopped
+;;; transfer, and a refusal while a transfer was set up, are of none.
 ;;;
 ;;; Then what the binding itself does:
 ;;;
 ;;;   - the setopt bindings, each observed in a transfer (ADR-0001's FFI
 ;;;     test): a string, USERAGENT, arrives as Latin-1 bytes; longs,
 ;;;     TIMEOUT_MS and NOBODY; an off_t, MAXFILESIZE_LARGE;
-;;;   - header strings are Latin-1 both ways (ADR-0001, amended
-;;;     2026-10-23): every byte 0x01 to 0xFF but CR and LF, sent and read;
+;;;   - header strings are Latin-1 both ways (ADR-0001): every byte 0x01 to
+;;;     0xFF but CR and LF, sent and read;
 ;;;   - the request's refusals, each reason at every position of a value,
 ;;;     the name rule against the whole complement of tchar from U+0000 to
 ;;;     U+00FF and beyond, and nothing native made at the raise;
 ;;;   - the body limit at its edges, with MAXFILESIZE_LARGE at the limit
 ;;;     plus one, and what the callable accepted, read from the chunk log
-;;;     write-body keeps on the token (M3 plan, section 3.6);
+;;;     write-body keeps on the token;
 ;;;   - a raise inside the callable, planted as data by a request's fault,
 ;;;     recorded by the transfer;
 ;;;   - two threads submitting to the one engine at once, with positive
@@ -51,10 +49,10 @@
 ;;;   - the hatch's settings as the engine sets them (ADR-0009): a setopt
 ;;;     libcurl refuses, through each integer binding, and the option
 ;;;     cache's own copy of a name; option-named's refusal of a name the
-;;;     libcurl does not know. The hatch's own rules are test-unsupported's
-;;;     (the M4 plan, section 3.7). Through the private follow field,
-;;;     curl-request-following, the last request's headers after a redirect
-;;;     followed, and the redirect pin observed;
+;;;     libcurl does not know. The hatch's own rules are test-unsupported's.
+;;;     Through the private follow field, curl-request-following, the last
+;;;     request's headers after a redirect followed, and the redirect pin
+;;;     observed;
 ;;;   - the request's snapshot, taken at submit: a request changed after it
 ;;;     was made is refused there, in prepare-transfer's order, and a value
 ;;;     another thread changes is sent whole or refused, never otherwise;
@@ -67,24 +65,22 @@
 ;;;     http_proxy or all_proxy at the http face, which stands in for the
 ;;;     proxy, through its command alone, no_proxy and NO_PROXY cleared:
 ;;;     environment goes through it, #f direct, judged by the target the
-;;;     face's /echo saw (ADR-0024, decision 1);
+;;;     face's /echo saw (ADR-0024);
 ;;;   - the native objects' lifetimes: the counts while a transfer is live,
 ;;;     and, read from transfer.sls as data, set-transfer-options!' order,
 ;;;     start-transfer!'s making order against free-transfer!'s freeing
 ;;;     order, and prepare-transfer's checks, since libcurl 8.20.0's cleanup
 ;;;     reads none of the objects a wrong order would free first.
 ;;;
-;;; M2's escape child, tests/transfer-escapes.sps, its performing mark and
-;;; the chunk hook's refusals retired with perform-transfer: the engine's
-;;; thread runs no caller code, sets no timer and gets no Ctrl-C (ADR-0013,
-;;; amended 2026-10-25).
+;;; The engine's thread runs no caller code, sets no timer and gets no
+;;; Ctrl-C (ADR-0013).
 ;;;
 ;;; Importing (curl) runs the load before this suite's first line, on this
 ;;; thread: a first reference from a second thread during the load would
-;;; raise cyclic dependency (ADR-0002, amended). The suite's top level also
-;;; reaches (curl private transfer), then makes its engine, before any
-;;; other thread is forked. Every expected value is one the code under test
-;;; cannot produce by failing: SRFI-64 makes #f of a raise in the actual
+;;; raise cyclic dependency (ADR-0002). The suite's top level also reaches
+;;; (curl private transfer), then makes its engine, before any other thread
+;;; is forked. Every expected value is one the code under test cannot
+;;; produce by failing: SRFI-64 makes #f of a raise in the actual
 ;;; expression, so none is #f.
 (import (rnrs)
         (srfi :64)
@@ -473,10 +469,9 @@
 (define ok "status 200\n")
 
 ;; shared-answers : (Listof (List Case Answer))
-;; Every plaintext scenario all four recorded libcurls answer alike (plan,
-;; section 5.1.1): the http face's routes, every raw script with the
-;; parameters build/verify/m2s2/measure/scenarios.c used. A redirect is
-;; not followed.
+;; Every plaintext scenario all four recorded libcurls answer alike: the
+;; http face's routes, every raw script with the parameters the C
+;; measurements used. A redirect is not followed.
 ;; Headers are those curl_easy_nextheader gives for CURLH_HEADER and the
 ;; last request, so a trailer is not among them.
 (define shared-answers
@@ -537,16 +532,14 @@
                ""))))
 
 ;; varying-cases : (Listof Case)
-;; The scenarios whose answers vary by version, in the order every row
-;; answers them: big-header at both sizes past CURL_MAX_HTTP_HEADER,
-;; bad-status-code and conflicting-content-length. many-headers at 50,000
-;; varied too, until the cap on response headers made it header-limit on
-;; every libcurl (ADR-0040): it is a cap test now, with big-header at the
-;; cap's edge. The plan's
-;; fifth, MAXFILESIZE_LARGE alone, is no longer reachable: the hatch
-;; refuses it, a request field's option (ADR-0009, amended 2026-10-23).
-;; Then a text: nul-in-header's error buffer, which 8.23.0 capitalised
-;; (ADR-0020, amended 2026-10-26).
+;; The scenarios whose answers vary by version, in the order every row answers
+;; them: big-header at both sizes past CURL_MAX_HTTP_HEADER, bad-status-code
+;; and conflicting-content-length. many-headers at 50,000 would vary too,
+;; but the cap on response headers makes it header-limit on every libcurl
+;; (ADR-0040): it is a cap test, with big-header at the cap's edge.
+;; A fifth scenario, MAXFILESIZE_LARGE set alone, is not reachable: the hatch
+;; refuses it, a request field's option (ADR-0009). Then a text:
+;; nul-in-header's error buffer, which 8.23.0 capitalised (ADR-0020).
 (define varying-cases
   '((get raw "/raw/big-header?bytes=102400")
     (get raw "/raw/big-header?bytes=1048576")
@@ -762,7 +755,7 @@
 
 ;; --- hermetic: no proxy from the environment ---------------------------------------------
 ;; libcurl reads these, and would send every transfer here to the proxy they
-;; name. The proxy policy is M4's; this suite runs with none.
+;; name. This suite runs with none.
 (define proxy-variables '("http_proxy" "HTTP_PROXY" "https_proxy" "HTTPS_PROXY" "all_proxy" "ALL_PROXY"))
 
 (test-equal "hermetic: none of http_proxy, HTTP_PROXY, https_proxy, HTTPS_PROXY, all_proxy and ALL_PROXY is set, or libcurl would send this suite's transfers to it"
@@ -1057,18 +1050,17 @@
              (lambda (url name value header headers agent other) (set-cdr! (cdr headers) 'tail))
              (lambda (url name value header headers agent other) (set-car! header 'x-name)))))
 
-;; A submit checks a request in prepare-transfer's order: the snapshot of
-;; the headers and the user agent, the CA file's copy, then the URL, parsed
-;; and its scheme checked. Each row makes its field wrong and every field
-;; checked after it, so a check out of order, or one left to the engine's
-;; thread, names another answer. The hatch's options were checked as they
-;; were attached, and are private copies: a submit has nothing of theirs
-;; to check (ADR-0009, amended 2026-10-27). The URL's parse runs in a
-;; critical section of its own, its refusal answered as data and raised
-;; once the section has ended (ADR-0025, as amended after the branch's
-;; review): the CURLU, which the parse makes on this thread, is freed by
-;; then, so the caller's handler counts none, where before the section it
-;; ran inside the parse and counted one.
+;; A submit checks a request in prepare-transfer's order: the snapshot of the
+;; headers and the user agent, the CA file's copy, then the URL, parsed and
+;; its scheme checked. Each row makes its field wrong and every field checked
+;; after it, so a check out of order, or one left to the engine's thread,
+;; names another answer. The hatch's options were checked as they were
+;; attached, and are private copies: a submit has nothing of theirs to check
+;; (ADR-0009). The URL's parse runs in a critical section of its own, its
+;; refusal answered as data and raised once the section has ended (ADR-0025):
+;; the CURLU, which the parse makes on this thread, is freed by then, so the
+;; caller's handler counts none, where a handler run inside the parse would
+;; count one.
 (test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file and the URL are wrong too; the CA file, while the URL is, each before anything native; then the URL, parsed on this thread, in a section of its own, its CURLU freed before its refusal is raised"
   (list (list '(request-refused header-name "X Name" not-a-token) running-counts running-counts)
         (list '(request-refused ca-file "/x/c\x0;.pem" embedded-nul) running-counts running-counts)
@@ -1083,14 +1075,13 @@
            (refusal (lambda () (curl-submit engine r)))))
        '((header ca-file url) (ca-file url) (url))))
 
-;; curl-request-check runs request-checks, the submit's own (ADR-0023,
-;; amended 2026-10-28). Each row makes one request wrong, after its
-;; constructor's check where the field allows it, and both the check and a
-;; submit are given that same request: what each raised is compared whole,
-;; its type, field, value, reason, input, code, message and irritants, but
-;; for its who, which is curl-request-check where a submit's is
-;; curl-submit. A refusal that names no who of its own, a URL's, names
-;; chez-curl in both.
+;; curl-request-check runs request-checks, the submit's own (ADR-0023). Each
+;; row makes one request wrong, after its constructor's check where the field
+;; allows it, and both the check and a submit are given that same request:
+;; what each raised is compared whole, its type, field, value, reason, input,
+;; code, message and irritants, but for its who, which is curl-request-check
+;; where a submit's is curl-submit. A refusal that names no who of its own, a
+;; URL's, names chez-curl in both.
 
 ;; raised-fields : (-> Any) -> (U 'no-raise (Listof Any))
 ;; What THUNK raised, as data: whether it is a request error, a URL error
@@ -1378,7 +1369,7 @@
                       'not-tried-with-a-count-left)))
       (list after-one after-two after-free again (slist-count)))))
 
-;; --- the hatch's deny-list (ADR-0009, amended 2026-10-23 and 2026-10-27) ------------------
+;; --- the hatch's deny-list (ADR-0009) -----------------------------------------------------
 
 (test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, a multipart body's MIMEPOST, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, cookie-jar's SHARE and COOKIEFILE, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, a multipart body's MIME_OPTIONS, owned and never set, in MIMEPOST's place among the twins, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then M7 slice 3's, the proxy's twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP; then M7 slice 4's, the cookie jar's twins COOKIE, COOKIELIST and COOKIESESSION; then M8 slice 2's, the header callable's twin SUPPRESS_CONNECT_HEADERS; then every proxy TLS option but the four proxy-ca-file and proxy-verify set, which are fields' now, as NOPROXY and FORBID_REUSE are proxy's, and COOKIEFILE cookie-jar's"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
@@ -1450,13 +1441,12 @@
 
 ;; --- what a transfer sets, read from transfer.sls as data -----------------------------
 ;; On the engine's thread, start-transfer! makes a transfer's native objects
-;; and set-transfer-options! every setting its easy handle gets, in one
-;; order; free-transfer! frees them the other way round (M3 plan, section
-;; 5.2). libcurl reads no setting before the transfer runs, and 8.20.0's
-;; curl_easy_cleanup reads none of the objects a wrong order would free
-;; first: freed first, each passed every behavioural check, Valgrind's too
-;; (traps.md). So the orders are read. Their limit is the pins': they hold
-;; an accidental move, not a rewrite made to pass them.
+;; and set-transfer-options! every setting its easy handle gets, in one order;
+;; free-transfer! frees them the other way round. libcurl reads no setting
+;; before the transfer runs, and 8.20.0's curl_easy_cleanup reads none of the
+;; objects a wrong order would free first: freed first, each passed every
+;; behavioural check, Valgrind's too. So the orders are read. Their limit is
+;; the pins': they hold an accidental move, not a rewrite made to pass them.
 
 (define transfer-source "src/curl/private/transfer.sls")
 
@@ -1576,11 +1566,10 @@
                   '() (cddddr library))
       (list 'no-library library)))
 
-;; A transfer that ran reports libcurl's count through ran-request-size
-;; alone, which reported-request-size judges by version: #f on 8.7.0 and
-;; 8.7.1, whose count is broken (ADR-0022, amended 2026-10-27). Only a lane
-;; on one of them shows it by behaviour, and CI runs none, so the reading is
-;; held here, as data.
+;; A transfer that ran reports libcurl's count through ran-request-size alone,
+;; which reported-request-size judges by version: #f on 8.7.0 and 8.7.1, whose
+;; count is broken (ADR-0022). Only a lane on one of them shows it by
+;; behaviour, and CI runs none, so the reading is held here, as data.
 (test-equal "CURLINFO_REQUEST_SIZE is read in transfer.sls by ran-request-size alone, through reported-request-size; finish-transfer reads a size by ran-request-size at both its failures, and never curlinfo-request-size itself"
   '((ran-request-size) 1 2 0)
   (list (definitions-naming 'curlinfo-request-size transfer-library)
@@ -1754,10 +1743,10 @@
   making-order)
 
 ;; libcurl's cleanup reads nothing a transfer handed it, so a mime freed
-;; before curl_easy_cleanup passes every behavioural check (traps.md): the
-;; order is read here. The mime, made with the easy handle, is freed after
-;; its cleanup, the order libcurl's examples take (the M8 plan, section
-;; 3.4), so it alone stands out of the making reversed.
+;; before curl_easy_cleanup passes every behavioural check: the order is
+;; read here. The mime, made with the easy handle, is freed after its
+;; cleanup, the order libcurl's examples take, so it alone stands out of the
+;; making reversed.
 (test-equal "free-transfer!, read from transfer.sls, frees the other way round from start-transfer!'s making, but a multipart body's mime: the easy handle, then the mime, after curl_easy_cleanup, then the hatch's string lists, the header list, the error buffer, the CURLU, then the key, each freed before its record is cleared"
   (list '(curl-easy-cleanup live-transfer-easy-set! curl-mime-free live-transfer-mime-set!
           curl-slist-free-all live-transfer-lists-set!
@@ -2039,7 +2028,7 @@
 ;; measured-texts : (Listof String)
 ;; The error-buffer texts the four libcurls measured wrote alike, and
 ;; 8.23.0 too. nul-in-header's is not one: 8.23.0 capitalised it, so it is
-;; a varying case's answer (ADR-0020, amended 2026-10-26).
+;; a varying case's answer (ADR-0020).
 (define measured-texts
   '("Recv failure: Connection reset by peer" "Received HTTP/0.9 when not allowed"
     "Header without colon" "Empty reply from server" "Maximum file size exceeded"))
@@ -2060,14 +2049,14 @@
            (cadr answered)))))
    shared-answers)
 
-  ;; --- the cap on response headers (ADR-0040; M8 slice 2), the raw face's
-  ;; oversized scripts at its edges: big-header's status line, 17 bytes, its
-  ;; X-Big line, the value and 9, and the empty line, 2, take 102,400 at
-  ;; bytes=102372; many-headers' status line is left out of the count, so
-  ;; 1,000 X-H lines are taken, the shared answers' count=1000. Each refusal
-  ;; is read by its reason and class, never its code, which is
-  ;; test-headers' to hold by version; 50,000 lines, which each libcurl
-  ;; answered its own way before the cap, are header-limit on every one.
+  ;; --- the cap on response headers (ADR-0040), the raw face's oversized
+  ;; scripts at its edges: big-header's status line, 17 bytes, its X-Big line,
+  ;; the value and 9, and the empty line, 2, take 102,400 at bytes=102372;
+  ;; many-headers' status line is left out of the count, so 1,000 X-H lines
+  ;; are taken, the shared answers' count=1000. Each refusal is read by its
+  ;; reason and class, never its code, which is test-headers' to hold by
+  ;; version; 50,000 lines, which each libcurl answers its own way without
+  ;; the cap, are header-limit on every one.
   (test-equal "the cap: GET raw /raw/big-header?bytes=102372, 102,400 bytes with its status line and empty line, is taken whole; bytes=102373 and bytes=102380 are refused, header-limit, of &curl-too-large; GET raw /raw/many-headers at 1,001 and 50,000 lines, header-limit too; each with the counts back to the engine's alone"
     (list (list (list 'response 200 'http/1.1 (list (list "X-Big" (make-string 102372 #\a))) "")
                 'no-transfer-error running-counts)
@@ -2251,8 +2240,8 @@
   ;; --- libcurl's texts, as the error carries them: strerror is
   ;; curl_easy_strerror's for the code, called here; the error buffer is
   ;; text, cut at its NUL, and where the four libcurls measured wrote the
-  ;; same text, that text whole (build/verify/m2s2/measure/out-*.txt).
-  ;; nul-in-header's text varies by version, so its row's answer holds it.
+  ;; same text, that text whole. nul-in-header's text varies by version, so
+  ;; its row's answer holds it.
   (for-each
    (lambda (row)
      (test-equal (string-append "libcurl's texts for " (car row) ": strerror is curl_easy_strerror's for the code, and the error buffer "
@@ -2316,7 +2305,7 @@
        (raw "/raw/drip?bytes=5&gap=10" 3 ,size ""))))
 
   ;; --- a raise inside the callable, planted by a request's fault: data,
-  ;; never a procedure (M3 plan, section 3.6)
+  ;; never a procedure
   (for-each
    (lambda (row)
      (test-equal (string-append "a fault " (car row) ", each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other")
@@ -2377,15 +2366,13 @@
                        (k (cond ((equal? a clean) 'whole)
                                 ((equal? a '(request-refused user-agent line-break)) 'refused)
                                 (else #f))))
-                  ;; A refusal comes before anything waits, so with no
-                  ;; yield the next transfer can read the flipper's same CR:
-                  ;; under Valgrind, which runs one thread at a time, every
-                  ;; one of the 300 was refused, the flipper never seen at
-                  ;; c, in 5 of 22 runs of the memory gate once the submit's
-                  ;; URL parse ran in a section of its own, and 0 of 12
-                  ;; before (research/m7/carried/guard/, the fix round's
-                  ;; flip logs). A refusal sleeps 1 ms, so the flipper moves
-                  ;; on (traps.md).
+                  ;; A refusal comes before anything waits, so with no yield
+                  ;; the next transfer can read the flipper's same CR: under
+                  ;; Valgrind, which runs one thread at a time, every one of
+                  ;; the 300 was refused, the flipper never seen at c, in 5 of
+                  ;; 22 runs of the memory gate, the submit's URL parse in a
+                  ;; section of its own, and 0 of 12 without it. A refusal
+                  ;; sleeps 1 ms, so the flipper moves on.
                   (when (eq? k 'refused) (pause-ms 1))
                   (loop (+ i 1)
                         (if k odd (cons a odd))
@@ -2556,15 +2543,13 @@
                        (k (cond ((equal? a clean) 'whole)
                                 ((equal? a '(request-refused header-value line-break)) 'refused)
                                 (else #f))))
-                  ;; A refusal comes before anything waits, so with no
-                  ;; yield the next transfer can read the flipper's same CR:
-                  ;; under Valgrind, which runs one thread at a time, every
-                  ;; one of the 300 was refused, the flipper never seen at
-                  ;; c, in 5 of 22 runs of the memory gate once the submit's
-                  ;; URL parse ran in a section of its own, and 0 of 12
-                  ;; before (research/m7/carried/guard/, the fix round's
-                  ;; flip logs). A refusal sleeps 1 ms, so the flipper moves
-                  ;; on (traps.md).
+                  ;; A refusal comes before anything waits, so with no yield
+                  ;; the next transfer can read the flipper's same CR: under
+                  ;; Valgrind, which runs one thread at a time, every one of
+                  ;; the 300 was refused, the flipper never seen at c, in 5 of
+                  ;; 22 runs of the memory gate, the submit's URL parse in a
+                  ;; section of its own, and 0 of 12 without it. A refusal
+                  ;; sleeps 1 ms, so the flipper moves on.
                   (when (eq? k 'refused) (pause-ms 1))
                   (loop (+ i 1)
                         (if k odd (cons a odd))
@@ -2599,10 +2584,10 @@
   ;; --- the lock: a drip beside a thread that collects every 2 ms. The
   ;; engine's thread waits in its __collect_safe poll between chunks, so the
   ;; collector runs between the callable's calls. Without lock-object a
-  ;; collection moves the callable's code, and libcurl calls where it was
-  ;; (plan, section 5.1.1). The positive evidence: collections made while
-  ;; the engine's table held the transfer, more than its connect and the
-  ;; 10 ms before its first byte leave room for.
+  ;; collection moves the callable's code, and libcurl calls where it was. The
+  ;; positive evidence: collections made while the engine's table held the
+  ;; transfer, more than its connect and the 10 ms before its first byte leave
+  ;; room for.
   (test-equal "the lock: a 50-byte drip, 10 ms apart, beside a thread that collects every 2 ms: the whole body, every chunk accepted on the engine's thread, ten collections or more while it was live, and the counts back to the engine's alone"
     (list (list (list 'response 200 'http/1.1 '(("Content-Length" "50"))
                       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx")
@@ -2626,13 +2611,13 @@
             (if (>= while-live 10) 'collected-while-live (list 'collections-while-live while-live))
             (native-counts))))
 
-  ;; --- the proxy field (ADR-0024, decision 1), in a child given http_proxy
-  ;; or all_proxy at the http face, and no no_proxy or NO_PROXY, through its
-  ;; command alone, so this suite stays hermetic. The http face stands in
-  ;; for the proxy: a target in absolute form is routed by its path, and
-  ;; /echo's first line shows the target as it came. So the proxy's own
-  ;; record says how each request reached it: GET http://HOST/echo through
-  ;; the proxy, GET /echo direct.
+  ;; --- the proxy field (ADR-0024), in a child given http_proxy or all_proxy
+  ;; at the http face, and no no_proxy or NO_PROXY, through its command alone,
+  ;; so this suite stays hermetic. The http face stands in for the proxy: a
+  ;; target in absolute form is routed by its path, and /echo's first line
+  ;; shows the target as it came. So the proxy's own record says how each
+  ;; request reached it: GET http://HOST/echo through the proxy, GET /echo
+  ;; direct.
   (let* ((proxy (string-append "http://" (host-of o 'http)))
          (url (url-of o 'http "/echo"))
          (through (string-append "GET " url " HTTP/1.1"))

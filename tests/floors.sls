@@ -1,6 +1,6 @@
 #!r6rs
 ;;; (floors): chez-curl's version floors, and the check that holds the rest of
-;;; the tree to them (harness plan, section 3, item 5).
+;;; the tree to them.
 ;;;
 ;;; packaging/floors.sexp is the one file that writes the Chez, libcurl and
 ;;; Node floors: one datum, ((chez "M.m.p") (libcurl "M.m.p") (node "M")),

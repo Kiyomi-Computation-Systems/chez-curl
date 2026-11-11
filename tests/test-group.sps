@@ -1,8 +1,7 @@
 #!r6rs
-;;; The suite for the request group and http-parallel, the high level's
-;;; fourth slice (the M5 plan, sections 3.7 and 7): call-with-request-group,
-;;; go, http-await, http-pending-done?, http-pending-cancel and
-;;; http-parallel, and &http-group-error.
+;;; The suite for the high level's request group and http-parallel:
+;;; call-with-request-group, go, http-await, http-pending-done?,
+;;; http-pending-cancel and http-parallel, and &http-group-error.
 ;;;
 ;;;   - the condition, its reasons written out, and the limit key's
 ;;;     refusals, by name and by value, before any call;
@@ -72,10 +71,10 @@
 ;;;
 ;;; Every check on the raw face makes its own session: the raw face closes
 ;;; after each script without saying so, and curl 8.23.0 resends on each
-;;; dead pooled connection (traps.md). The hold, retry and location scripts
-;;; say Connection: close. Every wait here is bounded. Every expected value
-;;; is one the code under test cannot produce by failing: SRFI-64 makes #f
-;;; of a raise in the actual expression, so none is #f.
+;;; dead pooled connection. The hold, retry and location scripts say
+;;; Connection: close. Every wait here is bounded. Every expected value is
+;;; one the code under test cannot produce by failing: SRFI-64 makes #f of
+;;; a raise in the actual expression, so none is #f.
 (import (rnrs)
         (srfi :64)
         (only (chezscheme) sleep make-time current-time time-second time-nanosecond getenv
@@ -230,7 +229,7 @@
 
 ;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
 ;; PROC of each of ITEMS, first to last: map calls its procedure in no
-;; fixed order (traps.md).
+;; fixed order.
 (define (in-order proc items)
   (let loop ((rest items) (answers '()))
     (if (null? rest)
@@ -439,7 +438,7 @@
 
 ;; child-hold : (Listof Datum)
 ;; The forms every SIGINT child below splices in after its import, for its
-;; hold (M7 slice 4's races, research/m7/slice4/races):
+;; hold:
 ;;   - (until-sent), which the holder sleeps in, holding its mutex, until
 ;;     the suite has sent the SIGINT: interrupt-script makes the file
 ;;     GROUP_CHILD_SENT names once its kill has returned, polled every 10 ms,
@@ -453,9 +452,9 @@
 ;;     every thread that reaches an event check meanwhile: a main thread
 ;;     that met one before its call blocked ran its handler only after the
 ;;     release, where it had stopped, in go's checks, whose guard read the
-;;     handler's raise as the call's (measured: the CI failure of PR #45,
-;;     reproduced by a trip planted at ready); and a submit-child so ended
-;;     passed, its submit never made. Each child asks for a collection by
+;;     handler's raise as the call's (measured: a CI failure, reproduced by
+;;     a trip planted at ready); and a submit-child so ended passed, its
+;;     submit never made. Each child asks for a collection by
 ;;     collect-rendezvous before its holder starts, which leaves none due in
 ;;     the hold (collect-rendezvous, not collect, which refuses while the
 ;;     engines' threads are alive), and quiet shows none ran.
@@ -490,24 +489,23 @@
            (list (car r) (read-all (cadr r)) (caddr r))))))))
 
 ;; lost-child : (Listof Datum)
-;; A program: in a group on a session of its own, a call to URL, its
-;; first argument, a fast 200. It waits for the call's token to be done,
-;; with no turn run, so the token's notice is in the group's mailbox. A
-;; second thread then holds that mailbox's mutex, through the seam and the
+;; A program: in a group on a session of its own, a call to URL, its first
+;; argument, a fast 200. It waits for the call's token to be done, with no
+;; turn run, so the token's notice is in the group's mailbox. A second
+;; thread then holds that mailbox's mutex, through the seam and the
 ;; private call-with-mailbox-held, until the suite has sent its SIGINT
 ;; (child-hold), and this thread prints (ready PID) and awaits the call,
 ;; inside the group's procedure, under a Ctrl-C handler that escapes. The
 ;; await's turn looks first: the token is done, so the look steps the
 ;; call, which ends, before the turn's take. The take then blocks inside
-;; its critical section on the held mutex; the
-;; suite sends SIGINT meanwhile, so the handler escapes as the take's
-;; section ends, once it has taken the notice out (traps.md: a Chez timer
-;; cannot plant it there). So what this shows is an escape at a take that
-;; took out a notice the look had already stepped, and a second await then
-;; answering: the notice lost is a late one. A notice lost while its call
-;; is unstepped is the seam test's, which takes it out by hand. The escape
-;; is caught inside the procedure, which then awaits the call again,
-;; bounded by 5 s.
+;; its critical section on the held mutex; the suite sends SIGINT
+;; meanwhile, so the handler escapes as the take's section ends, once it
+;; has taken the notice out (a Chez timer cannot plant it there). So what
+;; this shows is an escape at a take that took out a notice the look had
+;; already stepped, and a second await then answering: the notice lost is
+;; a late one. A notice lost while its call is unstepped is the seam
+;; test's, which takes it out by hand. The escape is caught inside the
+;; procedure, which then awaits the call again, bounded by 5 s.
 ;;
 ;; Prints (lost HOW QUIET TAKEN AGAIN): HOW, escaped or returned; QUIET,
 ;; quiet when no collection ran in the hold (child-hold); TAKEN, taken
@@ -593,20 +591,19 @@
 ;; until the suite has sent its SIGINT (child-hold), through the private
 ;; call-with-engine-held, prints (ready PID), and enters a group whose
 ;; procedure calls go on URL, its first argument, a 10 s drip, under a
-;; Ctrl-C handler that escapes from outside the group.
-;; go's submit blocks on that mutex inside its critical section; the suite
-;; sends SIGINT meanwhile, so the handler escapes as the section ends, once
-;; the submit has taken the mutex (traps.md). The group's winds then
-;; cancel what the group recorded and wait for it to end. The handler
-;; records whether the holder had begun to let go, a flag it sets just
-;; before it does: after-release shows the escape came once the submit
-;; could take the mutex.
+;; Ctrl-C handler that escapes from outside the group. go's submit blocks
+;; on that mutex inside its critical section; the suite sends SIGINT
+;; meanwhile, so the handler escapes as the section ends, once the submit
+;; has taken the mutex. The group's winds then cancel what the group
+;; recorded and wait for it to end. The handler records whether the holder
+;; had begun to let go, a flag it sets just before it does: after-release
+;; shows the escape came once the submit could take the mutex.
 ;;
 ;; The witness is the engine's own: its live and queued counts and the
 ;; transfer count, read 500 ms after the holder let go, when the engine
-;; has set up anything it took (traps.md: a token it is setting up is in
-;; neither count). A transfer the group did not record would run on there,
-;; its 10 s drip.
+;; has set up anything it took (a token it is setting up is in neither
+;; count). A transfer the group did not record would run on there, its
+;; 10 s drip.
 ;;
 ;; Prints (submit HOW WHEN QUIET HOLDS), QUIET quiet when no collection
 ;; ran in the hold (child-hold), then (counts COUNTS), once the session is
@@ -742,21 +739,20 @@
     (newline)))
 
 ;; turn-child : (Listof Datum)
-;; A program, from the review's probe: a turn's own submit and its record,
-;; the due submit of a call in a retry's wait, planted as submit-child plants
-;; go's. URL, its first argument, closes the first attempt and stalls the
-;; retry; the call waits 1000 ms to retry. With the call waiting, the
-;; group's live and draining sets are empty, so the due submit is the
-;; turn's first hold of the engine's mutex. 800 ms into the wait another
-;; thread takes that mutex, through call-with-engine-held, until the suite
-;; has sent its SIGINT (child-hold), and this thread prints (ready PID) and
-;; awaits the call, under a Ctrl-C handler that escapes from outside the
-;; group. The await's turn reaches the due submit about 200 ms later and
-;; blocks there, inside its critical section;
-;; the suite sends SIGINT 500 ms after ready, so the handler escapes as the
-;; section ends, once the submit has taken the mutex. With the submit and
-;; its record in one section, the group's winds cancel the retry; without,
-;; the escape lands between them, and the stalled retry runs on,
+;; A program: a turn's own submit and its record, the due submit of a call in
+;; a retry's wait, planted as submit-child plants go's. URL, its first
+;; argument, closes the first attempt and stalls the retry; the call waits
+;; 1000 ms to retry. With the call waiting, the group's live and draining
+;; sets are empty, so the due submit is the turn's first hold of the engine's
+;; mutex. 800 ms into the wait another thread takes that mutex, through
+;; call-with-engine-held, until the suite has sent its SIGINT (child-hold),
+;; and this thread prints (ready PID) and awaits the call, under a Ctrl-C
+;; handler that escapes from outside the group. The await's turn reaches the
+;; due submit about 200 ms later and blocks there, inside its critical
+;; section; the suite sends SIGINT 500 ms after ready, so the handler escapes
+;; as the section ends, once the submit has taken the mutex. With the submit
+;; and its record in one section, the group's winds cancel the retry;
+;; without, the escape lands between them, and the stalled retry runs on,
 ;; unrecorded. A collection asked for before the holder starts leaves none
 ;; due in the window (child-hold).
 ;;
@@ -856,22 +852,21 @@
     (newline)))
 
 ;; sections-child : (Listof Datum)
-;; A program, from the slice's second review: http-parallel's admissions,
-;; one critical section a call, watched by a pending keyboard interrupt,
-;; which runs as the section it was made in ends (traps.md). BASE, its
-;; first argument, is the raw face. Another thread holds the session's
-;; engine's mutex until the suite has sent its SIGINT (child-hold); this
-;; thread prints ready, then calls http-parallel with three 1 s holds. The
-;; checks take no engine's mutex, so the first admission's submit is the
-;; first to, and blocks there, inside its section; the suite sends SIGINT
-;; meanwhile. The handler does
-;; not escape: it closes the session, so every submit after it is refused
-;; as stopped, in its own section, its call a failure with no transfer,
-;; before any turn. With a section an admission, it runs as the first
-;; ends: the first failure is the second call's, refused, with no
-;; transfer. With every call in one section, it runs after the third, each
-;; token ends stopped, and a turn's look finds them in submit order: the
-;; first failure is the first call's, with its transfer counted.
+;; A program: http-parallel's admissions, one critical section a call,
+;; watched by a pending keyboard interrupt, which runs as the section it
+;; was made in ends. BASE, its first argument, is the raw face. Another
+;; thread holds the session's engine's mutex until the suite has sent its
+;; SIGINT (child-hold); this thread prints ready, then calls http-parallel
+;; with three 1 s holds. The checks take no engine's mutex, so the first
+;; admission's submit is the first to, and blocks there, inside its
+;; section; the suite sends SIGINT meanwhile. The handler does not escape:
+;; it closes the session, so every submit after it is refused as stopped,
+;; in its own section, its call a failure with no transfer, before any
+;; turn. With a section an admission, it runs as the first ends: the first
+;; failure is the second call's, refused, with no transfer. With every
+;; call in one section, it runs after the third, each token ends stopped,
+;; and a turn's look finds them in submit order: the first failure is the
+;; first call's, with its transfer counted.
 ;;
 ;; Prints (sections QUIET RAISED), QUIET as child-hold reads it, RAISED
 ;; (raised REASON URL TRANSFERS), then (counts COUNTS).
@@ -919,15 +914,14 @@
     (newline)))
 
 ;; admissions-child : (Listof Datum)
-;; The same for a turn's admissions, each a section of its own (the slice's
-;; second review). BASE, its first argument, is the raw face. At a limit
-;; of 2, two calls are put in retry waits of 5 s, holding both slots, and
-;; two more queued behind them. Another thread then holds the engine's mutex
-;; until the suite has sent its SIGINT (child-hold); this thread prints
-;; ready, cancels the two waiting calls, which frees their slots and takes
-;; no engine's mutex, and runs a turn, by http-pending-done?. The turn has
-;; no live token to look at, so its
-;; first admission's submit is its first hold of the engine's mutex, and
+;; The same for a turn's admissions, each a section of its own. BASE, its
+;; first argument, is the raw face. At a limit of 2, two calls are put in
+;; retry waits of 5 s, holding both slots, and two more queued behind them.
+;; Another thread then holds the engine's mutex until the suite has sent its
+;; SIGINT (child-hold); this thread prints ready, cancels the two waiting
+;; calls, which frees their slots and takes no engine's mutex, and runs a
+;; turn, by http-pending-done?. The turn has no live token to look at, so
+;; its first admission's submit is its first hold of the engine's mutex, and
 ;; blocks there, inside its section; SIGINT arrives meanwhile, and its
 ;; handler closes the session. With a section an admission, it runs as the
 ;; first ends: the second queued call's submit is refused, stopped, with no
@@ -1006,17 +1000,16 @@
 ;; resume-child : (Listof Datum)
 ;; A program: a group suspended at a chosen place and resumed, as a Chez
 ;; engine's expiry and resume do, but placed where a timer cannot be: a
-;; keyboard interrupt made pending inside a section runs as it ends
-;; (traps.md). BASE, its first argument, is the raw face; CASE, its second,
-;; the case. Another thread holds a mutex, the gate, inside a critical
-;; section, until the suite has sent its SIGINT (child-hold); this thread
-;; prints (ready PID) and runs the case, whose seam blocks on the gate
-;; inside a section of the group's; SIGINT arrives meanwhile, and its
-;; handler, run as the section ends, captures
-;; its continuation and escapes out of the group: the winds run, closing
-;; the group, cancelling every call and waiting for each transfer to end.
-;; The program then re-enters the continuation, once: the run resumes
-;; where the handler ran, outside the section.
+;; keyboard interrupt made pending inside a section runs as it ends. BASE,
+;; its first argument, is the raw face; CASE, its second, the case. Another
+;; thread holds a mutex, the gate, inside a critical section, until the
+;; suite has sent its SIGINT (child-hold); this thread prints (ready PID)
+;; and runs the case, whose seam blocks on the gate inside a section of the
+;; group's; SIGINT arrives meanwhile, and its handler, run as the section
+;; ends, captures its continuation and escapes out of the group: the winds
+;; run, closing the group, cancelling every call and waiting for each
+;; transfer to end. The program then re-enters the continuation, once: the
+;; run resumes where the handler ran, outside the section.
 ;;   P1: http-parallel's run of four 200s, the gate at call 1's submit, so
 ;;       the suspension comes after call 1's admission: resumed, it enters
 ;;       no call more, and raises call 0's cancel, the first not done in
@@ -1184,7 +1177,7 @@
                              '((limits 2) (limit 2 limit 3) (limit) (limit 0) (limit -1) (limit 2.0)
                                (limit 1/2) (limit two) (limit "2")))))
         ;; let*: a count read as an argument beside the calls that move it
-        ;; would be read in no fixed order (traps.md).
+        ;; would be read in no fixed order.
         (let* ((taken-false (outcome (lambda () (call-with-request-group s 'limit #f proc))))
                (taken-one (outcome (lambda () (call-with-request-group s 'limit 1 proc))))
                (extra (- called 2)))
@@ -1486,7 +1479,7 @@
    ;; failed with that raise, a condition compounded with its &http-exchange
    ;; and anything else as raised, and no other call is touched: a raise
    ;; that stranded its call, outside every set and holding its slot, hung
-   ;; the join and every await (the slice's review, limbo-probe).
+   ;; the join and every await.
    (let* ((look-url (url-of 'http "/status/201"))
           (due-url (retry-url "strand-due" 1 "close"))
           (admit-url (url-of 'http "/status/202"))
@@ -1619,13 +1612,13 @@
                    (attempts-of (string-append "raise-wait-" run)) (most-of "raise-queued"))))))
         '("1" "2" "3"))))
 
-   ;; A second escape, landing as the first unwinds: swept over its ticks,
-   ;; 1 to 40, one at a time. Measured (.plans/research/m5/group/sweep/): with
-   ;; the inner wind critical, ticks 1 to 3 land before its after thunk, the
-   ;; call still live, and 4 on are held off past it, the call ended by its
-   ;; cancel; with it plain, ticks 20 and 21 landed inside it, before the
-   ;; cancel, and the transfer ran on. Both kinds seen, before then after,
-   ;; are the sweep's evidence that it crossed the after thunk.
+   ;; A second escape, landing as the first unwinds: swept over its ticks, 1
+   ;; to 40, one at a time. Measured: with the inner wind critical, ticks 1 to
+   ;; 3 land before its after thunk, the call still live, and 4 on are held
+   ;; off past it, the call ended by its cancel; with it plain, ticks 20 and
+   ;; 21 landed inside it, before the cancel, and the transfer ran on. Both
+   ;; kinds seen, before then after, are the sweep's evidence that it crossed
+   ;; the after thunk.
    (test-equal "a second escape that lands as a group's first unwinds, at each of ticks 1 to 40, still leaves no transfer live within 3 s: the inner wind's cancel cannot be skipped; the early ticks land before it, the call live, then the rest after it, the call ended"
      (list (map (lambda (ticks) (list ticks 'ended)) (iota-from 1 40)) 'before-then-after)
      (let ((rows (in-order (lambda (ticks) (escape-twice (url-of 'raw "/raw/pause-mid-body?ms=10000") ticks))
@@ -1638,7 +1631,7 @@
    ;; handler escapes 300 ms into the join. The group must still cancel the
    ;; call and wait for it to end, so the escape leaves at once and the
    ;; engine then holds nothing; a group that skipped the cancel once closed
-   ;; waited out the drip in its outer wind, 9.7 s (the review's probe).
+   ;; waited out the drip in its outer wind, 9.7 s.
    (test-equal "an escape from the join's own wait, 300 ms after the procedure returned with a 10 s drip live, still cancels the call and ends it: the escape leaves within 2 s, the engine then holding nothing"
      (list 'escaped 'promptly '(0 0 0))
      (with-session '(timeout-ms 30000)
@@ -1672,25 +1665,22 @@
    ;; Fuel is ticks, not time, so Valgrind does not stretch it; but a Chez
    ;; build can move where a tick lands, so each assertion is an invariant
    ;; that holds wherever the expiry lands: in the calls' checks, in the
-   ;; entries, between them, or in the run loop or the awaits (measured,
-   ;; .plans/research/m5/group/engine/engine-sweep-probe.sps: on this build
-   ;; the checks take up to about 4500 ticks for four calls). The expiry is an escape: it closes
-   ;; the group and cancels its calls, and the engine, resumed, must start
-   ;; no transfer after it, but for a group made only after it; each outcome
-   ;; must be one the docs name; and nothing native is left. The review
-   ;; found a resumed http-parallel entering calls into its closed group, and
-   ;; reading their cancels as responses (the slice's second review).
-   ;; The window between two entries is narrow, about 20 ticks for four
-   ;; calls on this build (.plans/research/m5/group/traps/entry-window-probe.sps),
-   ;; where a resumed run that entered calls into its closed group was
-   ;; caught, so a coarse sweep can step over it; and the window inside the
-   ;; group before its first entry, where the cancel raised is a never-
-   ;; entered call's, is 3 ticks (.plans/research/m5/group/engine/
-   ;; unentered-window.out), and moved between runs, so a sweep by 2 hit it
-   ;; once or not at all; why it moves was not measured. The sweep
-   ;; finds its own band: the first coarse fuel whose outcome is a cancel
-   ;; lies just past the entries, wherever a build puts them, and a fine
-   ;; sweep of every tick for 100 either side of it covers them.
+   ;; entries, between them, or in the run loop or the awaits (measured: on
+   ;; this build the checks take up to about 4500 ticks for four calls). The
+   ;; expiry is an escape: it closes the group and cancels its calls, and the
+   ;; engine, resumed, must start no transfer after it, but for a group made
+   ;; only after it; each outcome must be one the docs name; and nothing
+   ;; native is left. The sweep also catches a resumed http-parallel entering
+   ;; calls into its closed group, and reading their cancels as responses. The
+   ;; window between two entries is narrow, about 20 ticks for four calls on
+   ;; this build, where a resumed run that entered calls into its closed group
+   ;; was caught, so a coarse sweep can step over it; and the window inside
+   ;; the group before its first entry, where the cancel raised is a
+   ;; never-entered call's, is 3 ticks, and moved between runs, so a sweep by
+   ;; 2 hit it once or not at all; why it moves was not measured. The sweep
+   ;; finds its own band: the first coarse fuel whose outcome is a cancel lies
+   ;; just past the entries, wherever a build puts them, and a fine sweep of
+   ;; every tick for 100 either side of it covers them.
    ;;
    ;; Each run is guarded: a raise out of it, its session's making or
    ;; closing among it, becomes a row of its own, a vector, which every
@@ -1736,10 +1726,9 @@
      ;; after it: its first call's cancel, or unentered, the cancel of a call
      ;; never entered, its group closed before its first entry. Never
      ;; (curl)'s refusal to re-enter a parse: each call's checks are one
-     ;; critical section, which no expiry lands inside (ADR-0025, amended
-     ;; 2026-11-05). A run that never expired answers its responses. No
-     ;; call here can fail, so a failure is no outcome: none was seen from
-     ;; 200 to 40000 ticks (the slice's third review).
+     ;; critical section, which no expiry lands inside (ADR-0025). A run that
+     ;; never expired answers its responses. No call here can fail, so a
+     ;; failure is no outcome: none was seen from 200 to 40000 ticks.
      (test-equal "an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, across its entries: the outcome is all four responses, with every transfer started after the expiry, its group made after it, or none, or with no expiry; or the cancel of its first call or a never-entered call's cancel, with no transfer started after the expiry; never (curl)'s refusal to re-enter a URL's parse"
        '()
        (filter (lambda (row) row)
@@ -1807,17 +1796,17 @@
          (list (and (memq 'cancelled calls) #t) (and (memq 'closed calls) #t)))))
 
    ;; go's recheck after an engine's expiry, placed by engine-block in
-   ;; PREPARE, outside every section of the group's, where a real expiry
-   ;; can land: in or just after the call's checks, whose own critical
-   ;; section an expiry that runs out in them lands after, before go's
-   ;; entry (engine-block inside a section suspends there at once, the
-   ;; slice's third review). The first go enters its call; the second's
-   ;; checks block the engine, whose expiry closes the group and cancels
-   ;; the first. Resumed, the second go asks again inside its entry's
-   ;; section, and raises closed once that section has ended: a handler
-   ;; installed around go by with-exception-handler runs with interrupts on,
-   ;; disable-interrupts answering 1, and sees the recheck's message. A
-   ;; hang here has no bound but make's timeout: the engine owns the timer.
+   ;; PREPARE, outside every section of the group's, where a real expiry can
+   ;; land: in or just after the call's checks, whose own critical section
+   ;; an expiry that runs out in them lands after, before go's entry
+   ;; (engine-block inside a section suspends there at once). The first go
+   ;; enters its call; the second's checks block the engine, whose expiry
+   ;; closes the group and cancels the first. Resumed, the second go asks
+   ;; again inside its entry's section, and raises closed once that section
+   ;; has ended: a handler installed around go by with-exception-handler
+   ;; runs with interrupts on, disable-interrupts answering 1, and sees the
+   ;; recheck's message. A hang here has no bound but make's timeout: the
+   ;; engine owns the timer.
    (test-equal "go's recheck, after an engine's expiry in or just after its checks, raises closed once its entry's section has ended: a handler around go runs with interrupts on and sees the recheck's message; the call entered before the expiry raises cancelled; no transfer starts after the expiry"
      (list #t
            (list (list 'handler #t 'closed 'go "the request group was closed while go checked the call: go starts no call")
@@ -2419,11 +2408,11 @@
 
    ;; Ten queued calls behind a 3 s hold at a limit of 1, bounded by 200 to
    ;; 290 ms, 10 ms apart, so their deadlines fall over every phase of the
-   ;; take's 100 ms (traps.md: a waiter's polling sleeps keep the phase of
-   ;; its start). Each is awaited in turn, and its lateness read where its
-   ;; await answers: a take bounded by the next deadline wakes at it; one
-   ;; bounded by 100 ms alone, with nothing else to wake it, overshoots most
-   ;; of them, up to 100 ms.
+   ;; take's 100 ms (a waiter's polling sleeps keep the phase of its start).
+   ;; Each is awaited in turn, and its lateness read where its await
+   ;; answers: a take bounded by the next deadline wakes at it; one bounded
+   ;; by 100 ms alone, with nothing else to wake it, overshoots most of
+   ;; them, up to 100 ms.
    (test-equal "a queued call's deadline wakes the take: ten queued calls, bounded 200 to 290 ms apart by 10, each fail with &http-timeout within 50 ms of their deadline"
      (list (make-list 10 'timed-out) 'on-time)
      (with-session '(timeout-ms 20000)
@@ -2455,9 +2444,8 @@
 
    ;; 20 calls of 500 ms on one session: with no limit all are held at once
    ;; and end within 2 s; at a limit of 2 at most 2 are, which takes 5 s at
-   ;; least, the control. The research measured the same through (curl)
-   ;; alone on five libcurls, and under the memory gate's Valgrind
-   ;; (.plans/research/m5/group/).
+   ;; least, the control. The same was measured through (curl) alone on
+   ;; five libcurls, and under the memory gate's Valgrind.
    (let ((twenty (lambda (key limit)
                    (with-session '(timeout-ms 30000)
                      (lambda (s)
@@ -2526,7 +2514,7 @@
                                 (list (list 'get ok 'bogus 1) (list 'options ok)
                                       (list 'get "ftp://h.example/x")))))
            ;; let*: most-of makes a transfer of its own, so the count is read
-           ;; before it, in a fixed order (traps.md).
+           ;; before it, in a fixed order.
            (let* ((made (- (transfers-started) started))
                   (most (most-of "par-checks")))
              (append rows (list made most)))))))
@@ -2535,9 +2523,9 @@
    ;; 3 s, so a submit made before a refusal would hold the call up until
    ;; then, while checks made before any submit raise at once. A collection
    ;; just before the holder starts leaves none due in the window: the holder
-   ;; sleeps in a critical section, where a collection would wait for it
-   ;; (traps.md). collect-rendezvous, since collect refuses while another
-   ;; thread is active, an engine's among them.
+   ;; sleeps in a critical section, where a collection would wait for it.
+   ;; collect-rendezvous, since collect refuses while another thread is
+   ;; active, an engine's among them.
    (test-equal "http-parallel's checks come before any submit: with the session's engine held by another thread for 3 s, where a submit would wait, a later spec's unknown key, refused method and ftp URL each raise within 500 ms"
      (list (list '(http-request-error key bogus unknown-key http-request) 'at-once)
            (list '(assertion make-curl-request) 'at-once)
@@ -2581,8 +2569,7 @@
    ;; 400000 specs so that judging it takes long enough, swept over the
    ;; timer's first 400 ticks, by 3: list? raises nothing, so no guard sits
    ;; there, and the raise must leave as raised, never be read as "the
-   ;; specs are a list", as a guarded length read it from tick 25 (the
-   ;; slice's second review).
+   ;; specs are a list", as a guarded length read it from tick 25.
    (test-equal "a timer's raise landing while http-parallel judges its specs leaves as raised, at every one of its first 400 ticks by 3, never read as the specs' refusal"
      '(raised-as-raised)
      (let* ((s (make-http-session 'timeout-ms 20000))
@@ -2609,17 +2596,16 @@
        (if (equal? seen '(raw)) '(raised-as-raised) seen)))
 
    ;; http-parallel's checks before any submit are (curl)'s own,
-   ;; curl-request-check's, the submit's checks (ADR-0023, amended
-   ;; 2026-10-28): its refusal of an ftp URL is the check's of the same
-   ;; first request, made before any submit. A submit of the ftp request
-   ;; would be refused too, alike, by the same checks, with no transfer
-   ;; either way; what tells a check before any submit from a refused
-   ;; submit is the core's step of the refusal, which draws once from the
-   ;; session's generator (the slice's second review): so the generator's
-   ;; state must be as it was. Its refusal of an ftp URL is the check's of the same
-   ;; first request, whole, and a submit's but for nothing, a URL's refusal
-   ;; naming chez-curl as its who in all three; compounded, in
-   ;; http-parallel's, with the call's &http-exchange.
+   ;; curl-request-check's, the submit's checks (ADR-0023): its refusal of an
+   ;; ftp URL is the check's of the same first request, made before any
+   ;; submit. A submit of the ftp request would be refused too, alike, by the
+   ;; same checks, with no transfer either way; what tells a check before any
+   ;; submit from a refused submit is the core's step of the refusal, which
+   ;; draws once from the session's generator: so the generator's state must
+   ;; be as it was. Its refusal of an ftp URL is the check's of the same first
+   ;; request, whole, and a submit's but for nothing, a URL's refusal naming
+   ;; chez-curl as its who in all three; compounded, in http-parallel's, with
+   ;; the call's &http-exchange.
    (test-equal "http-parallel's scheme refusal is curl-request-check's of the call's first request: &curl-url-error, scheme-not-http, its input, code, message, who and irritants as the check raises them, and as a submit does; compounded with the call's &http-exchange, no transfer made; and made before any submit: a refused submit's step would have drawn from the session's generator, which no step drew from"
      (list 'the-check-s 'a-submit-s '(exchange get "FTP://h.example/a/../x" 0 0) 'no-step-drew)
      (with-session '()

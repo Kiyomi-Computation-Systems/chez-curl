@@ -64,7 +64,7 @@
 #define curl_url_get decoy_header_curl_url_get
 /* curl_formadd and its codes are deprecated from 7.56.0, and from 7.87.0
    the headers mark them so, which warns at each use: the mime probe's
-   form uses them on purpose (ADR-0039, amended 2026-11-06). */
+   form uses them on purpose (ADR-0039). */
 #define CURL_DISABLE_DEPRECATION
 #include <curl/curl.h>
 #include <curl/header.h>
@@ -329,9 +329,9 @@ void curl_free(void *p)
 }
 #endif
 
-/* The transfer's entry points (M2 slice 2), which the load binds
-   and never calls, as with the variadic pair above. Each answers as a
-   library that can do nothing would. */
+/* The transfer's entry points, which the load binds and never calls, as
+   with the variadic pair above. Each answers as a library that can do
+   nothing would. */
 #ifndef DECOY_LACKS_curl_easy_strerror
 const char *curl_easy_strerror(CURLcode error)
 {
@@ -365,8 +365,8 @@ void curl_slist_free_all(struct curl_slist *list)
 }
 #endif
 
-/* The engine's multi interface (M3 slice 2), bound and never called during
-   the load, as above. */
+/* The engine's multi interface, bound and never called during the load, as
+   above. */
 #ifndef DECOY_LACKS_curl_multi_init
 CURLM *curl_multi_init(void)
 {
@@ -488,15 +488,14 @@ CURLSHcode curl_share_setopt(CURLSH *share, CURLSHoption option, ...)
 }
 #endif
 
-/* The mime probe's form (ADR-0039, amended 2026-11-06): variadic, the
-   seventh variadic use, called once by the load. It logs every option it
-   was handed, each as OPTION:STRING for CURLFORM_COPYNAME and
-   CURLFORM_COPYCONTENTS, then CURLFORM_END's number, so a binding that
-   passed its variadic arguments where this ABI does not read them shows
-   in the log; any other option ends the walk, logged as ?OPTION, and is
-   answered CURL_FORMADD_UNKNOWN_OPTION, as libcurl answers it. A
-   well-formed form answers 0 and makes a post, unless a switch above
-   says otherwise. */
+/* The mime probe's form (ADR-0039): variadic, the seventh variadic use,
+   called once by the load. It logs every option it was handed, each as
+   OPTION:STRING for CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS, then
+   CURLFORM_END's number, so a binding that passed its variadic arguments
+   where this ABI does not read them shows in the log; any other option
+   ends the walk, logged as ?OPTION, and is answered
+   CURL_FORMADD_UNKNOWN_OPTION, as libcurl answers it. A well-formed form
+   answers 0 and makes a post, unless a switch above says otherwise. */
 static int post_handle;
 #ifndef DECOY_LACKS_curl_formadd
 CURLFORMcode curl_formadd(struct curl_httppost **httppost, struct curl_httppost **last_post, ...)

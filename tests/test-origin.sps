@@ -1,14 +1,13 @@
 #!r6rs
-;;; The suite for the test instrument (M1 plan, sections 3 to 7; ADR-0005,
-;;; amended): the origin, tests/origin.mjs, as the byte probe,
-;;; tests/wire-probe.mjs, sees it. No check here uses libcurl or the curl
-;;; command line.
+;;; The suite for the test instrument (ADR-0005): the origin,
+;;; tests/origin.mjs, as the byte probe, tests/wire-probe.mjs, sees it. No
+;;; check here uses libcurl or the curl command line.
 ;;;
 ;;; Every expected output is written here, by hand, never read from
 ;;; origin.mjs: a script's bytes changed there fail a test here. Each
 ;;; scenario's test asserts the whole bytes received and how the connection
 ;;; ended. The well-formed face's bytes are those Node 20.10.0 and 24.18.0
-;;; were measured to write (.plans/instrument-mutation-log.md): they agree.
+;;; were measured to write: they agree.
 ;;;
 ;;; The scenarios run against one origin, so the suite starts Node a few
 ;;; times, not once a test. Then the lifecycle: loopback faces, OS ports, the
@@ -276,8 +275,8 @@
 
 ;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
 ;; PROC of each of ITEMS, called first to last: map calls its procedure in
-;; no fixed order (traps.md), and the retry script's answers depend on the
-;; requests before them.
+;; no fixed order, and the retry script's answers depend on the requests
+;; before them.
 (define (in-order proc items)
   (let loop ((rest items) (answers '()))
     (if (null? rest)
@@ -881,9 +880,8 @@
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")
          (list "garbage" (string-append (string #\nul #\x1 #\xff) " garbage\r\n\r\n"))))
 
-  ;; --- the raw face: the stream scripts (the M6 plan, section 4.2). The
-  ;; pattern's body is byte i mod 251, written by hand here; its record is
-  ;; the stalls script's answer.
+  ;; --- the raw face: the stream scripts. The pattern's body is byte i mod
+  ;; 251, written by hand here; its record is the stalls script's answer.
   (raw-row o "/raw/pattern?key=p1&bytes=600&chunk=256"
            (string-append "HTTP/1.1 200 OK\r\nContent-Length: 600\r\nConnection: close\r\n\r\n"
                           (pattern-text 600))
@@ -901,10 +899,10 @@
                           (pattern-text 1))
            'eof)
   (raw-row o "/raw/stalls?key=p-never" (counted-text "written 0 stalled none\n") 'eof)
-  ;; --- the raw face: the head routes (M8 slice 2; ADR-0040): a head of the
-  ;; size and shape its query names, a Digest round's two answers, and a
-  ;; 417 and its resend's, each written here by hand, or for a large one by
-  ;; this suite's own generator, head-text
+  ;; --- the raw face: the head routes (ADR-0040): a head of the size and
+  ;; shape its query names, a Digest round's two answers, and a 417 and its
+  ;; resend's, each written here by hand, or for a large one by this
+  ;; suite's own generator, head-text
   (raw-row o "/raw/head" "HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n" 'eof)
   (raw-row o "/raw/head?n=3"
            "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvv\r\nx-000002: vvvv\r\n\r\n" 'eof)
@@ -1071,8 +1069,8 @@
                "HTTP/1.1 404 Not Found\r\nContent-Length: 10\r\nConnection: close\r\n\r\nnot found\n"))
    '("/pattern/0" "/pattern/01" "/pattern/268435457" "/pattern/600?delay=60001" "/pattern/600?x=1"
      "/pattern/600?delay=" "/pattern" "/early?x=1" "/connects?x=1" "/connection"))
-  ;; The proxy's arm (M8 slice 2): the next CONNECT it answers 200 carries
-  ;; the lines /proxy-arm names, once; the one after carries none.
+  ;; The proxy's arm: the next CONNECT it answers 200 carries the lines
+  ;; /proxy-arm names, once; the one after carries none.
   (test-equal "the CONNECT proxy, armed by /proxy-arm?n=2&line=20: the next tunnel's 200 carries two lines of 20 bytes, then raw's bytes; the one after carries none; /proxy-arm refuses no n, n=100001 and line=12, each 404, and http's /head, HTTP/2's route, is 404"
     (let ((tunnelled (lambda (lines)
                        (list (string-append "HTTP/1.1 200 Connection Established\r\n" lines "\r\n"
@@ -1288,7 +1286,7 @@
   (json-scenarios o)
   (duplex-scenarios o))
 
-;; --- the parts route (M8 slice 3) -------------------------------------------------
+;; --- the parts route --------------------------------------------------------------
 ;; The bodies are built here, byte by byte, and their SHA-256 values were
 ;; computed on the host (sha256sum, and Python's hashlib, agreeing), never
 ;; by the origin.
@@ -1420,7 +1418,7 @@
            (seen (seen-of o "pt-refused")))
       (append rows (list seen)))))
 
-;; --- the JSON route (the M8 plan, section 3.10) ------------------------------------
+;; --- the JSON route ----------------------------------------------------------------
 ;; Each answer's body is written out here, by the route's rule, as the bytes
 ;; JSON.stringify writes; each request is built here, byte by byte.
 
@@ -1626,7 +1624,7 @@
             (read (open-string-input-port (cadr r)))
             (list 'exit r))))))
 
-;; --- the sinks (the M6 plan, slice 2) -------------------------------------------
+;; --- the sinks ------------------------------------------------------------------
 ;; Each test has keys of its own: the counts live as long as the origin, and
 ;; every face shares them. The SHA-256 values were computed on the host
 ;; (sha256sum, and Python's hashlib, agreeing), never by the origin.
@@ -1666,11 +1664,10 @@
 ;; spawned-probe : Origin Symbol String Natural -> (-> Probe)
 ;; A wire probe of TEXT to FACE, idle bound IDLE ms, started through
 ;; open-process-ports, not capture-command, so that another probe can run
-;; while it waits: on the Mac, two threads' system calls run one after the
+;; while it waits: on macOS, two threads' system calls run one after the
 ;; other, so a release made 800 ms into a 5 s probe, both through
-;; capture-command, arrived after it (traps.md; the Mac's run, 2026-11-01).
-;; Answers a thunk that reads
-;; the probe's output to its end, closes its pipes, and parses it.
+;; capture-command, arrived after it. Answers a thunk that reads the probe's
+;; output to its end, closes its pipes, and parses it.
 (define (spawned-probe o face text idle)
   (let-values (((to from err pid)
                 (open-process-ports
@@ -2033,7 +2030,7 @@
                 (list (lambda () (exchange o 'http (after "cuthead") 300))
                       (lambda () (exchange o 'http (get "/status/200" close) 2000)))))))
 
-;; --- the stream calls' scripts (the M6 plan, slice 3) --------------------------
+;; --- the stream calls' scripts -------------------------------------------------
 ;; Each test has keys of its own, as the sinks' do. A request's head goes
 ;; first and the rest of it 300 ms on, by the probe's --split, so a byte
 ;; read sooner than 300 ms after connecting came before the rest was sent,
@@ -2614,7 +2611,7 @@
   '(returned done)
   scenarios-outcome)
 
-;; --- the auth route (M7 slice 2; the M7 plan, section 5.2) ------------------------
+;; --- the auth route ---------------------------------------------------------------
 ;; Each test runs on an origin of its own, so its connections are numbered
 ;; from 1 there, in the order this suite opens them, one a probe. The
 ;; Authorization headers are written here: Basic's base64 and Digest's
@@ -2838,7 +2835,7 @@
 
 (auth-scenarios)
 
-;; --- the proxy (M7 slice 3; the M7 plan, section 6.2) ---------------------------------
+;; --- the proxy ------------------------------------------------------------------------
 ;; Each test runs on an origin of its own, so the proxy's connections are
 ;; numbered from 1 there, in the order this suite's probes open them; a
 ;; probe that reads /proxy-log comes direct, and is no proxy's. The
@@ -3030,7 +3027,7 @@
                                                 (number->string (head (list-ref cases 6))) " auth=basic:eve:\\x0d\\x0a\\xff (+1 more)")
                                  "close http conn=7"))))
               ;; Each case in turn, then the log: map's order is no order,
-              ;; and append's arguments run right to left (traps.md).
+              ;; and append's arguments run right to left.
               (got (let loop ((rest cases) (found '()))
                      (if (null? rest)
                          (reverse (cons (proxy-log-of o) found))
@@ -3076,7 +3073,7 @@
 
 (proxy-scenarios)
 
-;; --- the cookie route (M7 slice 4; the M7 plan, section 6.4) -------------------------
+;; --- the cookie route ----------------------------------------------------------------
 ;; Each test runs on an origin of its own. Every expected byte is written
 ;; here, never read from the origin.
 
@@ -3245,7 +3242,7 @@
 ;; - Node's own server.close(). It ends some waiting states with nothing
 ;;   tracked, so an end there proves nothing; each face here also waits in
 ;;   states it does not end. Untracked, close() ends, by face (measured on
-;;   Node 24.18.0 and 20.10.0, .plans/tls-mutation-log.md, section 4.2):
+;;   Node 24.18.0 and 20.10.0):
 ;;     http   idle after a whole keep-alive response, within 1 ms, on both;
 ;;            never a connection with nothing sent, a partial head, or a body
 ;;            still to come
@@ -3273,10 +3270,9 @@
 ;;   opening, cannot fall inside both windows.
 ;;
 ;; B is three times the slowest measured, 150 ms under 24 busy loops; idle it
-;; was 35 to 43 ms, and 49 to 76 ms with Chez under Valgrind
-;; (.plans/tls-mutation-log.md, section 4.2). The stop ends a connection
-;; with a FIN, or with a reset when the client's bytes are still unread, as
-;; a starved origin can leave them: both are the stop's.
+;; was 35 to 43 ms, and 49 to 76 ms with Chez under Valgrind. The stop ends a
+;; connection with a FIN, or with a reset when the client's bytes are still
+;; unread, as a starved origin can leave them: both are the stop's.
 ;;
 ;; The states held are those the table below names. Some a client can leave
 ;; a face in are not held by any check: an HTTP/2 response its client's
@@ -3303,8 +3299,7 @@
         (list "a stalled script, after its head" 'raw '() (hex (get "/raw/stall-after-head"))
               (hex "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\n"))
         ;; pause-mid-body waits 60 s between its writes: longer than any stop,
-        ;; on a slow machine too (2.9 to 5 s on one or two CPUs with Valgrind,
-        ;; measured by the review).
+        ;; on a slow machine too (2.9 to 5 s on one or two CPUs with Valgrind).
         (list "a script playing, between two of its writes" 'raw '() (hex (get "/raw/pause-mid-body?ms=60000"))
               (hex "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello"))
         (list "a script playing, between two of its writes, the client half-closed" 'raw '("--half-close")

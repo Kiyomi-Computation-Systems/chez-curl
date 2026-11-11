@@ -1,18 +1,17 @@
 #!r6rs
 ;;; (http-client private drive): the shell for one call, on its caller's
-;;; thread (the M5 plan, sections 3.5 and 3.6). It reads the clocks, draws,
-;;; submits, awaits, and hands each outcome to the core, (http-client
-;;; private exchange), which answers what comes next: a next, a redirect's
-;;; or a retry's, whose request goes through the core's submission, with
-;;; the time left, as the first did, once its wait has passed: at once for
-;;; a wait of 0.
+;;; thread. It reads the clocks, draws, submits, awaits, and hands each
+;;; outcome to the core, (http-client private exchange), which answers what
+;;; comes next: a next, a redirect's or a retry's, whose request goes
+;;; through the core's submission, with the time left, as the first did,
+;;; once its wait has passed: at once for a wait of 0.
 ;;;
 ;;; A wait above 0 is a take from an empty private mailbox, bounded by the
 ;;; wait: curl-mailbox-take polls, sleeping up to 10 ms between its looks,
 ;;; with interrupts on, so Ctrl-C and a timer reach it, and refuses to start
-;;; inside a critical section, as every wait of (curl)'s does (ADR-0013,
-;;; amended 2026-10-25). Each step draws one number from the session's
-;;; generator, through DRAW, whether a retry reads it or not.
+;;; inside a critical section, as every wait of (curl)'s does (ADR-0013).
+;;; Each step draws one number from the session's generator, through DRAW,
+;;; whether a retry reads it or not.
 ;;;
 ;;; The await is curl-token-wait in a loop, with no guard around it, then
 ;;; curl-token-outcome once the token is done: its response, as (response
@@ -24,10 +23,9 @@
 ;;; other object, is no outcome: it leaves as raised, and a handler that
 ;;; returns from a continuable raise resumes the wait. A guard around the
 ;;; await read such a raise as the transfer's failure, and retried it while
-;;; the first transfer ran on, a post's among them (the slice's first
-;;; review); one that re-awaited the done token to tell them apart lost a
-;;; raise landing there, and leaked the token's own condition raw (the
-;;; second review).
+;;; the first transfer ran on, a post's among them; one that re-awaited the
+;;; done token to tell them apart lost a raise landing there, and leaked the
+;;; token's own condition raw.
 ;;;
 ;;; A call needs interrupts on: its await sleeps between its looks, and
 ;;; inside a critical section that sleep would hold every other thread's
@@ -54,13 +52,11 @@
 ;;; records its token run in one critical section, so an interrupt handler
 ;;; that escapes cannot fall between them, nor between the record and the
 ;;; protection: a keyboard interrupt made pending inside the section runs as
-;;; it ends, once the token is recorded (traps.md). Each submit of a call,
-;;; a redirect's as the first, shares its section with its record. A
-;;; submit never waits
+;;; it ends, once the token is recorded. Each submit of a call, a redirect's
+;;; as the first, shares its section with its record. A submit never waits
 ;;; but for the engine's mutex; it does copy the request's body inside the
 ;;; section, as its private copy: about 50 ms for 64 MB, and 207 to 227 ms
-;;; for 256 MB (.plans/research/m5/submit-time/), which Ctrl-C then waits
-;;; out.
+;;; for 256 MB, which Ctrl-C then waits out.
 ;;;
 ;;; A call compounds its own failures with its &http-exchange: a &curl-error
 ;;; curl-submit raises is the core's (refused C), caught inside the submit's
@@ -76,14 +72,13 @@
 ;;; Each step, exchange-step's, and drive-stream's exchange-steps-past?,
 ;;; runs in a critical section of its own, its guard inside it, every raise
 ;;; answered as data and raised once the section has ended, as a group's
-;;; turn steps its calls (section-step; ADR-0025, as amended after the
-;;; branch's review): a redirect's step parses URLs through (curl)'s
-;;; critical winds, and with interrupts on an expiry or a handler's raise
-;;; there came out as call-with-parsed-url's refusal to re-enter one. So
-;;; what a handler raises during a step comes once it has ended, as raised,
-;;; and an expiry lands after it.
+;;; turn steps its calls (section-step; ADR-0025): a redirect's step parses
+;;; URLs through (curl)'s critical winds, and with interrupts on an expiry
+;;; or a handler's raise there came out as call-with-parsed-url's refusal to
+;;; re-enter one. So what a handler raises during a step comes once it has
+;;; ended, as raised, and an expiry lands after it.
 ;;;
-;;; --- the streamed call (the M6 plan, section 3.6) ---
+;;; --- the streamed call ---
 ;;;
 ;;; drive-stream drives a call whose responses stream, call-with-response-
 ;;; port's and http-request's with a producer: the same core, the same
@@ -97,7 +92,7 @@
 ;;; read once, with the head's body-asked bit, for the core's predicate and
 ;;; for the hop's step alike.
 ;;;
-;;; --- the request group (the M5 plan, section 3.7) ---
+;;; --- the request group ---
 ;;;
 ;;; A group drives many calls on its one thread, through one mailbox that
 ;;; every token it submits goes to (ADR-0021), on its session's engine: the
@@ -114,7 +109,7 @@
 ;;;     set, and taken out in the step, so a notice for a token outside it,
 ;;;     one a look found done first, or a cancelled one, is dropped: each
 ;;;     token is stepped once, and a notice an escape loses, from a take
-;;;     that took it out (ADR-0021, amended), is found by the next turn's
+;;;     that took it out (ADR-0021), is found by the next turn's
 ;;;     look;
 ;;;   - its draining tokens: those it cancelled, until each has ended;
 ;;;   - its slots: a call holds one from its first submit until it ends,
@@ -161,7 +156,7 @@
 ;;; would wait for good, and none leaves the await of another call. No
 ;;; interrupt handler runs inside the section, so the guard reads the
 ;;; code's own raises alone; a handler's comes as the section ends, outside
-;;; it, and leaves as raised (traps.md).
+;;; it, and leaves as raised.
 ;;;
 ;;; A turn, run by an await, by http-pending-done? and by the join:
 ;;;   1. steps every token of the live set that curl-token-done? finds
@@ -199,24 +194,23 @@
 ;;; from the join's own waits, a raise caught outside or a continuation
 ;;; alike, the cancel is made with interrupts off, then the wait. A second
 ;;; escape during that wait abandons it, and leaves those tokens live:
-;;; documented, not prevented (the M5 plan, section 3.7), as is the wait
-;;; itself, which a stalled lookup on 7.85.0 to 7.86.x holds up to glibc's
-;;; resolver timeout (ADR-0019). A handler installed outside the group by
-;;; with-exception-handler runs where the raise is made, inside the
-;;; group's extent, before either wind has run: it sees every call as it
-;;; was. And a Chez engine's expiry is an escape: around a group, the first
-;;; expiry ends the whole group, each call cancelled, and closes it, and once
-;;; resumed the procedure's await raises cancelled, as any escape's would.
-;;; A go resumed before it had entered its call raises closed: it asks
-;;; again inside its entry's section, after its checks, and raises once
-;;; that section has ended, so a handler around go runs with interrupts on.
-;;; A go resumed after its entry, in its admissions, answers its pending,
-;;; whose await raises cancelled. A resumed http-parallel enters no call
-;;; more, and raises its first failure, if any, or else the cancel of its
-;;; first call not done. A call's checks, go's and http-parallel's among
-;;; them, run in one critical section of (http-client)'s call-state, so no
-;;; expiry lands inside them: one that runs out there lands after them,
-;;; once the section has ended (ADR-0025, amended 2026-11-05).
+;;; documented, not prevented, as is the wait itself, which a stalled lookup
+;;; on 7.85.0 to 7.86.x holds up to glibc's resolver timeout (ADR-0019). A
+;;; handler installed outside the group by with-exception-handler runs where
+;;; the raise is made, inside the group's extent, before either wind has
+;;; run: it sees every call as it was. And a Chez engine's expiry is an
+;;; escape: around a group, the first expiry ends the whole group, each call
+;;; cancelled, and closes it, and once resumed the procedure's await raises
+;;; cancelled, as any escape's would. A go resumed before it had entered its
+;;; call raises closed: it asks again inside its entry's section, after its
+;;; checks, and raises once that section has ended, so a handler around go
+;;; runs with interrupts on. A go resumed after its entry, in its
+;;; admissions, answers its pending, whose await raises cancelled. A resumed
+;;; http-parallel enters no call more, and raises its first failure, if any,
+;;; or else the cancel of its first call not done. A call's checks, go's and
+;;; http-parallel's among them, run in one critical section of
+;;; (http-client)'s call-state, so no expiry lands inside them: one that
+;;; runs out there lands after them, once the section has ended (ADR-0025).
 ;;;
 ;;; A group is its thread's, by get-thread-id: go, http-await,
 ;;; http-pending-done? and http-pending-cancel from any other raise
@@ -324,27 +318,24 @@
   ;; exchange-step's answer for STATE and OUTCOME at NOW-NS, UTC-S and DRAW,
   ;; made in a critical section of its own, whose guard takes every raise
   ;; there and answers it as data, raised once the section has ended, as a
-  ;; group's turn steps its calls (ADR-0025, as amended after the branch's
-  ;; review). A redirect's step parses its Location and the URLs it
-  ;; compares through (curl)'s critical winds, some under a guard of
-  ;; &curl-url-error alone: with interrupts on, an engine's expiry inside a
-  ;; parse left it behind, and a handler's raise there that the guard
-  ;; declined was re-raised back inside it, each coming out as
+  ;; group's turn steps its calls (ADR-0025). A redirect's step parses its
+  ;; Location and the URLs it compares through (curl)'s critical winds, some
+  ;; under a guard of &curl-url-error alone: with interrupts on, an engine's
+  ;; expiry inside a parse left it behind, and a handler's raise there that
+  ;; the guard declined was re-raised back inside it, each coming out as
   ;; call-with-parsed-url's refusal to re-enter it, in place of the call's
-  ;; answer (research/m7/carried/review, M1). Inside the section no handler
-  ;; runs and no expiry lands: a Ctrl-C made pending there runs as it ends,
-  ;; a timer and an expiry at a later event check, after the step. A step
-  ;; waits for nothing and calls no caller code; it holds Ctrl-C and other
-  ;; threads' collections for its length, under 0.5 ms for an ordinary
-  ;; redirect, and as its inputs grow, to what libcurl lets in: 124 to 181
-  ;; ms for the largest step 7.85.0, 8.20.0 and 8.23.0 let one make, a
-  ;; requested URL of about 1,048,500 chars, within the 1 MiB they send a
-  ;; request in, a Location of 102,387 bytes, the most each takes under its
-  ;; 100 KiB cap on a header, and the most headers each takes, 5,000, or
-  ;; 100,003 on 7.85.0, which caps none; 11 to 17 ms on 8.5.0, which sent
-  ;; no URL past 131,041 chars, a longer request stalling to its timeout;
-  ;; the headers alone under 0.5 ms (research/m7/carried/guard/, the fix
-  ;; round's step-hold logs).
+  ;; answer. Inside the section no handler runs and no expiry lands: a
+  ;; Ctrl-C made pending there runs as it ends, a timer and an expiry at a
+  ;; later event check, after the step. A step waits for nothing and calls
+  ;; no caller code; it holds Ctrl-C and other threads' collections for its
+  ;; length, under 0.5 ms for an ordinary redirect, and as its inputs grow,
+  ;; to what libcurl lets in: 124 to 181 ms for the largest step 7.85.0,
+  ;; 8.20.0 and 8.23.0 let one make, a requested URL of about 1,048,500
+  ;; chars, within the 1 MiB they send a request in, a Location of 102,387
+  ;; bytes, the most each takes under its 100 KiB cap on a header, and the
+  ;; most headers each takes, 5,000, or 100,003 on 7.85.0, which caps none;
+  ;; 11 to 17 ms on 8.5.0, which sent no URL past 131,041 chars, a longer
+  ;; request stalling to its timeout; the headers alone under 0.5 ms.
   (define (section-step state outcome now-ns utc-s draw)
     (in-step-section (lambda () (exchange-step state outcome now-ns utc-s draw))))
 
@@ -427,11 +418,11 @@
           (when (and token (not (curl-token-done? token)))
             (curl-token-cancel token))))))
 
-  ;; --- the streamed call (the M6 plan, section 3.6; ADR-0031, ADR-0032) ----------------
+  ;; --- the streamed call (ADR-0031, ADR-0032) ------------------------------------------
 
   ;; side-ms : Natural
   ;; The bound of a side's wait while the other side has not just moved
-  ;; bytes: 10 ms (the M6 plan, section 6.1, as measured).
+  ;; bytes: 10 ms, as measured.
   (define side-ms 10)
 
   ;; A streamed call's record beside its exchange: its producer, or #f;
@@ -460,8 +451,7 @@
   ;; handler escapes as a critical section ends, and which PROC catches,
   ;; finds each of the producer's answer, the end and the held piece where
   ;; the next feed! takes it up: none is lost, none given twice, and the
-  ;; producer never called after its eof (the M6 plan, section 3.6; the
-  ;; slice's review, build/m6s3r/).
+  ;; producer never called after its eof.
   (define-record-type (leg make-leg leg?)
     (fields (immutable token leg-token)
             (immutable call leg-call)
@@ -480,7 +470,7 @@
   ;; A side's wait: 0 ms while the other side has just moved bytes, else
   ;; side-ms. Strict alternation, a whole bound on each side every turn,
   ;; cost one bound per piece: 9.64 to 12.7 MB/s at 10 ms, where this ran at
-  ;; 24.1 to 212.6 (the M6 plan, section 6.1, as measured).
+  ;; 24.1 to 212.6.
   (define (resp-bound leg)
     (let ((ms (if (leg-req-moved? leg) 0 side-ms)))
       (vector-set! wait-counts (if (= ms 0) 0 1) (+ 1 (vector-ref wait-counts (if (= ms 0) 0 1))))
@@ -504,9 +494,9 @@
   ;; LEG's response side has waited, GOT whether it found a piece, a head
   ;; or the end: its own flag set to that; and a wait that found nothing
   ;; clears the request side's, so a request side that moves no more, its
-  ;; body ended, is never waited for at 0 ms again. The measurement's first
-  ;; drive kept it, polled at 0 ms for good, millions of times, and under
-  ;; Valgrind starved the engine's thread (the M6 plan, section 3.6).
+  ;; body ended, is never waited for at 0 ms again. A drive that kept it
+  ;; polled at 0 ms for good, millions of times, and under Valgrind starved
+  ;; the engine's thread.
   (define (resp-waited! leg got)
     (leg-resp-moved-set! leg got)
     (unless got (leg-req-moved-set! leg #f)))
@@ -525,14 +515,13 @@
   ;; read, and the producer called only while no head is published or the
   ;; head is known final. A head published before libcurl's first ask, then
   ;; followed by one, a hop's or one still to be read, is never fed; the
-  ;; final head is fed whenever libcurl asks, its bit #f among them (the M6
-  ;; plan, section 3.6). A token done stops it. Once the puts have taken the
-  ;; body-length whole, the producer is asked for its end at once, by
-  ;; end-at-length!, never waiting for room. A body-length of 0, which
-  ;; libcurl never asks for, never calls the producer. STICKY? is the
-  ;; port's: a producer's failure there is the call's for good. STATE is
-  ;; the transfer's, for what a refusal compounds. Each wait is a bounded
-  ;; poll, unguarded, read as data.
+  ;; final head is fed whenever libcurl asks, its bit #f among them. A token
+  ;; done stops it. Once the puts have taken the body-length whole, the
+  ;; producer is asked for its end at once, by end-at-length!, never waiting
+  ;; for room. A body-length of 0, which libcurl never asks for, never calls
+  ;; the producer. STICKY? is the port's: a producer's failure there is the
+  ;; call's for good. STATE is the transfer's, for what a refusal compounds.
+  ;; Each wait is a bounded poll, unguarded, read as data.
   (define (feed! leg sticky? state)
     (case (leg-phase leg)
       ((feeding)
@@ -566,11 +555,10 @@
   ;; there or gives more is the producer's to tell. Waiting for room, the
   ;; drive was answered done whenever the server's answer ended the transfer
   ;; first, and never asked: a producer that gave more than its length then
-  ;; passed as a 200, on a drive whose waits were 10 ms
-  ;; (build/m6s3b/mutants/strict-alternation/). Asked here, a piece past the
-  ;; length fails the call alike however quickly the server answers
-  ;; (ADR-0031, decision 2). It is made after the put that took the length,
-  ;; in that step, and again at the final head.
+  ;; passed as a 200, on a drive whose waits were 10 ms. Asked here, a piece
+  ;; past the length fails the call alike however quickly the server answers
+  ;; (ADR-0031). It is made after the put that took the length, in that
+  ;; step, and again at the final head.
   (define (end-at-length! leg ms sticky? state)
     (when (and (at-length? leg) (not (unfed-head? leg)))
       (produce-and-put! leg ms sticky? state)))
@@ -586,12 +574,12 @@
   ;; by produce!, then taken and checked by take-answer! before anything is
   ;; put: the eof object ends the body, which the low level fails as
   ;; body-length-mismatch when it is short of the body-length, alike on
-  ;; every libcurl (ADR-0031, decision 2); a bytevector of a byte or more is
-  ;; held, then put, bounded by MS, unless it would take the body past its
-  ;; body-length; anything else, and a piece past the body-length, is the
-  ;; call's refusal, by refuse!, before any of it reaches libcurl. A
-  ;; producer is never called after it answered the eof object: the request
-  ;; side is ending or has ended.
+  ;; every libcurl (ADR-0031); a bytevector of a byte or more is held, then
+  ;; put, bounded by MS, unless it would take the body past its body-length;
+  ;; anything else, and a piece past the body-length, is the call's refusal,
+  ;; by refuse!, before any of it reaches libcurl. A producer is never
+  ;; called after it answered the eof object: the request side is ending or
+  ;; has ended.
   (define (produce-and-put! leg ms sticky? state)
     (produce! leg sticky?)
     (take-answer! leg ms sticky? state))
@@ -604,8 +592,8 @@
   ;; calling the producer; a bytevector of a byte or more becomes the held
   ;; piece, in one section with the answer's removal, then is put, unless
   ;; it would take the body past its body-length, which is refused,
-  ;; &http-request-error, body-length-mismatch (ADR-0031, amended); anything
-  ;; else is refused, an assertion violation.
+  ;; &http-request-error, body-length-mismatch (ADR-0031); anything else is
+  ;; refused, an assertion violation.
   (define (take-answer! leg ms sticky? state)
     (let ((answer (car (leg-answer leg))))
       (cond
@@ -651,18 +639,17 @@
   ;; put-held! : Leg Natural Boolean State -> Void
   ;; LEG's held piece put, bounded by MS, unless curl-token-body-count says
   ;; an earlier put of it committed it before an escape: taken, counted and
-  ;; let go, and, the
-  ;; body-length then taken whole, the producer asked for its end at once;
-  ;; done, the token done, the request side stopped; or the bound passed,
-  ;; the piece still held. It is within the body-length, checked before the
-  ;; hold, and the body has not ended, so the put raises nothing of its own,
-  ;; and no guard is around it (the M6 plan, section 3.6).
+  ;; let go, and, the body-length then taken whole, the producer asked for
+  ;; its end at once; done, the token done, the request side stopped; or the
+  ;; bound passed, the piece still held. It is within the body-length,
+  ;; checked before the hold, and the body has not ended, so the put raises
+  ;; nothing of its own, and no guard is around it.
   (define (put-held! leg ms sticky? state)
     (let ((answer (if (= (curl-token-body-count (leg-token leg))
                          (+ (leg-put leg) (bytevector-length (leg-held leg))))
                       ;; Committed already, by a put an interrupt handler
                       ;; escaped from as its hold ended, and caught in PROC:
-                      ;; taken, never put twice (the M6 plan, section 3.5).
+                      ;; taken, never put twice.
                       #t
                       (curl-token-put-piece! (leg-token leg) (leg-held leg) ms))))
       (cond ((eq? answer #t)
@@ -682,7 +669,7 @@
   ;; for good; LEG stopped, its answer and its held piece dropped; then its
   ;; transfer cancelled. C is raised once the section has ended, so a
   ;; keyboard interrupt whose handler escapes there finds everything
-  ;; recorded, and the next read raises C (the slice's review).
+  ;; recorded, and the next read raises C.
   (define (refuse! leg sticky? c)
     (critical-section
      (when (and sticky? (not (call-stuck (leg-call leg))))
@@ -707,8 +694,8 @@
   ;; record and the cancel are made only once the producer was entered, a
   ;; flag set as the first form inside the handler's thunk: a keyboard
   ;; interrupt that escapes as the before thunk's section ends leaves
-  ;; before it, and neither is made, so PROC, catching it, reads on, and
-  ;; the producer is called again (the slice's fourth review, case E).
+  ;; before it, and neither is made, so PROC, catching it, reads on, and the
+  ;; producer is called again.
   ;; Without STICKY?, a raise leaves the call as raised, and the call's own
   ;; wind cancels the transfer.
   (define (produce! leg sticky?)
@@ -741,7 +728,7 @@
   ;; A test seam's thunk, run once, inside the port's read, in produce!'s
   ;; critical after thunk, then dropped: a test blocks there on a mutex
   ;; another thread holds while that thread sends SIGINT, so a keyboard
-  ;; interrupt runs as the after thunk's section ends (traps.md).
+  ;; interrupt runs as the after thunk's section ends.
   (define produce-gate (vector #f))
 
   ;; drive-produce-gate-set! : (U (-> Any) #f) -> Void
@@ -759,7 +746,7 @@
   ;; The produce gate's twin, a test seam's thunk run once, inside the
   ;; port's read, in produce!'s critical before thunk, then dropped, so a
   ;; keyboard interrupt runs as the before thunk's section ends, before the
-  ;; producer is entered (the slice's fourth review, case E).
+  ;; producer is entered.
   (define before-gate (vector #f))
 
   ;; drive-before-gate-set! : (U (-> Any) #f) -> Void
@@ -778,8 +765,8 @@
   ;; with start and with end, the first and last forms of a call's checks,
   ;; inside their critical section: a test blocks at start on a mutex
   ;; another thread holds while that thread sends SIGINT, so a keyboard
-  ;; interrupt is made pending inside the section (traps.md), and an
-  ;; engine's sweep reads where its expiry landed. #f, unarmed, by default.
+  ;; interrupt is made pending inside the section, and an engine's sweep
+  ;; reads where its expiry landed. #f, unarmed, by default.
   (define checks-gate (vector #f))
 
   ;; drive-checks-gate-set! : (U (Symbol -> Any) #f) -> Void
@@ -811,13 +798,12 @@
       (when g (g where))))
 
   ;; last-token : (Vector Boolean (U Token #f))
-  ;; The test seam's record: whether a test has armed it; then the token
-  ;; the latest streamed call submitted while armed, held only until that
-  ;; call ends, when its own after thunk lets it go. Unarmed, it records
-  ;; nothing, so no call's token, nor the private copy of a whole body its
-  ;; plan holds, outlives the call through the seam: held for good, a 64
-  ;; MiB body's call kept 64.1 MB until the next (the slice's fourth
-  ;; review).
+  ;; The test seam's record: whether a test has armed it; then the token the
+  ;; latest streamed call submitted while armed, held only until that call
+  ;; ends, when its own after thunk lets it go. Unarmed, it records nothing,
+  ;; so no call's token, nor the private copy of a whole body its plan
+  ;; holds, outlives the call through the seam: held for good, a 64 MiB
+  ;; body's call kept 64.1 MB until the next.
   (define last-token (vector #f #f))
 
   ;; drive-last-token-arm! : Boolean -> Void
@@ -877,8 +863,7 @@
   ;; end-hop! : Token -> Void
   ;; A hop's transfer cancelled at its head, and waited for, a second at a
   ;; time, unguarded, so the next submit comes once it has ended, and the
-  ;; call's wind has one live token to cancel (ADR-0031, amended
-  ;; 2026-10-31).
+  ;; call's wind has one live token to cancel (ADR-0031).
   (define (end-hop! token)
     (curl-token-cancel token)
     (let wait () (unless (curl-token-wait token 1000) (wait))))
@@ -891,20 +876,20 @@
     (make-http-response status version "" headers #f #f '()))
 
   ;; call-port : Leg State -> Binary-Input-Port
-  ;; The call's port over LEG's body, the high level's own (the M6 plan,
-  ;; section 3.6): a read copies from the piece at hand, or takes the next
-  ;; by curl-token-next-piece, feeding the producer between its waits, as
-  ;; the drive does, so a full-duplex server is never left without a body.
-  ;; Its ends stick: 0 once the transfer ended with a response and every
-  ;; piece is read; for a failure, the low level's condition compounded
-  ;; with the call's &http-exchange, and with &http-timeout when it is the
-  ;; call's bound's 28, raised every time after; and once the producer
-  ;; failed inside a read, that failure, raised by every read after. A read
-  ;; from the producer, while it runs, and a read or a close from another
-  ;; thread are assertion violations from the call; so is a read that must
-  ;; wait inside a critical section, before it waits. Its close cancels a
-  ;; live transfer. Bytes Chez's port has already buffered are served to
-  ;; any thread with no read reaching it, as the low level's port's are.
+  ;; The call's port over LEG's body, the high level's own: a read copies
+  ;; from the piece at hand, or takes the next by curl-token-next-piece,
+  ;; feeding the producer between its waits, as the drive does, so a
+  ;; full-duplex server is never left without a body. Its ends stick: 0 once
+  ;; the transfer ended with a response and every piece is read; for a
+  ;; failure, the low level's condition compounded with the call's
+  ;; &http-exchange, and with &http-timeout when it is the call's bound's
+  ;; 28, raised every time after; and once the producer failed inside a
+  ;; read, that failure, raised by every read after. A read from the
+  ;; producer, while it runs, and a read or a close from another thread are
+  ;; assertion violations from the call; so is a read that must wait inside
+  ;; a critical section, before it waits. Its close cancels a live transfer.
+  ;; Bytes Chez's port has already buffered are served to any thread with no
+  ;; read reaching it, as the low level's port's are.
   (define (call-port leg state)
     (let* ((call (leg-call leg))
            (who (call-who call))
@@ -957,14 +942,13 @@
 
   ;; drive-stream : Engine State (-> Real) (U Procedure #f) (U 'port 'whole)
   ;;                (U (Response Binary-Input-Port -> Any) #f) Symbol -> Any
-  ;; STATE's call, every transfer's response streamed, on ENGINE (the M6
-  ;; plan, section 3.6; ADR-0031, amended 2026-10-31; ADR-0032): its
-  ;; requests carry a stream-buffer, and, with PRODUCER, body stream. Each
-  ;; transfer's head is waited for, PRODUCER fed meanwhile; then the draw,
-  ;; the UTC clock and the monotonic clock are read, and the head's
-  ;; body-asked bit, once, the producer counted as called when libcurl had
-  ;; asked by the head, or the drive called it; then exchange-steps-past?
-  ;; answers whether the call steps past the head:
+  ;; STATE's call, every transfer's response streamed, on ENGINE (ADR-0031,
+  ;; ADR-0032): its requests carry a stream-buffer, and, with PRODUCER, body
+  ;; stream. Each transfer's head is waited for, PRODUCER fed meanwhile;
+  ;; then the draw, the UTC clock and the monotonic clock are read, and the
+  ;; head's body-asked bit, once, the producer counted as called when
+  ;; libcurl had asked by the head, or the drive called it; then
+  ;; exchange-steps-past? answers whether the call steps past the head:
   ;;   - a hop, a redirect followed or a retry taken: one whose request
   ;;     sends a body, a producer's or a whole one, is cancelled at its
   ;;     head and stepped by exchange-step with those same values, its
@@ -980,18 +964,17 @@
   ;;     with it and the transfer's timings, a failure there stepped with
   ;;     the clocks read at it. The final head is fed whenever libcurl
   ;;     asks.
-  ;; A call that ends with a response read before, a retry run out of
-  ;; time, hands PROC that response and a port over its body in memory. A
-  ;; retry that runs out after its hop was cancelled at its head, whose
-  ;; body was never read, at its submission or at the bound's 28 with
-  ;; nothing sent, the core fails with &http-timeout instead, as with no
-  ;; time left for any request (decided by the maintainer, 2026-11-01). One
-  ;; critical wind spans the call, as drive-exchange's does: its after
-  ;; thunk closes the port, cancels the live token, and lets the test
-  ;; seam's record of it go. Once it has run, a producer's failure inside
-  ;; the port's read is raised in place of PROC's values. WHO names the
-  ;; call in its refusals; with interrupts off it refuses before anything
-  ;; is submitted.
+  ;; A call that ends with a response read before, a retry run out of time,
+  ;; hands PROC that response and a port over its body in memory. A retry
+  ;; that runs out after its hop was cancelled at its head, whose body was
+  ;; never read, at its submission or at the bound's 28 with nothing sent,
+  ;; the core fails with &http-timeout instead, as with no time left for any
+  ;; request. One critical wind spans the call, as drive-exchange's does:
+  ;; its after thunk closes the port, cancels the live token, and lets the
+  ;; test seam's record of it go. Once it has run, a producer's failure
+  ;; inside the port's read is raised in place of PROC's values. WHO names
+  ;; the call in its refusals; with interrupts off it refuses before
+  ;; anything is submitted.
   (define (drive-stream engine state draw producer mode proc who)
     (unless (interrupts-on?)
       (refuse-without-interrupts state who))
@@ -1004,8 +987,8 @@
             ((submit)
              (when (and (eq? (curl-request-body (caddr submission)) 'stream) (call-called? call))
                ;; The core never asks this: a producer counted as called is
-               ;; never sent again (ADR-0032, decision 3). Checked before the
-               ;; submit, so no second transfer of its body is ever made.
+               ;; never sent again (ADR-0032). Checked before the submit, so
+               ;; no second transfer of its body is ever made.
                (assertion-violation 'drive-stream "a producer's body was asked for by a second transfer"
                                     (caddr submission)))
              (let* ((state (cadr submission))
@@ -1078,7 +1061,7 @@
                          (http-response-with r (caddr read) (curl-response-timings (cadr read)))
                          ;; The final head is fed, so the producer may have
                          ;; been called first during the read: marked again,
-                         ;; no retry takes it (ADR-0032, decision 3).
+                         ;; no retry takes it (ADR-0032).
                          (let* ((utc (utc-seconds)) (now (monotonic-ns))
                                 (state (if (call-called? call) (exchange-mark-called state) state)))
                            (stepped (section-step state read now utc drawn) now)))))))
@@ -1118,7 +1101,7 @@
           (let ((stuck (call-stuck call)))
             (if stuck (raise stuck) (apply values answers)))))))
 
-  ;; --- the request group (the M5 plan, section 3.7) ------------------------------------
+  ;; --- the request group ---------------------------------------------------------------
 
   ;; require-interrupts : Symbol -> Void
   ;; Returns when this thread runs with interrupts on, as interrupts-on?
@@ -1349,8 +1332,8 @@
   ;; THUNK, PENDING's step or submit, with any raise from it made
   ;; PENDING's failure, by strand!. Its caller runs it inside the call's
   ;; critical section, where no interrupt handler runs, so the guard reads
-  ;; only the code's own raises (traps.md): a handler's raise comes as the
-  ;; section ends, outside the guard, and leaves as raised.
+  ;; only the code's own raises: a handler's raise comes as the section
+  ;; ends, outside the guard, and leaves as raised.
   (define (guarded! group pending thunk)
     (guard (x (#t (strand! group pending x)))
       (thunk)))
@@ -1621,21 +1604,20 @@
   ;; group of LIMIT in their order, each entered in a critical section of
   ;; its own, then let in by admit!, each admission a section of its own,
   ;; so no section copies more than one call's body while collections wait
-  ;; (the slice's review: 101 to 108 ms of held collections for 32 posts of
-  ;; 4 MB in one); then turns until all have ended or one has failed. Each
-  ;; entry's section asks first whether the group is closed: an escape, a
-  ;; Chez engine's expiry among them, closes and cancels it through its
-  ;; winds, and a resumed run must enter no more, so a call not yet entered
-  ;; is never submitted (the slice's second review). On the first failure,
-  ;; the first the group saw fail, ties in the order of their latest
-  ;; submits, every other call is cancelled, as the inner wind does, every
-  ;; token waited for, as the outer wind does, and that failure raised as
-  ;; the call raised it. The responses are answered only when every call
-  ;; was entered and its answer is done; otherwise, with no failure, the
-  ;; first call in STATES' order that is not done raises its cancel: an
-  ;; entered one's await's condition, and one never entered a cancel of its
-  ;; own, with its &http-exchange. Its calls are submitted by SUBMIT,
-  ;; curl-submit when none is given: a test seam.
+  ;; (101 to 108 ms of held collections for 32 posts of 4 MB in one); then
+  ;; turns until all have ended or one has failed. Each entry's section asks
+  ;; first whether the group is closed: an escape, a Chez engine's expiry
+  ;; among them, closes and cancels it through its winds, and a resumed run
+  ;; must enter no more, so a call not yet entered is never submitted. On
+  ;; the first failure, the first the group saw fail, ties in the order of
+  ;; their latest submits, every other call is cancelled, as the inner wind
+  ;; does, every token waited for, as the outer wind does, and that failure
+  ;; raised as the call raised it. The responses are answered only when
+  ;; every call was entered and its answer is done; otherwise, with no
+  ;; failure, the first call in STATES' order that is not done raises its
+  ;; cancel: an entered one's await's condition, and one never entered a
+  ;; cancel of its own, with its &http-exchange. Its calls are submitted by
+  ;; SUBMIT, curl-submit when none is given: a test seam.
   (define run-parallel
     (case-lambda
       ((engine limit draw states) (run-parallel engine limit draw states curl-submit))

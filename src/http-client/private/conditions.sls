@@ -1,7 +1,7 @@
 #!r6rs
-;;; (http-client private conditions): the high level's conditions (the M5
-;;; plan, section 3.3). (http-client) exports the types, their predicates
-;;; and their accessors; the constructors are this library's alone.
+;;; (http-client private conditions): the high level's conditions.
+;;; (http-client) exports the types, their predicates and their accessors;
+;;; the constructors are this library's alone.
 ;;;
 ;;;   &http-error           the base of the high level's own, under (curl)'s
 ;;;                         &curl-error, so a caller who catches that
@@ -65,8 +65,7 @@
   ;; policy's statuses or methods; else (kind K), K its kind-of, never the
   ;; value: a string, or a list holding one, can be a URL, a header,
   ;; credentials or a body. A proxy URL or a credentials list handed where
-  ;; a key or another value belongs was printed whole (M7 slice 3's
-  ;; review). Pure.
+  ;; a key or another value belongs was printed whole. Pure.
   (define (shown-value x)
     (if (or (shown-atom? x) (and (list? x) (for-all shown-atom? x)))
         x
@@ -83,7 +82,7 @@
   ;; PREDICATE holds; anything else an assertion violation from WHO, "not
   ;; WHAT", naming it by shown-value, never the value. Chez's own check
   ;; named what it refused, so (curl-request-url "http://u:PW@h/") printed
-  ;; the password (ADR-0036, amended 2026-11-03).
+  ;; the password (ADR-0036).
   (define (checked-accessor who predicate what accessor)
     (lambda (x)
       (unless (predicate x)
@@ -96,9 +95,9 @@
     make-http-error http-error?)
 
   ;; http-request-error-reasons : (Listof Symbol)
-  ;; Why the high level refuses a key or a value of its own (the M5 plan,
-  ;; section 3.2). Every other value is checked by the low level, whose
-  ;; &curl-request-error, or assertion violation, passes through.
+  ;; Why the high level refuses a key or a value of its own. Every other
+  ;; value is checked by the low level, whose &curl-request-error, or
+  ;; assertion violation, passes through.
   ;;
   ;;   unknown-key           a key make-http-session, or a call, does not take
   ;;   repeated-key          a key given twice to one call
@@ -128,11 +127,10 @@
   ;;                         is neither an exact positive integer nor #f
   ;;   stream-in-group       a producer as the body of a group's call, go's or
   ;;                         http-parallel's: a group's calls share one thread,
-  ;;                         which a producer's wait would hold (the M6 plan,
-  ;;                         sections 3.6 and 9)
+  ;;                         which a producer's wait would hold
   ;;   body-length-mismatch  a producer's piece that would take its body past
   ;;                         its body-length, refused before any of it is put,
-  ;;                         once the transfer is cancelled (ADR-0031, amended)
+  ;;                         once the transfer is cancelled (ADR-0031)
   (define http-request-error-reasons
     '(unknown-key repeated-key missing-value body-and-form multipart-beside-body
       body-not-allowed not-a-body
@@ -161,7 +159,7 @@
   ;;           where it is a symbol, a
   ;;           number, a boolean, a char or (), else its kind, (kind K),
   ;;           shown-value's: a value where another belongs can be a URL,
-  ;;           credentials or a body (M7 slice 3's review); #f, for
+  ;;           credentials or a body; #f, for
   ;;           body-and-form and multipart-beside-body
   ;;   reason  one of http-request-error-reasons
   (define-condition-type &http-request-error &http-error
@@ -172,8 +170,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define http-request-error-field
     (checked-accessor 'http-request-error-field http-request-error? "a &http-request-error" unchecked-http-request-error-field))
   (define http-request-error-value
@@ -198,7 +195,7 @@
   ;; http-request-error-reason : &http-request-error -> Symbol
 
   ;; http-redirect-error-reasons : (Listof Symbol)
-  ;; Why a redirect is not followed (the M5 plan, section 3.4; ADR-0027):
+  ;; Why a redirect is not followed (ADR-0027):
   ;;
   ;;   too-many-redirects  the call had followed its redirects' bound, and
   ;;                       this response would redirect once more
@@ -212,7 +209,7 @@
   ;;                       producer streams, once that producer counts as
   ;;                       called: the drive called it, or libcurl had asked
   ;;                       for the body by a head. A streamed body is sent at
-  ;;                       most once (ADR-0032, decision 3, amended)
+  ;;                       most once (ADR-0032)
   (define http-redirect-error-reasons
     '(too-many-redirects bad-location insecure-redirect body-not-replayable))
 
@@ -231,8 +228,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define http-redirect-error-reason
     (checked-accessor 'http-redirect-error-reason http-redirect-error? "a &http-redirect-error" unchecked-http-redirect-error-reason))
   (define http-redirect-error-response
@@ -258,22 +254,19 @@
   ;; http-timeout? : Any -> Boolean
   ;; http-timeout-timeout-ms : &http-timeout -> Positive-Integer
   ;; A call's timeout-ms passed: TIMEOUT-MS is that bound. When libcurl's 28
-  ;; was the bound's, its &curl-timeout is compounded with it (the M5 plan,
-  ;; section 3.3).
+  ;; was the bound's, its &curl-timeout is compounded with it.
   (define-condition-type &http-timeout &http-error
     make-http-timeout http-timeout?
     (timeout-ms unchecked-http-timeout-timeout-ms))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define http-timeout-timeout-ms
     (checked-accessor 'http-timeout-timeout-ms http-timeout? "a &http-timeout" unchecked-http-timeout-timeout-ms))
 
   ;; http-group-error-reasons : (Listof Symbol)
-  ;; Why a request group refuses an operation, or ended a call (the M5 plan,
-  ;; section 3.7):
+  ;; Why a request group refuses an operation, or ended a call:
   ;;
   ;;   wrong-thread  go, http-await, http-pending-done? or
   ;;                 http-pending-cancel called from a thread other than
@@ -295,8 +288,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define http-group-error-reason
     (checked-accessor 'http-group-error-reason http-group-error? "a &http-group-error" unchecked-http-group-error-reason))
 
@@ -321,9 +313,8 @@
   ;; A call's context: its method and URL as the caller gave them, the
   ;; responses before the last that redirected, oldest first, and how many
   ;; transfers it submitted that the engine took, each retry's among them.
-  ;; Under &condition, not &http-error: it
-  ;; is compounded onto what a call raises, the low level's conditions
-  ;; among it (the M5 plan, section 3.3).
+  ;; Under &condition, not &http-error: it is compounded onto what a call
+  ;; raises, the low level's conditions among it.
   (define-condition-type &http-exchange &condition
     make-http-exchange http-exchange?
     (method unchecked-http-exchange-method)
@@ -333,8 +324,7 @@
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
-  ;; never printed, as Chez's own check printed it (ADR-0036, amended
-  ;; 2026-11-03).
+  ;; never printed, as Chez's own check printed it (ADR-0036).
   (define http-exchange-method
     (checked-accessor 'http-exchange-method http-exchange? "a &http-exchange" unchecked-http-exchange-method))
   (define http-exchange-url

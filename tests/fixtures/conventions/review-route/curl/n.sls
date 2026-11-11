@@ -1,10 +1,10 @@
 #!r6rs
-;; The review's route. load-step, a plain macro, gains a flat second clause
-;; that puts its first operand at the head: handed define-syntax, it defines
-;; bind-quietly, whose syntax-case builds a foreign-procedure form from
-;; strings. curl-easy-setopt-long is bound through it, plain, while an
-;; unused bind-variadic keeps the count. The clause's head and the handed
-;; keyword are each named.
+;; load-step, a plain macro, gains a flat second clause that puts its first
+;; operand at the head: handed define-syntax, it defines bind-quietly, whose
+;; syntax-case builds a foreign-procedure form from strings.
+;; curl-easy-setopt-long is bound through it, plain, while an unused
+;; bind-variadic keeps the count. The clause's head and the handed keyword
+;; are each named.
 (library (curl n)
   (export curl-easy-setopt-long)
   (import (rnrs) (only (chezscheme) foreign-procedure foreign-entry?))

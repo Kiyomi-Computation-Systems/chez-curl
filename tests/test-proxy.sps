@@ -1,9 +1,8 @@
 #!r6rs
-;;; The suite for a proxy given by URL (ADR-0037, amended twice; ADR-0026 and
-;;; ADR-0034, amended; the M7 plan, sections 3.1, 3.2, 3.4, 3.6, 3.7 and
-;;; 6.2), at both levels, against the test origin's proxy: its http face and
-;;; its https faces, which take a CONNECT and a request in absolute form, and
-;;; log each, the proxy's own record of what it got.
+;;; The suite for a proxy given by URL (ADR-0037, ADR-0026 and ADR-0034), at
+;;; both levels, against the test origin's proxy: its http face and its https
+;;; faces, which take a CONNECT and a request in absolute form, and log each,
+;;; the proxy's own record of what it got.
 ;;;
 ;;;   - the settings, as data: proxy-settings' answer written out whole for
 ;;;     every value; unshared-tunnel-settings' and tls-in-tls-stall?'s
@@ -113,8 +112,7 @@
 ;; The request size a transfer that sent nothing carries on this libcurl:
 ;; 0, but #f, unknown, on 8.7.0 and 8.7.1, which report 0 for every
 ;; transfer, so a failure there never claims that nothing was sent
-;; (ADR-0022, amended 2026-10-27). Written out here, not read from the
-;; library's own list.
+;; (ADR-0022). Written out here, not read from the library's own list.
 (define nothing-sent (if (member version '("8.7.0" "8.7.1")) #f 0))
 
 ;; tls-failure : (List Symbol Symbol Integer Symbol (U 0 #f) #f)
@@ -308,10 +306,9 @@
 ;; loaded libcurl's version or lane, and MEASURE's answer: the row's value
 ;; and the measurement; with no row, (a-row-for KEY), which no measurement
 ;; gives, and (no-row-for KEY measured M), so the failure names the libcurl
-;; and prints the row it lacks (ADR-0017; AGENTS.md's by-version trap). TAG
-;; names the table, on stdout with the key and the measurement, as evidence
-;; of what ran, and on the error port with the row a libcurl with none
-;; would need.
+;; and prints the row it lacks (ADR-0017). TAG names the table, on stdout
+;; with the key and the measurement, as evidence of what ran, and on the
+;; error port with the row a libcurl with none would need.
 (define (by-version rows tag key measure)
   (let ((row (assoc key rows))
         (measured (measure)))
@@ -446,8 +443,8 @@
         (checked (lambda () (check-https-proxy 'curl-submit #f #x00200000)))))
 
 ;; The features word read after curl_global_init: Apple's MultiSSL 8.7.1
-;; reports CURL_VERSION_HTTPS_PROXY clear before it, and every https://
-;; proxy was refused there until the check read this word (the Mac's run).
+;; reports CURL_VERSION_HTTPS_PROXY clear before it, so a check that reads
+;; the word earlier refuses every https:// proxy there.
 (test-equal "the loaded libcurl speaks TLS to an https:// proxy, as every lane's and the Mac's does, by the features it reports after its init, so its submit passes an https:// proxy URL that check-https-proxy would refuse beside features without it"
   (list #t 'no-raise)
   (list (guard (e (#t (list 'raised (describe e)))) (https-proxy-supported? (loaded-features)))
@@ -521,7 +518,7 @@
 ;; userinfo and gives the URL back without them, where 8.5.0 and later
 ;; report "" and refuse both as credentials-empty; :p@ and u:@, which hold
 ;; one part beside the other, pass alike, as 8.5.0 and later give them back,
-;; 7.85.0 dropping the empty password's colon. 8.7.1's row is the Mac's.
+;; 7.85.0 dropping the empty password's colon. 8.7.1's row is from macOS.
 (define empty-userinfo-later
   '((refused proxy (proxy user) credentials-empty test)
     (refused proxy (proxy user) credentials-empty test)
@@ -639,12 +636,12 @@
   (apply check-of nowhere 'proxy proxy keys))
 
 ;; unparsable : (Listof String)
-;; Proxy URLs libcurl's URL API refuses, on every libcurl (the slice's
-;; probe, build/m7s3b/): no scheme, an empty one, a port past 65535, an
-;; unclosed IPv6 host; a raw control byte, space or 0x7F in the userinfo;
-;; U+0000; a host whose %XX decodes to bytes that are not UTF-8; a scheme
-;; holding U+017F LONG S or U+212A KELVIN SIGN, which Unicode folds make s
-;; and k, refused before chez-curl compares it.
+;; Proxy URLs libcurl's URL API refuses, on every libcurl: no scheme, an
+;; empty one, a port past 65535, an unclosed IPv6 host; a raw control
+;; byte, space or 0x7F in the userinfo; U+0000; a host whose %XX decodes
+;; to bytes that are not UTF-8; a scheme holding U+017F LONG S or U+212A
+;; KELVIN SIGN, which Unicode folds make s and k, refused before chez-curl
+;; compares it.
 (define unparsable
   (list "" "127.0.0.1:3128" "localhost:3128" "localhost" "http://127.0.0.1:99999" "http://[::1"
         "http://u\x1;x:p@127.0.0.1:1" "http://u\x9;x:p@127.0.0.1:1" "http://u x:p@127.0.0.1:1"
@@ -780,7 +777,7 @@
                      "socks5://u%01@127.0.0.1:1" "http://u%01@127.0.0.1:1/a" "http://u%01:p%02@127.0.0.1:1"
                      "http://u%zz:p%01@127.0.0.1:1")))
 
-;; --- a caller's Proxy-Authorization header (ADR-0037, decision 4) ---------------------
+;; --- a caller's Proxy-Authorization header (ADR-0037) ---------------------------------
 
 (define proxy-authorization "Proxy-Authorization")
 
@@ -880,7 +877,7 @@
           (map (lambda (proxy) (proxy-check proxy 'proxy-verify #t))
                (list 'environment #f "http://127.0.0.1:1" "https://127.0.0.1:1"))))
 
-;; --- prior knowledge beside a proxy URL (ADR-0034, amended) ----------------------------
+;; --- prior knowledge beside a proxy URL (ADR-0034) -------------------------------------
 
 (test-equal "prior-knowledge-through-proxy: http/2-prior-knowledge beside an http:// or https:// proxy URL is refused at check and submit, field http-version; beside environment and #f, and http/2, http/1.1 and none beside a proxy URL, pass; an https:// URL is prior-knowledge-over-https first; a proxy URL that does not parse is proxy-url first"
   (list (refused-both 'http-version 'http/2-prior-knowledge 'prior-knowledge-through-proxy)
@@ -899,7 +896,7 @@
         (check-of nowhere-tls 'proxy "http://127.0.0.1:1" 'http-version 'http/2-prior-knowledge)
         (check-of nowhere 'proxy "127.0.0.1:1" 'http-version 'http/2-prior-knowledge)))
 
-;; --- TLS inside TLS, by version and backend (ADR-0037, decisions 7 and 10) -------------
+;; --- TLS inside TLS, by version and backend (ADR-0037) ---------------------------------
 
 ;; tls-in-tls-checks : (Listof (Pairof String (Listof Any)))
 ;; What curl-request-check answers an https:// URL through an https:// proxy
@@ -907,7 +904,7 @@
 ;; an https:// URL through an http:// proxy URL, by VERSION/BACKEND: 7.85.0
 ;; refuses unless http/1.1 is asked; Ubuntu's 8.5.0 with GnuTLS refuses
 ;; every one; with OpenSSL, 8.20.0 and 8.23.0 none; nor 8.7.1 with
-;; SecureTransport, the Mac's.
+;; SecureTransport on macOS.
 (define tls-in-tls-refused
   '(refused proxy proxy proxy-tls-in-tls curl-request-check))
 (define tls-in-tls-checks
@@ -916,7 +913,7 @@
         (cons "8.5.0/GnuTLS" (list tls-in-tls-refused tls-in-tls-refused tls-in-tls-refused 'no-raise 'no-raise))
         (cons "8.20.0/GnuTLS" '(no-raise no-raise no-raise no-raise no-raise))
         (cons "8.23.0/OpenSSL" '(no-raise no-raise no-raise no-raise no-raise))
-        ;; The Mac's run, two passes alike: SecureTransport, with
+        ;; On macOS, two passes alike: SecureTransport, with
         ;; CURL_SSL_BACKEND unset, refuses none, and through the engine an
         ;; https:// URL through an https:// proxy answered 200 for each
         ;; http-version asked.
@@ -930,7 +927,7 @@
 ;; REFUSED where this lane's row refuses an https:// URL through an
 ;; https:// proxy asking nothing, PASSED where it passes; with no row,
 ;; (a-row-for LANE), which no measurement gives, so a lane with no row
-;; fails by name, printing what it measured (AGENTS.md's by-version trap).
+;; fails by name, printing what it measured.
 (define (tls-in-tls-verdict refused passed)
   (cond ((not tls-in-tls-row) (list 'a-row-for lane))
         ((equal? (list-ref (cdr tls-in-tls-row) 0) tls-in-tls-refused) refused)
@@ -1015,7 +1012,7 @@
                  (if (contains? (printed raised) secret) 'printed-the-secret 'no-secret))))
        secret-cases))
 
-;; --- a secret where another value belongs (M7 slice 3's review) ---
+;; --- a secret where another value belongs ---
 
 ;; misplaced-url : String
 ;; A proxy URL holding the secret, handed where it does not belong.
@@ -1046,12 +1043,12 @@
     (dynamic-wind (lambda () #f) (lambda () (proc s)) (lambda () (http-session-close s)))))
 
 ;; misplaced-cases : (Listof (List String Any (-> Any)))
-;; The review's nine, a proxy URL holding the secret, and slice 2's
-;; credentials list, where a key belongs, at both levels; then the audit's:
-;; a number there, headers of a wrong type holding an Authorization, a
-;; header value refused, a body of a wrong type, a URL where a request, a
-;; session or a token belongs, a hatch value of a wrong type. Each with
-;; the refusal it must raise, its value named by its kind or its field.
+;; A proxy URL holding the secret, and a credentials list, where a key
+;; belongs, at both levels; then a number there, headers of a wrong type
+;; holding an Authorization, a header value refused, a body of a wrong
+;; type, a URL where a request, a session or a token belongs, a hatch value
+;; of a wrong type. Each with the refusal it must raise, its value named by
+;; its kind or its field.
 (define misplaced-cases
   (list (list "make-curl-request, the proxy URL with no key"
               '(curl-request-error key (kind string) unknown-key make-curl-request)
@@ -1231,7 +1228,7 @@
                  (let* ((start (+ i (string-length key))) (end (digits-end line start)))
                    (loop end (cons (string-append key (number->string (number-of (substring line start end)))) out))))
                 (else (loop (+ i 1) (cons (string (string-ref line i)) out)))))))
-    ;; In order, line by line: map's order is no order (traps.md).
+    ;; In order, line by line: map's order is no order.
     (let loop ((rest lines) (found '()))
       (if (null? rest) (reverse found) (loop (cdr rest) (cons (renumber (car rest)) found))))))
 
@@ -1323,7 +1320,7 @@
   ;; @ and :@ through the proxy, by version: 7.85.0, which reports neither
   ;; part, sends no Proxy-Authorization, where 8.5.0 and later refuse each
   ;; at submit, nothing sent (8.5.0 and 8.20.0 sent :, and 8.23.0 nothing,
-  ;; the slice's measurement). 8.7.1's row is the Mac's.
+  ;; as measured). 8.7.1's row is from macOS.
   (define empty-later
     (list (list (list 'refused 'proxy '(proxy user) 'credentials-empty 'curl-submit) '())
           (list (list 'refused 'proxy '(proxy user) 'credentials-empty 'curl-submit) '())))
@@ -1334,7 +1331,7 @@
           (cons "8.5.0" empty-later) (cons "8.20.0" empty-later) (cons "8.23.0" empty-later)
           (cons "8.7.1" empty-later)))
 
-  ;; --- a refused CONNECT, by version (ADR-0037, decision 9) ---
+  ;; --- a refused CONNECT, by version (ADR-0037) ---
 
   ;; refused-rows : (Listof (Pairof String (Listof Any)))
   ;; Each refused CONNECT's code, class, CONNECT status and request size,
@@ -1342,9 +1339,9 @@
   ;; wrong password and for none at localhost, and a proxy that closes: 56,
   ;; send-receive, with the CONNECT's own bytes as the size on 7.85.0, and
   ;; 0 on 8.5.0; 7, connect, and 0, on 8.20.0 and 8.23.0; the close 56
-  ;; everywhere, its status #f (the slice's measurement, item 4); on 8.7.1
-  ;; 56, send-receive, and the size unknown, #f, as 8.7.x reports every
-  ;; transfer's (the Mac's run, two runs alike).
+  ;; everywhere, its status #f; on 8.7.1 56, send-receive, and the size
+  ;; unknown, #f, as 8.7.x reports every transfer's (on macOS, two runs
+  ;; alike).
   (define refused-statuses '(403 407 502 503 407 407 #f))
   (define (refused-row code class size)
     (map (lambda (status) (list (if status code 56) (if status class 'send-receive) status size))
@@ -1370,7 +1367,7 @@
                         (else (list 'size size 'head head)))))
           (list out (cadr c)))))
 
-  ;; --- no tunnel shared before 8.19.0 (ADR-0037, decision 8) ---
+  ;; --- no tunnel shared before 8.19.0 (ADR-0037) ---
 
   ;; pair-run : String String -> (List Any Any Boolean (Listof String))
   ;; Two GETs of URL through PROXY on one engine, the second submitted once
@@ -1403,7 +1400,7 @@
   ;; FRESH_CONNECT's effect, and alice's first closes as it ends,
   ;; FORBID_REUSE's, where the one with none stays in the pool until the
   ;; engine stops; from 8.19.0 the second rides the first's tunnel, and
-  ;; nothing closes before the stop. 8.7.1's row is the Mac's.
+  ;; nothing closes before the stop. 8.7.1's row is from macOS.
   (define (unshared-below target auth)
     (list ok ok (string=? auth "basic:alice:s3cret")
           (append (if (string=? auth "basic:alice:s3cret")
@@ -1434,7 +1431,7 @@
   ;; The tunnel settings a submit's plan holds, and whether it stops the
   ;; engine's multiplexing, by version: an https:// URL through a proxy URL
   ;; with userinfo, without, an http:// URL through one with userinfo, and
-  ;; an https:// URL through environment and #f. 8.7.1's row is the Mac's.
+  ;; an https:// URL through environment and #f. 8.7.1's row is from macOS.
   (define tunnel-plans
     (let ((below '(((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f)
                    (() #t) (() #f) (() #f)))
@@ -1442,7 +1439,7 @@
       (list (cons "7.85.0" below) (cons "8.5.0" below) (cons "8.20.0" from) (cons "8.23.0" from)
             (cons "8.7.1" below))))
 
-  ;; --- no multiplexing once an authenticated proxy is used, before 8.19.0 (decision 11) ---
+  ;; --- no multiplexing once an authenticated proxy is used, before 8.19.0 ---
 
   ;; connection-numbers : (Listof String) -> (Listof Any)
   ;; Each body's /connection number, renumbered from 1 in the order first
@@ -1510,8 +1507,7 @@
   ;; switch-run's answer by version: below 8.19.0 S switches the engine,
   ;; A1 and A2 end 200 on their shared connection, and B, which would have
   ;; joined it, opens its own; from 8.19.0 nothing switches and B rides
-  ;; theirs (the fix round's measurement, two runs on each lane). 8.7.1's
-  ;; row is the Mac's.
+  ;; theirs (measured, two runs on each lane). 8.7.1's row is from macOS.
   (define switch-rows
     (let ((ends (list ok ok ok ok)))
       (list (cons "7.85.0" (list '(head head default switched) '(1 1 2) '(#f #f) ends))
@@ -1519,7 +1515,7 @@
             (cons "8.20.0" (list '(head head default default) '(1 1 1) '(#f #f) ends))
             (cons "8.23.0" (list '(head head default default) '(1 1 1) '(#f #f) ends))
             ;; 8.7.x's engine never multiplexes: off from its start, each
-            ;; stream on a connection of its own (the Mac's run, two runs).
+            ;; stream on a connection of its own (on macOS, two runs).
             (cons "8.7.1" (list '(head head off off) '(1 2 3) '(#f #f) ends)))))
 
   ;; join-child : -> Any
@@ -1543,12 +1539,11 @@
             (list 'exit (car r) (cadr r) (caddr r))))))
 
   ;; join-rows : (Listof (Pairof String (List Any Any)))
-  ;; join-child's answer and the proxy's lines, by version: below 8.19.0
-  ;; the engine switches at A, so B sends a CONNECT of its own, refused 407,
-  ;; where 7.85.0 had let it ride A's tunnel as a second stream and get
-  ;; 200 (the review's probe); from 8.19.0 nothing switches, and B's own
-  ;; CONNECT is refused alike. Its code is the refused CONNECT's, by
-  ;; version. 8.7.1's row is the Mac's.
+  ;; join-child's answer and the proxy's lines, by version: below 8.19.0 the
+  ;; engine switches at A, so B sends a CONNECT of its own, refused 407,
+  ;; where 7.85.0 had let it ride A's tunnel as a second stream and get 200;
+  ;; from 8.19.0 nothing switches, and B's own CONNECT is refused alike. Its
+  ;; code is the refused CONNECT's, by version. 8.7.1's row is from macOS.
   (define (join-row before after code class)
     (list (list (list 'environment '(no_proxy . #f) '(NO_PROXY . #f) '(http_proxy . #f)
                       (cons 'https_proxy (proxy-at o 'http)) '(all_proxy . #f))
@@ -1566,10 +1561,10 @@
           (cons "8.20.0" (join-row 'default 'default 7 'connect))
           (cons "8.23.0" (join-row 'default 'default 7 'connect))
           ;; 8.7.x's engine never multiplexes, so it reads off before and
-          ;; after (the Mac's run, two runs).
+          ;; after (on macOS, two runs).
           (cons "8.7.1" (join-row 'off 'off 56 'send-receive))))
 
-  ;; --- the high level (the M7 plan, section 3.1) ---
+  ;; --- the high level ---
 
   ;; call-outcome : (-> Any) -> Any
   ;; What a call answers, (answered STATUS), or raises, (raised FIELD VALUE
@@ -1606,7 +1601,7 @@
                       (hex2 b)))
                 (bytevector->u8-list (string->utf8 s)))))
 
-  ;; --- a refused CONNECT retried by its status (ADR-0026, amended 2026-11-03) ---
+  ;; --- a refused CONNECT retried by its status (ADR-0026) ---
 
   ;; retried : List String Symbol -> (List Any Natural)
   ;; A call of METHOD to URL through the http face's proxy, with POLICY-KEYS
@@ -1637,13 +1632,13 @@
   ;; 56 carries the CONNECT's bytes as its request size on 7.85.0, so a post
   ;; outside the policy's methods is tried once there, and three times on
   ;; 8.5.0 and later, where its size is 0; a get, in the methods, three
-  ;; times everywhere. 8.7.1's row is the Mac's.
+  ;; times everywhere. 8.7.1's row is from macOS.
   (define closing-retries
     (let ((later '(((failed 56 #f 3) 3) ((failed 56 #f 3) 3))))
       (list (cons "7.85.0" '(((failed 56 #f 1) 1) ((failed 56 #f 3) 3)))
             (cons "8.5.0" later) (cons "8.20.0" later) (cons "8.23.0" later)
             ;; 8.7.x reports no request size, so a post outside the methods
-            ;; is tried once, as on 7.85.0 (ADR-0022; the Mac's run, two runs).
+            ;; is tried once, as on 7.85.0 (ADR-0022; on macOS, two runs).
             (cons "8.7.1" '(((failed 56 #f 1) 1) ((failed 56 #f 3) 3))))))
 
   ;; --- in a child, given the environment through its command ---
@@ -2125,7 +2120,7 @@
    "exit $?\n"))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))

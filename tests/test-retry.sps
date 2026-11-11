@@ -1,8 +1,7 @@
 #!r6rs
-;;; The suite for retries, the high level's third slice (the M5 plan,
-;;; sections 3.5 and 6; ADR-0026, amended 2026-10-28; ADR-0022, amended
-;;; 2026-10-28): make-http-retry, the retry key, the retry rules in
-;;; exchange-step, the waits, Retry-After, and the session's generator.
+;;; The suite for retries (ADR-0026 and ADR-0022): make-http-retry, the
+;;; retry key, the retry rules in exchange-step, the waits, Retry-After,
+;;; and the session's generator.
 ;;;
 ;;;   - the policy: its defaults and keys, each refusal by name and by
 ;;;     value, in order, its private copies, and the retry key of a session
@@ -28,9 +27,9 @@
 ;;;     a retry's wait; and an escape during the wait. The origin counts the
 ;;;     attempts that reached it.
 ;;;
-;;; Every check on the raw face makes its own session: the raw face closes
-;;; after each script, and curl 8.23.0 resends on each dead pooled
-;;; connection (traps.md). The retry script says Connection: close, so its
+;;; Every check on the raw face makes its own session: the raw face
+;;; closes after each script, and curl 8.23.0 resends on each dead pooled
+;;; connection. The retry script says Connection: close, so its
 ;;; connections go back to no pool. Every expected value is one the code
 ;;; under test cannot produce by failing: SRFI-64 makes #f of a raise in
 ;;; the actual expression, so none is #f.
@@ -207,7 +206,7 @@
 
 ;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
 ;; PROC of each of ITEMS, called first to last: map calls its procedure in
-;; no fixed order (traps.md).
+;; no fixed order.
 (define (in-order proc items)
   (let loop ((rest items) (answers '()))
     (if (null? rest)
@@ -542,7 +541,7 @@
 
 ;; refused-connect : Integer Natural Positive-Integer -> Condition
 ;; A transfer's perform-failed of CODE and request size SIZE whose CONNECT
-;; a proxy refused with STATUS (ADR-0037, decision 9).
+;; a proxy refused with STATUS (ADR-0037).
 (define (refused-connect code size status)
   (make-classed-transfer-error 'perform-failed code #f "a refused CONNECT" #f #f size status))
 
@@ -552,11 +551,10 @@
                       '()))
 
 ;; heads-seen : (Listof (List Boolean Any))
-;; Every response row the tables step through answers, the M6 plan's
-;; section 6.2 has the head's predicate checked on: whether exchange-step
-;; answered next, and what exchange-steps-past? answered for the same
-;; state, clocks and draw, given the response as a head, its body and
-;; timings #f.
+;; Every response row the tables step through answers, on which the head's
+;; predicate is checked: whether exchange-step answered next, and what
+;; exchange-steps-past? answered for the same state, clocks and draw, given
+;; the response as a head, its body and timings #f.
 (define heads-seen '())
 
 ;; note-head! : State Response Integer Real Answer -> Void
@@ -713,7 +711,7 @@
           (seen (answers (rstate 'post p) (reply 503 '()) 1000))
           (seen (answers (rstate 'get p) (reply 500 '()) 1000)))))
 
-;; --- a refused CONNECT, by its status (ADR-0026 and ADR-0037, amended 2026-11-03) --------
+;; --- a refused CONNECT, by its status (ADR-0026 and ADR-0037) ----------------------------
 
 ;; connect-failed-as : Symbol Symbol Integer Symbol Positive-Integer Natural -> (Listof Any)
 ;; The fail a METHOD call makes with a refused CONNECT of CLASS, CODE,
@@ -725,8 +723,7 @@
 ;; connect-codes : (Listof (List Integer Symbol Natural Symbol))
 ;; Written out: a refused CONNECT's code, its class, its request size and
 ;; that size's kind, by version: 56 with the CONNECT's 89 bytes on 7.85.0,
-;; 56 with 0 on 8.5.0, and 7 with 0 on 8.20.0 and 8.23.0 (M7 slice 3's
-;; measurement).
+;; 56 with 0 on 8.5.0, and 7 with 0 on 8.20.0 and 8.23.0.
 (define connect-codes '((56 send-receive 89 sent) (56 send-receive 0 zero) (7 connect 0 zero)))
 
 (test-equal "exchange-step: a failure that carries a CONNECT's status is retried as a response with that status: statuses (503) and methods (get post) retry a get's and a post's 503, whatever the code and size, after the backoff, and fail head, put, patch and delete, which the class rule would retry with nothing sent"
@@ -1117,10 +1114,10 @@
 ;; --- the session's mutex ---------------------------------------------------------------
 
 ;; Evidence on the plain lanes alone: two threads that draw at once from a
-;; generator with no lock lose and repeat draws (the slice's review, 3 of 3
-;; runs), so their multiset parts from a copy's draws in turn. Under
-;; Valgrind, which runs one thread at a time, the draws never overlap, and
-;; this test cannot fail there.
+;; generator with no lock lose and repeat draws (3 of 3 runs), so their
+;; multiset parts from a copy's draws in turn. Under Valgrind, which runs
+;; one thread at a time, the draws never overlap, and this test cannot fail
+;; there.
 (test-equal "evidence on the plain lanes, where threads run at once: two threads drawing 100000 each from one session draw the multiset that 200000 draws in turn from a copy of its generator give, the session's mutex holding each draw; under Valgrind, one thread at a time, it cannot fail"
   '(same-multiset 200000)
   (with-session '()
@@ -1173,8 +1170,8 @@
 
 ;; unknown-size-versions : (Listof String)
 ;; Written out: the libcurls whose request size is unknown, #f, for every
-;; transfer that ran (ADR-0022, amended 2026-10-27), so a post's failure
-;; there is never retried, a refused connect's among them.
+;; transfer that ran (ADR-0022), so a post's failure there is never
+;; retried, a refused connect's among them.
 (define unknown-size-versions '("8.7.0" "8.7.1"))
 
 ;; size-known? : Boolean
@@ -1220,7 +1217,7 @@
 ;; each call ended, returned, compounded (a transfer error with
 ;; &http-exchange), raw (one without), (assertion WHO IRRITANTS) or (other
 ;; X); and no-raise-lost when every raise sent reached a handler, else
-;; (lost SENT REACHED). Adapted from the slice's second review's probes.
+;; (lost SENT REACHED).
 (define (storm mode runs url)
   (let ((s (make-http-session 'timeout-ms 5000))
         (sent 0) (reached 0) (period 1) (base 0) (active #f) (in-raise #f) (tally '())
@@ -1607,11 +1604,10 @@
    ;; 1400 ms left, under its connect timeout, so its 28 is the bound's, again
    ;; with nothing sent, and the call raises the 28 it retried, with no
    ;; &http-timeout. The first attempt has 1400 ms to spare: under Valgrind
-   ;; and load its 28 came about 200 ms late (the slice's third review), and
-   ;; on CI's memory lane about 540 ms late, which a spare of 500 failed
-   ;; (research/ci-first-run). On 8.7.0 and
-   ;; 8.7.1 the size is unknown, so the retry may have sent its request,
-   ;; and the call raises the bound's &http-timeout.
+   ;; and load its 28 came about 200 ms late, and on CI's memory lane about
+   ;; 540 ms late, which a spare of 500 failed. On 8.7.0 and 8.7.1 the size
+   ;; is unknown, so the retry may have sent its request, and the call
+   ;; raises the bound's &http-timeout.
    (let ((url (guard (e (#t "https://no-raw-face/stall"))
                 (let ((f (origin-face o 'raw)))
                   (string-append "https://" (car f) ":" (number->string (cdr f)) "/stall")))))
@@ -1655,7 +1651,7 @@
    ;; A session closed while a retrying call awaits its transfer: the engine
    ;; ends the transfer as stopped, which no policy retries, and the drive
    ;; reads it through curl-token-outcome, a condition that is no class's,
-   ;; and the call raises it, one transfer made (the slice's third review).
+   ;; and the call raises it, one transfer made.
    (test-equal "a session closed during a retrying call's await, live: the transfer ends as stopped, which is never retried, and the call raises it, compounded, with one transfer and no &http-timeout"
      '(stopped 1 #f)
      (let* ((s (make-http-session 'timeout-ms 10000 'retry (make-http-retry 'backoff-ms 50 'jitter #f)))

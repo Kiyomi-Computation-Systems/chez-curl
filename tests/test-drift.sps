@@ -1,11 +1,11 @@
 #!r6rs
-;;; The drift guard (ADR-0017): the libcurl this suite loaded must be one the
-;;; maintainers have recorded. tests/known-libcurls.sexp holds one row for each
-;;; libcurl the suites have run against, and this suite passes only when the
-;;; loaded libcurl's version, version-num, features, ssl-version and host equal
-;;; exactly one row's. The path it loaded from and the row's `where` are not
-;;; compared: discovery checks the path, and the container's profile path
-;;; changes with every manifest change.
+;;; The drift guard (ADR-0017): the libcurl this suite loaded must be a recorded
+;;; one. tests/known-libcurls.sexp holds one row for each libcurl the suites
+;;; have run against, and this suite passes only when the loaded libcurl's
+;;; version, version-num, features, ssl-version and host equal exactly one
+;;; row's. The path it loaded from and the row's `where` are not compared:
+;;; discovery checks the path, and the container's profile path changes with
+;;; every manifest change.
 ;;;
 ;;; A libcurl with no row fails here, wherever it runs, and the suite prints
 ;;; the row to add to the error port. Adding a row is a reviewed change.

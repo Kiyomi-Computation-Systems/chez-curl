@@ -1,11 +1,10 @@
 #!r6rs
 ;;; A child of tests/test-stream.sps: a streamed response's head through a
-;;; proxy's CONNECT tunnel (the M6 plan, sections 3.2 and 4.1). The suite
-;;; runs it with https_proxy at the origin's http face, which tunnels to the
-;;; origin's own faces, in this child's environment alone, no_proxy and
-;;; NO_PROXY cleared. libcurl reads the CONNECT's head first, its
-;;; RESPONSE_CODE 0 at its empty line, a head the header callable passes
-;;; over.
+;;; proxy's CONNECT tunnel. The suite runs it with https_proxy at the origin's
+;;; http face, which tunnels to the origin's own faces, in this child's
+;;; environment alone, no_proxy and NO_PROXY cleared. libcurl reads the
+;;; CONNECT's head first, its RESPONSE_CODE 0 at its empty line, a head the
+;;; header callable passes over.
 ;;;
 ;;;   stream-connect.sps HTTP HTTPS H2 CA
 ;;;

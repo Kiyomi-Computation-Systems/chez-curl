@@ -60,7 +60,7 @@
 (define info (loaded-libcurl))
 
 ;; The counts once the load has returned: its header probe's easy handle
-;; and slot are counted, and freed before it returns (M2 plan, section 4.2).
+;; and slot are counted, and freed before it returns.
 (define counts-after-load (native-counts))
 
 ;; reported : Symbol -> Pair
@@ -143,7 +143,7 @@
       'read
       protocols-oracle))
 
-;; --- each handle's thread (ADR-0012, decision 3) -------------------------------
+;; --- each handle's thread (ADR-0012) -------------------------------------------
 
 ;; The other thread: one thread, forked once, that runs each thunk handed
 ;; it, so the handles it makes are freed on the thread that made them.
@@ -348,7 +348,7 @@
 ;; libcurl's texts, a header's bytes, curl-free of a string libcurl
 ;; handed back, curl-multi-wakeup, which any thread may call, and the mime
 ;; probe's form. A new export that takes a handle fails here by name until
-;; the table calls it (the M8 plan, section 3.4).
+;; the table calls it.
 (define exports-without-a-handle
   '(loaded-libcurl loaded-libcurl-file loaded-libcurl-patched? loaded-ca-variables loaded-tls-backend
     loaded-features loaded-on-macos? loaded-protocols loaded-mime-probe loaded-mime?

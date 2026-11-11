@@ -1,8 +1,8 @@
 #!r6rs
-;;; The suite for a request's HTTP version (ADR-0034; the M7 plan, sections
-;;; 3.1, 3.2, 3.7 and 4.2), at both levels, against the test origin's four
-;;; faces: http, HTTP/1.1; https, TLS with ALPN http/1.1 alone; h2c, HTTP/2
-;;; by prior knowledge, plaintext; h2, TLS with ALPN h2 alone.
+;;; The suite for a request's HTTP version (ADR-0034), at both levels,
+;;; against the test origin's four faces: http, HTTP/1.1; https, TLS with
+;;; ALPN http/1.1 alone; h2c, HTTP/2 by prior knowledge, plaintext; h2, TLS
+;;; with ALPN h2 alone.
 ;;;
 ;;;   - the settings, as data: version-settings' answer written out whole,
 ;;;     for every value, and its refusal of any other; HTTP_VERSION standing
@@ -13,25 +13,23 @@
 ;;;     curl-request-check and at a submit, with a sentinel of its own for
 ;;;     no raise: its field, value, reason and who; nothing queued and
 ;;;     nothing native left; a URL's own refusal first;
-;;;   - each value over each face, each on an engine of its own, by the
-;;;     slice's measurement (.plans/research/m7/slice1/): the whole outcome,
-;;;     the status, the version and the echo's head, or the reason, code and
-;;;     class. Every cell the measurement found alike on its five libcurls
-;;;     is asserted on every lane. Prior knowledge to the HTTP/1.1 http face
-;;;     fails by version: a row per libcurl, 8.7.1's from the Mac's C probe
-;;;     (research/m7/http2/results/mac-8.7.1.log), each row every outcome
-;;;     seen, natively and under the memory gate's Valgrind, where the code
-;;;     moves; a libcurl with no row fails, naming its version, and prints
-;;;     what it measured;
+;;;   - each value over each face, each on an engine of its own, by
+;;;     measurement: the whole outcome, the status, the version and the
+;;;     echo's head, or the reason, code and class. Every cell found alike
+;;;     on its five libcurls is asserted on every lane. Prior knowledge to
+;;;     the HTTP/1.1 http face fails by version: a row per libcurl, 8.7.1's
+;;;     from a C probe on macOS, each row every outcome seen, natively and
+;;;     under the memory gate's Valgrind, where the code moves; a libcurl
+;;;     with no row fails, naming its version, and prints what it measured;
 ;;;   - connection sharing, by the h2 and h2c faces' /connection, whose
 ;;;     body names the connection its stream came on: two submitted in one
 ;;;     batch, one submitted once the first's head is in, one once the
-;;;     first has ended, each case on an engine of its own. No transfer sets
-;;;     PIPEWAIT (ADR-0034, decision 3). The batch by prior knowledge over
-;;;     h2c shares one connection on 7.85.0 alone: a row per libcurl,
-;;;     8.7.1's from the Mac's make test. One after the head reuses the first's connection
-;;;     but where the engine multiplexes nothing, 8.7.0 and 8.7.1, as
-;;;     tests/test-stream.sps holds for h2;
+;;;     first has ended, each case on an engine of its own. No transfer
+;;;     sets PIPEWAIT (ADR-0034). The batch by prior knowledge over h2c
+;;;     shares one connection on 7.85.0 alone: a row per libcurl, 8.7.1's
+;;;     from make test on macOS. One after the head reuses the first's
+;;;     connection but where the engine multiplexes nothing, 8.7.0 and
+;;;     8.7.1, as tests/test-stream.sps holds for h2;
 ;;;   - a reused connection keeps its version: on an engine holding a
 ;;;     prior-knowledge connection to h2c, #f and http/2 read HTTP/2 there;
 ;;;   - the high level: the key from a session, a call's value replacing
@@ -42,9 +40,9 @@
 ;;;     with the low level's refusal, compounded with its &http-exchange.
 ;;;
 ;;; No test reads a timing: a reused connection's connect is 10 to 37 µs on
-;;; 7.85.0, 0 elsewhere (the measurement). Every expected value is one the
-;;; code under test cannot produce by failing: SRFI-64 makes #f of a raise
-;;; in the actual expression, so none is #f.
+;;; 7.85.0, 0 elsewhere (measured). Every expected value is one the code
+;;; under test cannot produce by failing: SRFI-64 makes #f of a raise in the
+;;; actual expression, so none is #f.
 (import (rnrs)
         (srfi :64)
         (only (chezscheme) fork-thread make-mutex with-mutex sleep make-time current-time
@@ -296,7 +294,7 @@
 ;; Written out whole: HTTP_VERSION at CURL_HTTP_VERSION_1_1, 2; 2TLS, 4; and
 ;; 2_PRIOR_KNOWLEDGE, 5 (curl/curl.h; tests/test-constants.sps holds the
 ;; constants to the headers). http/2 is 2TLS, never 2_0's 3, which sends
-;; Upgrade: h2c over http:// (the M7 plan, section 3.1).
+;; Upgrade: h2c over http://.
 (test-equal "version-settings, written out: #f sets nothing; http/1.1 HTTP_VERSION at 2, 1_1; http/2 at 4, 2TLS; http/2-prior-knowledge at 5, 2_PRIOR_KNOWLEDGE"
   '(() (("HTTP_VERSION" . 2)) (("HTTP_VERSION" . 4)) (("HTTP_VERSION" . 5)))
   (map (lambda (v) (guard (e (#t (list 'raised (describe e)))) (version-settings v)))
@@ -429,30 +427,25 @@
 ;; --- each value over each face ----------------------------------------------------------
 
 ;; prior-knowledge-to-h1 : (Listof (Pairof String (Listof Outcome)))
-;; What prior knowledge to the http face, HTTP/1.1, may answer, by version
-;; (the M7 plan, section 3.7): libcurl sends its preface, then its request,
-;; and fails as the server answers HTTP/1.1. Natively, the first outcome of
-;; each row, every time: 7.85.0 reads an empty reply, 52; 8.5.0, OpenSSL's
-;; and GnuTLS's alike, 56; 8.20.0 and 8.23.0 16, a framing error (the
-;; slice's measurement, two runs each; and this build's probe, 30 of 30 on
-;; each Docker lane and 10 of 10 on Guix's 8.20.0). Under the memory gate's
-;; Valgrind, which slows libcurl, the code moves: 55 most times, and on
-;; 7.85.0 each of 52, 55 and 16 (this build's probe, 30 transfers a lane:
-;; 7.85.0 52 11, 55 18, 16 1; OpenSSL's 8.5.0 55 30; GnuTLS's 55 29, 56 1;
-;; 8.20.0 16 21, 55 9; 8.23.0 16 22, 55 8). Our reading, not measured: the
-;; face answers the preface with a 400 and resets the connection, and the
-;; code is a race between that reset and libcurl's next send. A suite
-;; cannot tell whether it runs under the gate's Valgrind
-;; (tests/test-upload.sps), so one row holds both modes' outcomes: a cell
-;; that splits is held to what its runs showed (AGENTS.md). 52, 55 and 56
-;; are send-receive, 16 protocol. 8.7.1's row is Apple's 8.7.1: 16 from the
-;; Mac's C probe against research/m7/http2's own HTTP/1.1 face
-;; (research/m7/http2/results/mac-8.7.1.log) and its make test through M7
-;; slice 3; then 56, three runs of three, through the engine at slice 4,
-;; where curl's own tool, 200 times, gave 16 194 and 56 6 against the
-;; origin before the slice and 193 and 7 after it
-;; (research/m7/slice4/results/mac-8.7.1-pk-h1-and-test-version.log): a
-;; race the earlier runs had not shown.
+;; What prior knowledge to the http face, HTTP/1.1, may answer, by version:
+;; libcurl sends its preface, then its request, and fails as the server
+;; answers HTTP/1.1. Natively, the first outcome of each row, every time:
+;; 7.85.0 reads an empty reply, 52; 8.5.0, OpenSSL's and GnuTLS's alike, 56;
+;; 8.20.0 and 8.23.0 16, a framing error (two runs each; and a probe, 30 of
+;; 30 on each Docker lane and 10 of 10 on Guix's 8.20.0). Under the memory
+;; gate's Valgrind, which slows libcurl, the code moves: 55 most times, and
+;; on 7.85.0 each of 52, 55 and 16 (a probe, 30 transfers a lane: 7.85.0 52
+;; 11, 55 18, 16 1; OpenSSL's 8.5.0 55 30; GnuTLS's 55 29, 56 1; 8.20.0 16
+;; 21, 55 9; 8.23.0 16 22, 55 8). By reading, not measurement: the face
+;; answers the preface with a 400 and resets the connection, and the code is
+;; a race between that reset and libcurl's next send. A suite cannot tell
+;; whether it runs under the gate's Valgrind (tests/test-upload.sps), so one
+;; row holds both modes' outcomes: a cell that splits is held to what its
+;; runs showed. 52, 55 and 56 are send-receive, 16 protocol. 8.7.1's row is
+;; Apple's 8.7.1: 16 from a C probe on macOS against an HTTP/1.1 face, and
+;; from make test; then 56, three runs of three, through the engine, where
+;; curl's own tool, run 200 times against the origin twice, gave 16 194 and
+;; 56 6, then 193 and 7: a race the earlier runs had not shown.
 (define prior-knowledge-to-h1
   '(("7.85.0" (failed perform-failed 52 send-receive) (failed perform-failed 55 send-receive)
               (failed perform-failed 16 protocol))
@@ -466,10 +459,9 @@
 ;; knowledge to the h2c face, use, by version: one on 7.85.0, which finds
 ;; the first's connection multiplexable inside the turn that set both up;
 ;; two on 8.5.0 ("Server doesn't support multiplex (yet)"), 8.20.0 and
-;; 8.23.0 ("Connection #0 is not open enough"), in every rep of the
-;; slice's two runs; two on 8.7.1, whose engine multiplexes nothing
-;; (ADR-0030, amended), from the Mac's make test (research/m7/slice1/
-;; results/mac-8.7.1-make-test.log).
+;; 8.23.0 ("Connection #0 is not open enough"), in every rep of two runs;
+;; two on 8.7.1, whose engine multiplexes nothing (ADR-0030), from make test
+;; on macOS.
 (define together-by-prior-knowledge
   '(("7.85.0" . 1) ("8.5.0" . 2) ("8.7.1" . 2) ("8.20.0" . 2) ("8.23.0" . 2)))
 
@@ -478,9 +470,9 @@
 ;; loaded libcurl's version and MEASURE's answer: the row's value and the
 ;; measurement; with no row, (a-row-for VERSION), which no measurement
 ;; gives, and (no-row-for VERSION measured M), so the failure names the
-;; version and prints the row it lacks (ADR-0017; AGENTS.md's by-version
-;; trap). TAG names the table on the error port, and on stdout, with the
-;; version and the measurement, as evidence of what ran.
+;; version and prints the row it lacks (ADR-0017). TAG names the table on
+;; the error port, and on stdout, with the version and the measurement, as
+;; evidence of what ran.
 (define (by-version rows tag measure)
   (let ((row (and (string? version) (assoc version rows)))
         (measured (measure)))
@@ -583,9 +575,9 @@
 
 ;; unmultiplexed : (Listof String)
 ;; The libcurl versions on which the engine multiplexes nothing, 8.7.0 and
-;; 8.7.1 (ADR-0030, amended), written out here, not read from the engine's
-;; table, which a mutant would loosen with the code (AGENTS.md):
-;; tests/test-stream.sps holds that table to its own copy.
+;; 8.7.1 (ADR-0030), written out here, not read from the engine's table,
+;; which a mutant would loosen with the code: tests/test-stream.sps holds
+;; that table to its own copy.
 (define unmultiplexed '("8.7.0" "8.7.1"))
 
 ;; --- the high level ---------------------------------------------------------------------
@@ -682,7 +674,7 @@
             (if (member measured row) (cons 'one-of row) (list 'measured measured 'not-one-of row))
             measured)))
 
-    ;; --- connection sharing (ADR-0034, amended) ---
+    ;; --- connection sharing (ADR-0034) ------------
 
     (test-equal "two requests to h2, http-version #f and http/2, submitted in one batch, open two connections, each read over HTTP/2"
       '((2 (http/2 http/2)) (2 (http/2 http/2)))
@@ -696,10 +688,10 @@
         (if (integer? (car pair)) (list (car pair) '(http/2 http/2)) (car pair))
         (cadr pair)))
 
-    ;; The engine multiplexes nothing on 8.7.0 and 8.7.1 (ADR-0030, amended),
-    ;; so a second request beside a live first has a connection of its own
-    ;; there, as tests/test-stream.sps holds for h2; on every other lane it
-    ;; reuses the first's.
+    ;; The engine multiplexes nothing on 8.7.0 and 8.7.1 (ADR-0030), so a
+    ;; second request beside a live first has a connection of its own there,
+    ;; as tests/test-stream.sps holds for h2; on every other lane it reuses
+    ;; the first's.
     (test-equal (string-append "a request submitted once a streamed first's head is in, while the first is still open, reuses its connection, but where the engine multiplexes nothing, on 8.7.0 and 8.7.1, where it opens its own: to h2 at #f and http/2, and to h2c by prior knowledge, on "
                                (if (string? version) version (written version)))
       (let ((n (if (member version unmultiplexed) 2 1)))
@@ -718,7 +710,7 @@
     ;; or http/2 request reads HTTP/2 from h2c on the engine's prior-
     ;; knowledge connection, where on a connection of its own each fails 1,
     ;; as the cells above show; http/1.1 allows no HTTP/2, opens its own,
-    ;; and fails 1 (the slice's review, on 8.20.0).
+    ;; and fails 1 (on 8.20.0).
     (test-equal "over http://, on an engine holding an HTTP/2 connection to h2c made by prior knowledge, a #f and an http/2 request there, each awaited in turn, reuse it and read HTTP/2; an http/1.1 one does not, and fails 1"
       (list (h2 'h2c) (h2 'h2c) (h2 'h2c) fails-1)
       (on-own-engine
@@ -786,10 +778,10 @@
 
     ;; A redirect from http:// to https:// with prior knowledge: the hop's
     ;; request is made, and its submit refuses it, as any submit does
-    ;; (ADR-0034, decision 2). The call fails with that refusal, compounded
-    ;; with its &http-exchange: its method and URL as given, the 302 in its
-    ;; history, one transfer, the refused submit counting none. Its
-    ;; neighbour, http/2 from the http face to h2, follows, and reads HTTP/2.
+    ;; (ADR-0034). The call fails with that refusal, compounded with its
+    ;; &http-exchange: its method and URL as given, the 302 in its history,
+    ;; one transfer, the refused submit counting none. Its neighbour, http/2
+    ;; from the http face to h2, follows, and reads HTTP/2.
     (let* ((to-h2 (face-url o 'h2 "/echo"))
            (from-h2c (face-url o 'h2c (string-append "/redirect/302?to=" (pct to-h2))))
            (from-http (face-url o 'http (string-append "/redirect/302?to=" (pct to-h2)))))
@@ -821,7 +813,7 @@
              (native-counts)))))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))

@@ -1,10 +1,9 @@
 #!r6rs
-;;; A child of tests/test-stream.sps: the take's escape (the M6 plan,
-;;; sections 3.5 and 4.1). A keyboard interrupt made pending while a take's
-;;; look waits for the stream's mutex inside its critical section runs as
-;;; that section ends; a handler that escapes there must lose no piece, and
-;;; one that returns none either (traps.md: planting an escape at a
-;;; section's end).
+;;; A child of tests/test-stream.sps: the take's escape. A keyboard interrupt
+;;; made pending while a take's look waits for the stream's mutex inside its
+;;; critical section runs as that section ends; a handler that escapes there
+;;; must lose no piece, and one that returns none either (a timer cannot plant
+;;; an escape at a section's end, so a SIGINT does).
 ;;;
 ;;;   stream-escape.sps BASE
 ;;;

@@ -1,9 +1,8 @@
 #!r6rs
-;;; Not a suite: tests/test-origin.sps runs this as a child Chez, for the
-;;; checks on how long the origin outlives a suite killed with SIGKILL (M1
-;;; plan, section 7), which runs none of call-with-origin's cleanup. It starts
-;;; an origin with call-with-origin and prints one line, (ORIGIN-PID HTTP-PORT
-;;; RAW-PORT H2C-PORT). Then:
+;;; Not a suite: tests/test-origin.sps runs this as a child Chez, for the checks
+;;; on how long the origin outlives a suite killed with SIGKILL, which runs none
+;;; of call-with-origin's cleanup. It starts an origin with call-with-origin and
+;;; prints one line, (ORIGIN-PID HTTP-PORT RAW-PORT H2C-PORT). Then:
 ;;;
 ;;;   with no argument   it waits to be killed;
 ;;;   with "probe"       it runs a probe on stall-before-head, idle bound

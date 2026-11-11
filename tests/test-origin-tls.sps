@@ -1,16 +1,16 @@
 #!r6rs
-;;; The suite for the test instrument's TLS and HTTP/2 faces (M1 plan,
-;;; section 8; ADR-0005, amended): the origin, tests/origin.mjs, with --pki,
-;;; as the byte probe, tests/wire-probe.mjs, and openssl see it, and the TLS
-;;; material, tests/make-test-pki.sh, it serves. No check here uses libcurl or
-;;; the curl command line.
+;;; The suite for the test instrument's TLS and HTTP/2 faces (ADR-0005): the
+;;; origin, tests/origin.mjs, with --pki, as the byte probe,
+;;; tests/wire-probe.mjs, and openssl see it, and the TLS material,
+;;; tests/make-test-pki.sh, it serves. No check here uses libcurl or the curl
+;;; command line.
 ;;;
 ;;; One PKI per run, made by make-test-pki at the start. Every expected output
 ;;; is written here, by hand, never read from origin.mjs: changing a face's
 ;;; bytes or leaf there fails a test here. Each scenario's test asserts the
 ;;; whole bytes received and how the connection ended.
 ;;;
-;;; - The certificates are checked by openssl, portably (ADR-0005, amended):
+;;; - The certificates are checked by openssl, portably (ADR-0005):
 ;;;   s_client's verify errors and final code against the run CA, the ALPN it
 ;;;   was given, the leaf it was served, by which file holds it, and that
 ;;;   leaf's SAN line. No check reads a hostname code: LibreSSL has none.
@@ -21,10 +21,10 @@
 ;;;   an empty SETTINGS frame and a HEADERS frame, then DATA for a body, its
 ;;;   HPACK plain literals, sent with --half-close. Each answer's HPACK is
 ;;;   what nghttp2 writes in Node 20.10.0 and 24.18.0, measured, and decoded
-;;;   by hand beside it. The head routes' blocks (M8 slice 2) are decoded by
-;;;   this suite's own HPACK decoder, RFC 7541's static table, dynamic table
-;;;   and Huffman code, and compared whole with its own lists of fields; the
-;;;   large ones, past Node's default send limit, show the faces raise it.
+;;;   by hand beside it. The head routes' blocks are decoded by this suite's
+;;;   own HPACK decoder, RFC 7541's static table, dynamic table and Huffman
+;;;   code, and compared whole with its own lists of fields; the large ones,
+;;;   past Node's default send limit, show the faces raise it.
 ;;;
 ;;; make test runs it from the repository root, with CHEZ, NODE and OPENSSL
 ;;; exported. Each computation that can raise runs under a guard that names
@@ -379,7 +379,7 @@
 ;; from its stdout and stderr. A face with no TLS at all also gives a
 ;; refusal, No ALPN negotiated, and no certificate; only a TLS refusal
 ;; writes "alert number 120" on stderr, OpenSSL 3.5.7 and 3.0.11 and
-;; LibreSSL 3.3.6 alike (measured: .plans/tls-mutation-log.md, section 5.2).
+;; LibreSSL 3.3.6 alike (measured).
 (define (alpn-outcome o face offer)
   (guard (e ((and (who-condition? e) (eq? (condition-who e) 's-client) (irritants-condition? e)
                   (assq 'status (condition-irritants e)))
@@ -506,11 +506,11 @@
            (answer (join (list #vu8(#x88 #x0f #x0d 2)
                                (octets (number->string (string-length echoed)))))
                    echoed))
-     ;; The stream routes (the M6 plan, section 4.2): content-length 600 is
-     ;; a Huffman literal, 0x82 70 00; a body under 16384 bytes is one DATA
-     ;; frame. A longer body's frames, written a write at a time, end the
-     ;; stream as the writes' drains fall, so its END_STREAM races the
-     ;; probe's half-close; tests/test-stream.sps reads such bodies whole.
+     ;; The stream routes: content-length 600 is a Huffman literal, 0x82 70
+     ;; 00; a body under 16384 bytes is one DATA frame. A longer body's
+     ;; frames, written a write at a time, end the stream as the writes'
+     ;; drains fall, so its END_STREAM races the probe's half-close;
+     ;; tests/test-stream.sps reads such bodies whole.
      (list "GET /pattern/600: :status 200, content-length 600, then the body, byte i being i mod 251"
            (request scheme "GET" "/pattern/600" '() #f)
            (answer #vu8(#x88 #x0f #x0d #x82 #x70 #x00) (pattern-text 600)))
@@ -606,9 +606,9 @@
 ;; spawned-probe : Origin Symbol Bytevector Natural (Listof String) -> (-> Probe)
 ;; The wire probe of BYTES to FACE, with OPTIONS, idle bound IDLE ms, started
 ;; through open-process-ports, not capture-command, so that this thread can
-;; make another exchange while it waits: on the Mac, two threads' system
-;; calls run one after the other (traps.md). Answers a thunk that reads the
-;; probe's output to its end, closes its pipes, and parses it.
+;; make another exchange while it waits: on macOS, two threads' system calls
+;; run one after the other. Answers a thunk that reads the probe's output to
+;; its end, closes its pipes, and parses it.
 (define (spawned-probe o face bytes idle options)
   (let ((f (origin-face o face)))
     (let-values (((to from err pid)
@@ -636,9 +636,8 @@
 ;; spawn and return all included. With OPTIONS' --split OFFSET:2000,
 ;; STOPPED under 2000 shows the stop began before the probe sent its rest,
 ;; 2000 ms after it connected by its clock: 342 to 390 ms natively and
-;; beside busy loops, and 372 to 377 ms under Valgrind
-;; (research/m7/carried/review, m3). It raises when a kill fails, or when no
-;; connected line comes within 10 s.
+;; beside busy loops, and 372 to 377 ms under Valgrind. It raises when a
+;; kill fails, or when no connected line comes within 10 s.
 (define (stopped-probe o face bytes idle options)
   (let ((f (origin-face o face))
         (spawned (now-ms)))
@@ -712,7 +711,7 @@
 ;; a ClientHello that says it is longer.
 (define partial-client-hello #vu8(#x16 #x03 #x01 #x00 #xc8 #x01 #x00 #x00 #xc4 #x03 #x03))
 
-;; --- the sinks' summaries (the M6 plan, slice 2) -----------------------------
+;; --- the sinks' summaries ----------------------------------------------------
 ;; This suite's own copy of test-origin.sps's: a summary line holds times,
 ;; which no run can fix, the G of gap=G@B and each list entry's T. shape
 ;; writes each as ~ once it is a time as the origin writes one, so a test
@@ -911,7 +910,7 @@
 
 (define h2-not-found (lambda () (list (hex (answer #vu8(#x8d #x0f #x0d 2 #x31 #x30) "not found\n")) 'eof)))
 
-;; --- the parts route (M8 slice 3) --------------------------------------------
+;; --- the parts route ---------------------------------------------------------
 ;; parts-body : String
 ;; Two parts, boundary BND, then the closing delimiter and CR LF: a, its data
 ;; hi|, a backslash and 0x01; f, a filename and a type, the pattern's 300
@@ -1234,22 +1233,20 @@
                                                  '(("content-length" . "7")))
                                        (frame DATA 0 1 (octets "abc"))))
                     tls))
-     ;; The request and the client's end in one read (research/m7/carried/
-     ;; races): the preface, then, 2000 ms on, the SETTINGS and HEADERS of
-     ;; POST /refuse?at=0 and the probe's half-close, while the origin is
-     ;; stopped, from 300 ms after the probe connected to 3000 ms after. Over
-     ;; TLS the HEADERS record and the close_notify then come in one read. The
-     ;; refusal first writes the SETTINGS ACK, a TLS write that completes only
-     ;; at the next immediate, and the RST_STREAM waits for it; Node's own end
-     ;; of the TLS socket, at the close_notify, came before that, and the
-     ;; frame was never written. Main's origin lost it on h2 10 times of 10
-     ;; in the races' forced loop, and h2c 0 of 10 (research/m7/carried/
-     ;; races, results/loop/stop0-main.log); this test failed with main's
-     ;; origin in each of its three kept runs, mutant o0's (results/mutants/
-     ;; there, build/carried-races/out/ and research/m7/carried/verify/
-     ;; mutants/), where unstopped CI's floor job and the memory gate met it
-     ;; as a race. h2c reads its FIN in a read of its own, after the data,
-     ;; and passed either way.
+     ;; The request and the client's end in one read: the preface, then,
+     ;; 2000 ms on, the SETTINGS and HEADERS of POST /refuse?at=0 and the
+     ;; probe's half-close, while the origin is stopped, from 300 ms after the
+     ;; probe connected to 3000 ms after. Over TLS the HEADERS record and the
+     ;; close_notify then come in one read. The refusal first writes the
+     ;; SETTINGS ACK, a TLS write that completes only at the next immediate,
+     ;; and the RST_STREAM waits for it; Node's own end of the TLS socket, at
+     ;; the close_notify, came before that, and the frame was never written.
+     ;; An origin that ends at the close_notify at once, not at the next
+     ;; immediate (origin.mjs's h2EndNext), lost it on h2 10 times of 10 in a
+     ;; forced loop, and on h2c 0 of 10; this test failed against that origin
+     ;; in each of three runs, where unstopped CI's floor job and the memory
+     ;; gate met it as a race. h2c reads its FIN in a read of its own, after
+     ;; the data, and passed either way.
      (test-equal (named "POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it")
        (list (list (hex (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())
                                     (frame RST-STREAM 0 1 #vu8(0 0 0 7)))))
@@ -1293,7 +1290,7 @@
              (loop (cdr targets) (cons (h2-exchange o face (request scheme "GET" (car targets) '() #f) tls) answers))))))
    '(h2c h2) '("http" "https") (list #f h2-tls) '(() ("--tls" "localhost" "--alpn" "h2"))))
 
-;; --- the stream calls' routes (the M6 plan, slice 3) -----------------------------
+;; --- the stream calls' routes ----------------------------------------------------
 ;; This suite's own copies of test-origin.sps's helpers for them, and what
 ;; HTTP/2 needs besides: a frame reader, and HPACK's Huffman code for the
 ;; characters a summary line holds, to read the sink header nghttp2 codes.
@@ -1511,7 +1508,7 @@
                (list->string (reverse chars)))
               (else #f))))))
 
-;; --- HPACK, decoded (M8 slice 2): the head routes' blocks -------------------
+;; --- HPACK, decoded: the head routes' blocks --------------------------------
 
 ;; hpack-static : (Vector (Pair String String))
 ;; RFC 7541's static table, appendix A: entry I at index I, 1 to 61.
@@ -1985,13 +1982,13 @@
                (list face (if (equal? with without) 'same-peer (list 'with with 'without without))))))
          tls-faces))
 
-  ;; --- each face's ALPN set, pinned. Offered one protocol alone, a face
-  ;; that accepts it chooses it; one that does not refuses the handshake with
-  ;; a no_application_protocol alert, 120: s_client then exits 1, writes No
-  ;; ALPN negotiated and no certificate, and "alert number 120" on stderr,
-  ;; which a face with no TLS, or a refusal without that alert, does not. Node 20.10.0 and 24.18.0 alike,
-  ;; every face, with OpenSSL 3.5.7 and 3.0.11 and LibreSSL 3.3.6 (measured:
-  ;; .plans/tls-mutation-log.md, section 4.2).
+  ;; --- each face's ALPN set, pinned. Offered one protocol alone, a face that
+  ;; accepts it chooses it; one that does not refuses the handshake with a
+  ;; no_application_protocol alert, 120: s_client then exits 1, writes No ALPN
+  ;; negotiated and no certificate, and "alert number 120" on stderr, which a
+  ;; face with no TLS, or a refusal without that alert, does not. Node 20.10.0
+  ;; and 24.18.0 alike, every face, with OpenSSL 3.5.7 and 3.0.11 and LibreSSL
+  ;; 3.3.6 (measured).
   (for-each
    (lambda (face)
      (test-equal (string-append (symbol->string face) ": its ALPN set pinned, offered each of h2, http/1.1 and an unknown protocol alone")
@@ -2060,14 +2057,13 @@
      ("/raw/nope" "HTTP/1.1 400 Bad Request\r\nContent-Length: 12\r\nConnection: close\r\n\r\nbad request\n" eof)))
   ;; Timing over TLS is judged between arrivals. TLS hands the reader each
   ;; record as a chunk of its own, even when TCP joined them, so a byte that
-  ;; arrives alone says nothing here. With Nagle's algorithm on raw-tls's
-  ;; TCP socket, the first two body bytes of this drip arrived 0 to 2 ms
-  ;; apart, every other gap about 20 ms; without it, no gap was under 19 ms,
-  ;; idle or under 24 busy loops (measured: .plans/tls-mutation-log.md,
-  ;; section 3.3). So each gap must be at least half the drip's.
-  ;; And, as on raw, body byte i comes at least (i+1) x 20 ms after the probe
-  ;; connected: the origin waits the gap before each byte, and the request
-  ;; goes only once the handshake is done.
+  ;; arrives alone says nothing here. With Nagle's algorithm on raw-tls's TCP
+  ;; socket, the first two body bytes of this drip arrived 0 to 2 ms apart,
+  ;; every other gap about 20 ms; without it, no gap was under 19 ms, idle or
+  ;; under 24 busy loops (measured). So each gap must be at least half the
+  ;; drip's. And, as on raw, body byte i comes at least (i+1) x 20 ms after
+  ;; the probe connected: the origin waits the gap before each byte, and the
+  ;; request goes only once the handshake is done.
   (test-equal "raw-tls /raw/drip?bytes=8&gap=20: the whole bytes, then eof, each body byte read at least 10 ms after the one before it, and byte i at least (i+1) x 20 ms after connecting"
     (list "HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nabcdefgh" 'eof 'spaced 'each-late-enough)
     (guard (e (#t (list 'raised (describe e))))
@@ -2119,16 +2115,16 @@
           (h2-exchange o face (cadr row) tls)))
       (h2-rows scheme)))
    '(h2c h2) '("http" "https") (list #f h2-tls))
-  ;; The head routes (M8 slice 2; ADR-0040), decoded: each block's fields
-  ;; whole, against this suite's own list; END_STREAM; the body; and no other
-  ;; frame. The large ones are past Node's default send limit, 64 KiB, which
-  ;; both faces raise: at the default the head is never sent, and the trailer
-  ;; block is dropped or the stream reset, by Node's version (traps.md). A
-  ;; trailer block goes in a write of its own after the head, and the large
-  ;; head in several, which a client's half-close can cut, as it cuts a long
-  ;; body's (h2EndNext's comment): under the memory gate's load h2 lost the
-  ;; trailers of /head?n=2&tn=6000 so (M8 slice 2's build). Those rows' probe
-  ;; does not half-close: it reads until it has been idle, and ends there.
+  ;; The head routes (ADR-0040), decoded: each block's fields whole, against
+  ;; this suite's own list; END_STREAM; the body; and no other frame. The
+  ;; large ones are past Node's default send limit, 64 KiB, which both faces
+  ;; raise: at the default the head is never sent, and the trailer block is
+  ;; dropped or the stream reset, by Node's version. A trailer block goes in
+  ;; a write of its own after the head, and the large head in several, which
+  ;; a client's half-close can cut, as it cuts a long body's (h2EndNext's
+  ;; comment): under the memory gate's load h2 lost the trailers of
+  ;; /head?n=2&tn=6000 to a half-close. Those rows' probe does not
+  ;; half-close: it reads until it has been idle, and ends there.
   (let ((digest "Digest realm=\"chez-curl-test\", qop=\"auth\", nonce=\"n0\", algorithm=MD5")
         (cl0 '("content-length" . "0")))
     (for-each
@@ -2372,7 +2368,7 @@
   '(returned done)
   scenarios-outcome)
 
-;; --- the auth route over TLS (M7 slice 2; the M7 plan, section 5.2) ---------------
+;; --- the auth route over TLS ------------------------------------------------------
 ;; Each test runs on an origin of its own, so the https face's handshakes and
 ;; h2's sessions are numbered from 1 there. Each log is read by the http
 ;; face, whose answer tests/test-origin.sps holds. The Authorization headers
@@ -2442,8 +2438,8 @@
 ;; Huffman code, 0x82 0x68 0x01; www-authenticate a literal with
 ;; incremental indexing of static name 61, 0x7d, its value 22 bytes of
 ;; Huffman code, 0x96, Bearer realm="chez-curl-test", as Node's own HTTP/2
-;; client decoded them (build/m7s2b/hpack/decode.mjs, on 24.18.0); then
-;; content-length 13, its two digits as they are.
+;; client decoded them (on 24.18.0); then content-length 13, its two digits
+;; as they are.
 (test-equal "the auth route over h2: no credentials, a 401 with Bearer's challenge in www-authenticate; Bearer, 200; each its own session, logged face=h2"
   (list 'returned
         (list (list (hex (answer (u8-list->bytevector
@@ -2465,7 +2461,7 @@
             (log (auth-logged o "h2b")))
        (list a b log)))))
 
-;; --- the proxy over TLS (M7 slice 3; the M7 plan, section 6.2) --------------------
+;; --- the proxy over TLS -----------------------------------------------------------
 ;; Each https face serves the proxy too, so it stands in for an https://
 ;; proxy; the probe speaks TLS to it and verifies nothing, so the expired,
 ;; wrong-host and untrusted faces serve as well, failing a client that
@@ -2685,7 +2681,7 @@
 ;; - Node's own server.close(). It ends some waiting states with nothing
 ;;   tracked, so an end there proves nothing; each face here also waits in
 ;;   states it does not end. Untracked, close() ends, by face (measured on
-;;   Node 24.18.0 and 20.10.0, .plans/tls-mutation-log.md, section 4.2):
+;;   Node 24.18.0 and 20.10.0):
 ;;     https*   idle after a whole keep-alive response, within 1 ms, on both;
 ;;              never TCP with nothing sent, a partial ClientHello, the
 ;;              handshake done, a partial head, a body still to come
@@ -2715,10 +2711,9 @@
 ;;   opening, cannot fall inside both windows.
 ;;
 ;; B is three times the slowest measured, 150 ms under 24 busy loops; idle it
-;; was 35 to 43 ms, and 49 to 76 ms with Chez under Valgrind
-;; (.plans/tls-mutation-log.md, section 4.2). The stop ends a connection
-;; with a FIN, or with a reset when the client's bytes are still unread, as
-;; a starved origin can leave them: both are the stop's.
+;; was 35 to 43 ms, and 49 to 76 ms with Chez under Valgrind. The stop ends a
+;; connection with a FIN, or with a reset when the client's bytes are still
+;; unread, as a starved origin can leave them: both are the stop's.
 ;;
 ;; The states held are those the table below names. Some a client can leave
 ;; a face in are not held by any check: an HTTP/2 response its client's
@@ -2759,7 +2754,7 @@
                (hex (octets "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\n")))
          ;; pause-mid-body waits 60 s between its writes: longer than any
          ;; stop, on a slow machine too (2.9 to 5 s on one or two CPUs with
-         ;; Valgrind, measured by the review).
+         ;; Valgrind, measured).
          (list "a script playing, between two of its writes" 'raw-tls tls1
                (hex (octets (get "/raw/pause-mid-body?ms=60000")))
                (hex (octets "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello")))

@@ -1,6 +1,6 @@
 #!r6rs
 ;;; The suite for (curl private conditions): chez-curl's condition types, all
-;;; under &curl-error (harness plan §1).
+;;; under &curl-error.
 ;;;
 ;;;   &curl-error                 the base, under &error
 ;;;   &curl-library-unavailable   libcurl was refused: ADR-0002's and ADR-0003's
@@ -19,14 +19,11 @@
 ;;;   &curl-transfer-error        a transfer failed, with one of fourteen
 ;;;                               reasons, its code, option, libcurl's texts,
 ;;;                               what the write callable recorded and its
-;;;                               request size (M2 plan, section 5.3),
-;;;                               cancelled and stopped among them (M3 plan,
-;;;                               section 3.4); and its six classes, every
-;;;                               code from 0 to 101 written out (ADR-0022,
-;;;                               amended 2026-10-26)
+;;;                               request size, cancelled and stopped among
+;;;                               them; and its six classes, every code from
+;;;                               0 to 101 written out (ADR-0022)
 ;;;   &curl-engine-error          an engine stopped, or failed, with the
-;;;                               condition it failed with (M3 plan,
-;;;                               sections 3.4 and 3.7)
+;;;                               condition it failed with
 ;;;
 ;;; Each expected value is one the code under test cannot produce by failing.
 ;;; SRFI-64 turns a raise in the actual expression into #f, so no expected
@@ -302,13 +299,13 @@
          (raised (lambda () (make-curl-transfer-error reason 28 #f #f #f #f 0 #f))))
        (list 'timed-out "body-limit" #f)))
 
-;; --- the classes (ADR-0022, amended 2026-10-26) -----------------------------------------
+;; --- the classes (ADR-0022) -------------------------------------------------------------
 
 ;; code-rows : (Listof (List Integer Symbol))
-;; Every CURLcode from 0 to 101, with its class, or none: the M4 plan's table
-;; (section 3.4), settled against curl's description of each code in
-;; libcurl-errors (8.23.0). Written out here, never read from the library's
-;; table, so a code moved there fails here, by that code.
+;; Every CURLcode from 0 to 101, with its class, or none, settled against
+;; curl's description of each code in libcurl-errors (8.23.0). Written out
+;; here, never read from the library's table, so a code moved there fails
+;; here, by that code.
 (define code-rows
   '((0 none) (1 protocol) (2 none) (3 none) (4 none) (5 connect) (6 connect) (7 connect)
     (8 protocol) (9 none) (10 none) (11 none) (12 none) (13 none) (14 none) (15 none)
@@ -508,7 +505,7 @@
          (raised (lambda () (make-curl-engine-error reason #f))))
        (list 'cancelled "failed" #f)))
 
-;; --- a caller's value, as a refusal names it (M7 slice 3's review) ---
+;; --- a caller's value, as a refusal names it -------------------------
 
 ;; circular : List
 ;; A list whose last pair points back at its first.

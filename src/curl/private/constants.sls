@@ -1,11 +1,11 @@
 #!r6rs
 ;;; (curl private constants): the libcurl constants chez-curl needs, each a
-;;; Scheme definition copied from libcurl's headers (ADR-0001, decision 3).
-;;; The values are curl 8.20.0's, read from the container's
-;;; include/curl/. libcurl never renumbers them.
+;;; Scheme definition copied from libcurl's headers (ADR-0001). The values
+;;; are curl 8.20.0's, read from the container's include/curl/. libcurl never
+;;; renumbers them.
 ;;;
 ;;; CURLOPT_* ids are not here, and never will be: they come from the
-;;; loaded library, by name (ADR-0001, decision 2).
+;;; loaded library, by name (ADR-0001).
 (library (curl private constants)
   (export curl-version-features curl-version-ssl curl-version-https-proxy
           curlhe-not-built-in curlh-header curl-global-default curle-ok
@@ -94,7 +94,7 @@
   ;; to an https:// proxy. One without it writes the whole proxy URL, its
   ;; userinfo with it, into the error buffer (7.85.0 lib/url.c:2496, 8.20.0
   ;; lib/url.c:1994, 8.23.0 lib/peer.c:654, read in source), so a submit
-  ;; refuses an https:// proxy URL there (ADR-0037, decision 2).
+  ;; refuses an https:// proxy URL there (ADR-0037).
   (define curl-version-https-proxy #x00200000)
 
   ;; curlhe-not-built-in : Natural
@@ -172,10 +172,9 @@
   ;; curlue-codes : (Listof (Pairof Symbol Natural))
   ;; Every CURLUcode in the floor's curl/urlapi.h (7.85.0), in its order,
   ;; each named for its CURLUE_* name without the prefix. A URL refusal's
-  ;; reason is its code's name here (M2 plan, section 3.7). A later
-  ;; libcurl's codes, CURLUE_LACKS_IDN (30) and CURLUE_TOO_LARGE (31) in
-  ;; 8.20.0, are not here: the floor lane's headers lack them, and such a
-  ;; code is reported by its number.
+  ;; reason is its code's name here. A later libcurl's codes, CURLUE_LACKS_IDN
+  ;; (30) and CURLUE_TOO_LARGE (31) in 8.20.0, are not here: the floor lane's
+  ;; headers lack them, and such a code is reported by its number.
   (define curlue-codes
     '((ok                  . 0)     ; CURLUE_OK
       (bad-handle          . 1)     ; CURLUE_BAD_HANDLE
@@ -224,9 +223,9 @@
   ;; curlupart-query : Positive-Integer
   ;; curlupart-fragment : Positive-Integer
   ;; curlupart-zoneid : Positive-Integer
-  ;; curl/urlapi.h: the CURLUParts curl-url-part reads (the M5 plan, section
-  ;; 3.1). CURLUPART_OPTIONS, 4, lies between the password and the host; the
-  ;; zone ID, an IPv6 host's, which the host part leaves out, comes last.
+  ;; curl/urlapi.h: the CURLUParts curl-url-part reads. CURLUPART_OPTIONS, 4,
+  ;; lies between the password and the host; the zone ID, an IPv6 host's,
+  ;; which the host part leaves out, comes last.
   (define curlupart-user 2)
   (define curlupart-password 3)
   (define curlupart-host 5)
@@ -246,10 +245,10 @@
   ;; URL whose scheme libcurl does not know, as any other. A proxy URL is
   ;; parsed with it, so its scheme is chez-curl's to judge alike on every
   ;; libcurl: with no flags 7.85.0 to 8.20.0 refuse socks5:// as an
-  ;; unsupported scheme, 5, and 8.23.0 parses it (M7 slice 3's build).
+  ;; unsupported scheme, 5, and 8.23.0 parses it.
   (define curlu-non-support-scheme 8)
 
-  ;; --- the transfer (M2 plan, section 5; on an engine since M3) ---------------
+  ;; --- the transfer -----------------------------------------------------------
 
   ;; curlinfo-response-code : Positive-Integer
   ;; curl/curl.h: CURLINFO_RESPONSE_CODE, CURLINFO_LONG + 2, 0x200000 + 2.
@@ -270,8 +269,7 @@
   ;; curlinfo-http-connectcode : Positive-Integer
   ;; curl/curl.h: CURLINFO_HTTP_CONNECTCODE, CURLINFO_LONG + 22, 0x200000 +
   ;; 22. curl_easy_getinfo writes the status a proxy answered the
-  ;; transfer's CONNECT with, a long, 0 for none (ADR-0037, amended
-  ;; 2026-11-03, decision 9).
+  ;; transfer's CONNECT with, a long, 0 for none (ADR-0037).
   (define curlinfo-http-connectcode 2097174)
 
   ;; curl-error-size : Positive-Integer
@@ -281,7 +279,7 @@
   ;; curl-blob-copy : Positive-Integer
   ;; curl/easy.h: CURL_BLOB_COPY, 1 (7.71.0): a struct curl_blob's flags,
   ;; telling setopt to copy the bytes, so they may be freed once it returns
-  ;; (ADR-0009, decision 4).
+  ;; (ADR-0009).
   (define curl-blob-copy 1)
 
   ;; curl-http-version-1-0 : Positive-Integer
@@ -312,13 +310,13 @@
   ;; curl/curl.h: CURLAUTH_BASIC 1<<0 and CURLAUTH_DIGEST 1<<1 (7.10.6), and
   ;; CURLAUTH_BEARER 1<<6 (7.61.0), all in the floor's headers: what
   ;; HTTPAUTH takes for a credentials key's basic, digest and bearer, each
-  ;; one scheme alone, never a set (ADR-0036, decision 2).
+  ;; one scheme alone, never a set (ADR-0036).
   (define curlauth-basic 1)
   (define curlauth-digest 2)
   (define curlauth-bearer 64)
 
   ;; The CURLcodes chez-curl names, each a curl/curl.h CURLcode: every code a
-  ;; class names (ADR-0022, amended 2026-10-26), and the transfer's others.
+  ;; class names (ADR-0022), and the transfer's others.
   ;; Each is described in curl's words, from libcurl-errors. All but the last
   ;; two are in the floor's headers. CURLE_TOO_LARGE came in 8.6.0 and
   ;; CURLE_ECH_REQUIRED in 8.8.0, after the floor (symbols-in-versions), so
@@ -443,11 +441,10 @@
   (define curle-filesize-exceeded 63)
   (define curle-too-large 100)
 
-  ;; What a finished transfer reports, read by curl_easy_getinfo (M4 plan,
-  ;; section 3.3; ADR-0022, amended 2026-10-26), curl/curl.h. The five
-  ;; timings are CURLINFO_OFF_T, 0x600000, plus their numbers: each a
-  ;; curl_off_t of microseconds from the transfer's start, since 7.61.0. The
-  ;; request size is CURLINFO_LONG, 0x200000, plus 12.
+  ;; What a finished transfer reports, read by curl_easy_getinfo (ADR-0022),
+  ;; curl/curl.h. The five timings are CURLINFO_OFF_T, 0x600000, plus their
+  ;; numbers: each a curl_off_t of microseconds from the transfer's start,
+  ;; since 7.61.0. The request size is CURLINFO_LONG, 0x200000, plus 12.
   ;;
   ;; curlinfo-namelookup-time-t : Positive-Integer     CURLINFO_NAMELOOKUP_TIME_T, + 51
   ;; curlinfo-connect-time-t : Positive-Integer        CURLINFO_CONNECT_TIME_T, + 52
@@ -465,7 +462,7 @@
   (define curlinfo-total-time-t 6291506)
   (define curlinfo-request-size 2097164)
 
-  ;; The multi interface's (M3 plan, section 5.2), curl/multi.h.
+  ;; The multi interface's constants, curl/multi.h.
   ;;
   ;; curlm-ok : Natural                  CURLM_OK, 0
   ;; curlm-unknown-option : Positive-Integer
@@ -480,13 +477,13 @@
 
   ;; The multi options chez-curl sets, curl/multi.h, each CURLOPTTYPE_LONG,
   ;; 0, plus its number. A multi option has no lookup by name, as an easy
-  ;; option has (ADR-0001, decision 2), so its id is a constant.
+  ;; option has (ADR-0001), so its id is a constant.
   ;;
   ;; curlmopt-max-total-connections : Positive-Integer
   ;;                                     CURLMOPT_MAX_TOTAL_CONNECTIONS, 13, since
   ;;                                     7.30.0: tests/test-variadic.sps sets it
   ;;                                     through curl-multi-setopt-long, to watch a
-  ;;                                     long arrive (ADR-0001, amended 2026-10-25)
+  ;;                                     long arrive (ADR-0001)
   ;; curlmopt-quick-exit : Positive-Integer
   ;;                                     CURLMOPT_QUICK_EXIT, 21, since 8.20.0, after
   ;;                                     the floor: every engine sets it to 1 when it
@@ -497,8 +494,7 @@
   ;;                                     CURLMOPT_PIPELINING, 3, since 7.16.0: the
   ;;                                     engine sets it to CURLPIPE_NOTHING on
   ;;                                     libcurl 8.7.0 and 8.7.1, which then
-  ;;                                     multiplexes nothing (ADR-0030, amended
-  ;;                                     2026-10-29)
+  ;;                                     multiplexes nothing (ADR-0030)
   ;; curlpipe-nothing : Natural          CURLPIPE_NOTHING, 0: no HTTP/1.1
   ;;                                     pipelining, and no HTTP/2 multiplexing
   (define curlmopt-max-total-connections 13)
@@ -506,7 +502,7 @@
   (define curlmopt-pipelining 3)
   (define curlpipe-nothing 0)
 
-  ;; The response stream's (the M6 plan, sections 3.2 and 3.4), curl/curl.h.
+  ;; The response stream's constants, curl/curl.h.
   ;;
   ;; curl-writefunc-pause : Positive-Integer
   ;;                                     CURL_WRITEFUNC_PAUSE, 0x10000001: what the
@@ -517,13 +513,13 @@
   ;; curlpause-cont : Natural            CURLPAUSE_CONT, 0: curl_easy_pause's new
   ;;                                     state with neither direction paused.
   ;;                                     The call takes the whole state, not a
-  ;;                                     change (ADR-0012, amended 2026-10-29)
+  ;;                                     change (ADR-0012)
   (define curl-writefunc-pause #x10000001)
   (define curlpause-cont 0)
 
-  ;; The request stream's (the M6 plan, sections 3.3 and 3.4), curl/curl.h,
-  ;; each the same from 7.85.0 to 8.23.0, and stdio.h's SEEK_SET, which
-  ;; curl.h names for a seek callback's origin.
+  ;; The request stream's constants, curl/curl.h, each the same from 7.85.0
+  ;; to 8.23.0, and stdio.h's SEEK_SET, which curl.h names for a seek
+  ;; callback's origin.
   ;;
   ;; curl-readfunc-pause : Positive-Integer
   ;;                                     CURL_READFUNC_PAUSE, 0x10000001: what the
@@ -553,9 +549,9 @@
   (define curl-prereqfunc-abort 1)
   (define seek-set 0)
 
-  ;; The cookie jar's (ADR-0035; the M7 plan, section 3.5), curl/curl.h,
-  ;; each the same from 7.85.0 to 8.23.0: the share interface's CURLSHoption,
-  ;; curl_lock_data and CURLSHcode, and CURLINFO_COOKIELIST.
+  ;; The cookie jar's (ADR-0035), curl/curl.h, each the same from 7.85.0 to
+  ;; 8.23.0: the share interface's CURLSHoption, curl_lock_data and CURLSHcode,
+  ;; and CURLINFO_COOKIELIST.
   ;;
   ;; curlshopt-share : Positive-Integer CURLSHOPT_SHARE, 1: what a share
   ;;                                     holds, its value a curl_lock_data
@@ -586,10 +582,9 @@
   (define curlshe-in-use 2)
   (define curlinfo-cookielist #x40001C)
 
-  ;; The load's mime probe's (ADR-0039, amended 2026-11-06, decision 4 made
-  ;; exact; the M8 plan, section 3.4), curl/curl.h, each the same from 7.85.0
-  ;; to 8.23.0, where 8.x marks the form API deprecated: CURLformoption, an
-  ;; enum, and CURLFORMcode, the answer of curl_formadd.
+  ;; The load's mime probe's constants (ADR-0039), curl/curl.h, each the same
+  ;; from 7.85.0 to 8.23.0, where 8.x marks the form API deprecated:
+  ;; CURLformoption, an enum, and CURLFORMcode, the answer of curl_formadd.
   ;;
   ;; curlform-copyname : Positive-Integer
   ;;                                     CURLFORM_COPYNAME, 1: a field's name,

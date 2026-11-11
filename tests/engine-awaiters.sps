@@ -1,10 +1,10 @@
 #!r6rs
 ;;; A child of tests/test-engine.sps: several caller threads, each submitting
-;;; a transfer and awaiting it, over and over, while their allocation asks
-;;; for collections (ADR-0013, amended 2026-10-25, after the slice's
-;;; review). A wait that held the engine's mutex with interrupts on joined a
-;;; collection there, while another thread, blocked on that mutex with
-;;; interrupts off, stayed active: four threads hung within 1 s.
+;;; a transfer and awaiting it, over and over, while their allocation asks for
+;;; collections (ADR-0013). A wait that held the engine's mutex with
+;;; interrupts on joined a collection there, while another thread, blocked on
+;;; that mutex with interrupts off, stayed active: four threads hung within
+;;; 1 s.
 ;;;
 ;;;   engine-awaiters.sps together THREADS MS URL
 ;;;   engine-awaiters.sps latency N 0 URL

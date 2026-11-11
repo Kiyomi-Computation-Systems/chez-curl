@@ -1,9 +1,7 @@
 #!r6rs
-;;; The suite for redirects, the high level's second slice (the M5 plan,
-;;; sections 3.4 and 5; ADR-0008, amended 2026-10-27 and 2026-10-28;
-;;; ADR-0027; ADR-0029): the redirect rules in exchange-step, the history,
-;;; &http-redirect-error, and the session's and the call's keys, redirects
-;;; and allow-downgrade.
+;;; The suite for redirects (ADR-0008; ADR-0027; ADR-0029): the redirect
+;;; rules in exchange-step, the history, &http-redirect-error, and the
+;;; session's and the call's keys, redirects and allow-downgrade.
 ;;;
 ;;;   - the keys: taken by a session and a call, a bad value refused by
 ;;;     name, with no engine made and no transfer; the condition's type, its
@@ -31,10 +29,10 @@
 ;;;
 ;;; Every check on the origin's raw face makes its own session: the raw face
 ;;; closes after each script, and curl 8.23.0 resends on each dead pooled
-;;; connection (traps.md). The location script says Connection: close, so
-;;; its own connections go back to no pool. Every expected value is one the
-;;; code under test cannot produce by failing: SRFI-64 makes #f of a raise
-;;; in the actual expression, so none is #f. Where curl_url's answer varies
+;;; connection. The location script says Connection: close, so its own
+;;; connections go back to no pool. Every expected value is one the code
+;;; under test cannot produce by failing: SRFI-64 makes #f of a raise in
+;;; the actual expression, so none is #f. Where curl_url's answer varies
 ;;; by version, the row below for the libcurl loaded holds it; a libcurl
 ;;; with no row fails, and the suite prints the row it measured.
 (import (rnrs)
@@ -195,7 +193,7 @@
 
 ;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
 ;; PROC of each of ITEMS, called first to last: map calls its procedure in
-;; no fixed order (traps.md).
+;; no fixed order.
 (define (in-order proc items)
   (let loop ((rest items) (answers '()))
     (if (null? rest)
@@ -218,11 +216,11 @@
 (define version (guard (e (#t "unknown")) (libcurl-info-version (loaded-libcurl))))
 
 ;; location-rows : (Listof (Pairof String (Listof (List Symbol Any ...))))
-;; Where curl_url's answer varies by version, each libcurl's, measured by
-;; .plans/research/m5/location/ on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and
-;; with GnuTLS, Guix's 8.20.0 and 8.23.0; the Mac's 8.7.1 answers as 8.5.0
-;; for the URL API (ADR-0008, amended 2026-10-27). Each case is a Location
-;; through the raw face's location script, from /raw/location:
+;; Where curl_url's answer varies by version, each libcurl's, measured on
+;; 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and
+;; 8.23.0; Apple's 8.7.1 answers as 8.5.0 for the URL API (ADR-0008). Each
+;; case is a Location through the raw face's location script, from
+;; /raw/location:
 ;;   javascript  javascript:alert(1)
 ;;   bad-ipv6    http://[::1/x
 ;;   ctl         /x, 0x01, y
@@ -348,7 +346,7 @@
 ;; Every row the tables step a response through: whether exchange-step
 ;; answered next, and what exchange-steps-past? answered for the same
 ;; state, clocks and draw, given the response as a head, its body and
-;; timings #f (the M6 plan, section 6.2).
+;; timings #f.
 (define heads-seen '())
 
 ;; step : State Response -> Answer
@@ -586,8 +584,8 @@
 
 ;; origin-headers : (Listof (Pairof String String))
 ;; The credentials, in cases of their own, Host, and two that follow. A
-;; Proxy-Authorization header was one, until the low level refused every
-;; one (ADR-0037, decision 4): the test after holds that.
+;; Proxy-Authorization header is not among them: the low level refuses
+;; every one (ADR-0037), which the test after holds.
 (define origin-headers
   '(("Authorization" . "Bearer a") ("cookie" . "c=1")
     ("HOST" . "h.example") ("X-Api-Key" . "k") ("Authorization-X" . "kept")))
@@ -1122,8 +1120,8 @@
             (list 'file "file:///etc/passwd" 'scheme)
             (list 'latin-1-host "http://caf\xE9;.invalid/" 'not-utf-8)))
 
-     ;; A Location's bytes are encoded before they are resolved (ADR-0029,
-     ;; amended), so 0x01 and 0x7F, which 7.85.0 and 8.5.0 refused raw, and a
+     ;; A Location's bytes are encoded before they are resolved (ADR-0029),
+     ;; so 0x01 and 0x7F, which 7.85.0 and 8.5.0 refused raw, and a
      ;; Latin-1 byte in an absolute URL's path, which every libcurl gave back
      ;; raw, as no UTF-8, are followed alike: the raw face answers each path
      ;; with its fixed 400.

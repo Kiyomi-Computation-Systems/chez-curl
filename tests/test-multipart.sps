@@ -1,17 +1,17 @@
 #!r6rs
-;;; The suite for a multipart/form-data body (ADR-0039, amended twice; the
-;;; M8 plan, sections 3.1, 3.4, 3.7 and 3.8), against the test origin's
-;;; parts route, its bytes held by test-origin and test-origin-tls:
+;;; The suite for a multipart/form-data body (ADR-0039), against the test
+;;; origin's parts route, its bytes held by test-origin and
+;;; test-origin-tls:
 ;;;
-;;;   - every refusal of section 3.7 beside the neighbour that passes: the
-;;;     shapes, assertion violations naming the body by its kind;
-;;;     multipart-empty; part-empty; part-bytes over every char U+0000 to
-;;;     U+001F, U+007F and ", at each place, beside U+0020, U+0021, U+0023,
-;;;     U+007E, a char past ASCII and a leading U+FEFF; a file part's
-;;;     default filename by the filename's rules; multipart-content-type, as
-;;;     the request is made and at submit; part-file, made, submitted, and
-;;;     a relative path at submit, through the private seam; the high
-;;;     level's multipart-beside-body and body-not-allowed;
+;;;   - every refusal beside the neighbour that passes: the shapes,
+;;;     assertion violations naming the body by its kind; multipart-empty;
+;;;     part-empty; part-bytes over every char U+0000 to U+001F, U+007F and
+;;;     ", at each place, beside U+0020, U+0021, U+0023, U+007E, a char past
+;;;     ASCII and a leading U+FEFF; a file part's default filename by the
+;;;     filename's rules; multipart-content-type, as the request is made and
+;;;     at submit; part-file, made, submitted, and a relative path at
+;;;     submit, through the private seam; the high level's
+;;;     multipart-beside-body and body-not-allowed;
 ;;;   - the copies: each metadata string and the list mutated after the
 ;;;     request is made, then submitted; the accessor's copy mutated; a
 ;;;     relative path resolved when the request is made; the data copied at
@@ -37,9 +37,9 @@
 ;;;     type and a path, through every refusal and every outcome.
 ;;;
 ;;; Each transfer runs on an engine of its own, stopped after it, so no
-;;; connection outlives its test (traps.md). Every computation that can
-;;; raise runs under a guard that names what was raised, and no expected
-;;; value is #f: SRFI-64 makes #f of a raise in the actual expression.
+;;; connection outlives its test. Every computation that can raise runs
+;;; under a guard that names what was raised, and no expected value is
+;;; #f: SRFI-64 makes #f of a raise in the actual expression.
 (import (rnrs)
         (rnrs mutable-pairs)
         (rnrs mutable-strings)
@@ -285,7 +285,7 @@
                    (list "b" (bytes 1 2) 'type "x/y" 'filename "b.bin")
                    (list "f" (list 'file file-a) 'filename "a.bin" 'type "application/x")))))
 
-;; --- the refusals of section 3.7, each beside the neighbour that passes ----------------
+;; --- the refusals, each beside the neighbour that passes -------------------------------
 
 (test-equal "multipart-empty: (multipart), field body, value multipart; a part with empty data is made"
   (list '(refused make-curl-request body multipart multipart-empty) '(made))
@@ -422,7 +422,7 @@
               (refusal-of (lambda () (curl-request-check stays))))))))
 
 ;; A request holds resolved paths, so only a fault hands a submit a
-;; relative one: the private seam makes one (ADR-0039, amended 2026-11-07).
+;; relative one: the private seam makes one (ADR-0039).
 (test-equal "part-file at submit: a path that is not absolute, through the private seam that sets one unresolved, is refused, whether or not the working directory holds the file; the seam's absolute path passes"
   (list '(refused curl-request-check body (part 0 path) part-file)
         '(refused curl-request-check body (part 0 path) part-file)
@@ -449,8 +449,7 @@
 ;; submit's own copies.
 (test-equal "multipart-content-type at submit: a header's name changed to Content-Type after the request is made is refused by the submit's check"
   (list '(made) '(refused curl-request-check header-name "Content-Type" multipart-content-type))
-  ;; In turn, by let*: a list's arguments are evaluated in no fixed order
-  ;; (AGENTS.md).
+  ;; In turn, by let*: a list's arguments are evaluated in no fixed order.
   (let* ((name (string-copy "Content-Typf"))
          (r (made '(multipart ("a" "x")) 'headers (list (cons name "x"))))
          (before (refusal-of (lambda () (curl-request-check r))))
@@ -479,11 +478,11 @@
     (curl-request-check (made '(multipart ("a" "x"))))
     'mime))
 
-;; --- a caller's timer across the checks of a file part (the slice's review) ----------------
+;; --- a caller's timer across the checks of a file part -------------------------------------
 ;; A caller's timer handler raises wherever its timer runs out, inside a
-;; check as anywhere: a guard that took every raise around the path's
-;; stat answered the handler's raise as part-file (review-timer-rerun.log,
-;; 6 of 20,000 ticks each for make-curl-request and curl-request-check).
+;; check as anywhere: a guard that took every raise around the path's stat
+;; answered the handler's raise as part-file (6 of 20,000 ticks each for
+;; make-curl-request and curl-request-check).
 ;; Each operation is timed first, its band found: the first tick count,
 ;; doubling from 16, at which four runs in a row end before their timer;
 ;; then the timer is swept across the band a tick at a time, its handler
@@ -587,7 +586,7 @@
                                                    'headers '(("Content-Type" . "x")))))
               (refusal-of (lambda () (http-request s 'post "http://127.0.0.1:9/" 'multipart '(("a" 42))))))))))
 
-;; --- curl-request-with's url key (ADR-0023, after slice 3's review) ------------------------
+;; --- curl-request-with's url key (ADR-0023) ------------------------------------------------
 ;; The url key is checked as make-curl-request checks its first argument,
 ;; by the one path: as the request is made, a URL that is no string, and
 ;; the cookie jar's Host rule on the request's headers; then, at submit or
@@ -681,7 +680,7 @@
 
 (when url-key-engine (curl-engine-stop url-key-engine))
 
-;; --- a redirect's hop, through curl-request-with (ADR-0023, after slice 3's review) ---------
+;; --- a redirect's hop, through curl-request-with (ADR-0023) ---------------------------------
 ;; next-request builds a hop from the last request through curl-request-with
 ;; 'url. Each hop must hold exactly what the hop built by make-curl-request
 ;; held before, field by field, for every redirect kind, method and body:
@@ -816,13 +815,13 @@
            (hop (next-request last "http://127.0.0.1:9/to" 307 #f #f)))
       (list (hatch-settings-of hop) (curl-request-fault hop) (curl-request-follow hop)))))
 
-;; --- the copies (the M8 plan, section 3.1; ADR-0039, amended 2026-11-07) --------------
+;; --- the copies (ADR-0039) ------------------------------------------------------------
 
 ;; scratch-resolved : String
 ;; What a relative path made in scratch resolves to: current-directory's
-;; answer there. On macOS that names /private/var where TMPDIR names /var,
-;; a symbolic link to it, so scratch's own name is not it (the Mac's run,
-;; 2026-11-07). Under a guard: a raise in an expected value kills the suite.
+;; answer there. On macOS that names /private/var where TMPDIR names /var, a
+;; symbolic link to it, so scratch's own name is not it. Under a guard: a
+;; raise in an expected value kills the suite.
 (define scratch-resolved
   (guard (e (#t "current-directory-refused"))
     (parameterize ((current-directory scratch)) (current-directory))))
@@ -841,7 +840,7 @@
            (first (curl-request-body resolved))
            (second (curl-request-body resolved))
            ;; Each read and each change in turn, by let*: a list's
-           ;; arguments are evaluated in no fixed order (AGENTS.md).
+           ;; arguments are evaluated in no fixed order.
            (answered (curl-request-body resolved))
            (fresh (if (and (not (eq? (car (cadr first)) (car (cadr second))))
                            (not (eq? (cadr (caddr first)) (cadr (caddr second)))))
@@ -1150,7 +1149,7 @@
   ;; Beside MIMEPOST the Content-Type: blank sent "Content-Type: ;
   ;; boundary=B", every part an attachment; past 1 MiB libcurl adds Expect:
   ;; 100-continue over HTTP/1.1 and waits a second for a server that never
-  ;; answers, which the Expect: blank removes (ADR-0039, context).
+  ;; answers, which the Expect: blank removes (ADR-0039).
   (test-equal "every method that sends a body, over HTTP/1.1, h2c and h2: post, put, patch and delete each send multipart/form-data with the body's own boundary, every part form-data, the body whole, no Expect, closed by its delimiter: the whole report"
     (map (lambda (face) (map (lambda (method) '(200 as-sent)) '(post put patch delete))) '(http h2c h2))
     (map (lambda (face)
@@ -1180,7 +1179,7 @@
                            (list (part (list (disposition "big" #f)) (pattern-bytes 1048577))))
                (list 'not-ended)))))))
 
-  ;; The cap on response headers (ADR-0040) beside the mime: slice 2's
+  ;; The cap on response headers (ADR-0040) beside the mime: the header
   ;; callable and MIMEPOST sit together.
   (test-equal "the header cap beside a multipart body: 1,000 header lines answer the whole report; 1,001 refuse the transfer, header-limit, too large"
     (list '(200 as-sent) '(refused header-limit too-large))
@@ -1226,10 +1225,10 @@
       (set-cdr! (cdr copy) '())
       (sent-as r "http" "POST" "-" (list (part (list (disposition "n" #f)) (string->utf8 "v")) (a-bin-part "f")))))
 
-  ;; The data is copied at submit alone, as a whole body is (ADR-0023,
-  ;; decision 4): a change before the submit is sent; one after it is not.
-  ;; The private gate holds the engine's thread at the file check, before
-  ;; the transfer's setup, until this thread has made its change, so the
+  ;; The data is copied at submit alone, as a whole body is (ADR-0023): a
+  ;; change before the submit is sent; one after it is not. The private
+  ;; gate holds the engine's thread at the file check, before the
+  ;; transfer's setup, until this thread has made its change, so the
   ;; change lands after the submit and before the mime is made.
   (test-equal "a part's data is copied at submit, not when the request is made: a bytevector and a string changed before the submit are sent changed; changed after the submit returns, held by the gate before the mime is made, the submit's bytes are sent: each the whole report"
     '((200 as-sent) (200 as-sent) gate-ran)
@@ -1269,8 +1268,7 @@
             (list before after (if (eq? (vector-ref state 0) 'changed) 'gate-ran (vector-ref state 0))))))))
 
   ;; The working directory is the process's: a path resolved again at a
-  ;; later submit would meet a chdir made between (ADR-0039, amended
-  ;; 2026-11-06).
+  ;; later submit would meet a chdir made between (ADR-0039).
   (test-equal "a relative path is resolved as the request is made: submitted from another directory, whose file of that name differs, the origin gets the first directory's file: the whole report"
     '(200 as-sent)
     (guard (e (#t (list 'raised (describe e))))
@@ -1285,7 +1283,7 @@
                      (list (part (list (disposition "f" "same.bin") "Content-Type: application/octet-stream")
                                  (string->utf8 "first")))))))))
 
-  ;; --- the engine's check (ADR-0039, amended 2026-11-06, decision 1) -----------------------
+  ;; --- the engine's check (ADR-0039) -------------------------------------------------------
   ;; The gate changes the path after the submit's stat and before the
   ;; engine's: a check skipped would send a directory as an empty part,
   ;; answered 200, and a path removed would fail at curl_mime_filedata with
@@ -1403,7 +1401,7 @@
                         (native-counts))))))
         (append cancelled stopped))))
 
-  ;; --- the high level (the M8 plan, section 3.1) ---------------------------------------------
+  ;; --- the high level ------------------------------------------------------------------------
   (let ((want (list (part (list (disposition "title" #f)) (string->utf8 "Holiday")) (a-bin-part "photo"))))
     (test-equal "the high level's multipart key: a post sends the parts, the session's Content-Type header dropped; through a 307 and a 308 each hop sends them again, whole; a 303 sends a get with no body; a group, http-parallel's two calls, sends each: each the whole report"
       (list '(200 as-sent) '(200 as-sent) '(200 as-sent)
@@ -1474,7 +1472,7 @@
   ;; one with no bound, each after fail=1's 503; and a group's 307 hop.
   ;; Each hop and each retry is made with no file system call, its body
   ;; kept as the last request held it, so each is refused alike, at its
-  ;; submit's stat (ADR-0023, after slice 3's review).
+  ;; submit's stat (ADR-0023).
   (let* ((lost (lambda (name start)
                  ;; START's call, its file NAME removed once KEY's first request is counted
                  (let* ((key (next-key name))
@@ -1533,7 +1531,7 @@
   (table-scenarios o)
   'done)
 
-;; --- the per-version table (ADR-0017; the M8 plan, section 3.8) -----------------------------
+;; --- the per-version table (ADR-0017) -------------------------------------------------------
 
 ;; after-answer : Any String String (Listof Part) -> List
 ;; A transfer's outcome as a cell: (response STATUS whole), the whole
@@ -1754,10 +1752,9 @@
 
 ;; rows : (Listof (Pair String (Listof (Pair Symbol Answer))))
 ;; Each libcurl's answer to every case, written out: the Linux libcurls'
-;; measured through the engine by M8 slice 3's build, two runs each, 8.5.0
-;; with OpenSSL and with GnuTLS alike; Apple's 8.7.1's from this suite's two
-;; runs on the Mac, 2026-11-07 (research/m8/slice3/mac/), which agreed with
-;; the mime-files probe's run there over HTTP/1.1, and with each other but
+;; measured through the engine, two runs each, 8.5.0 with OpenSSL and with
+;; GnuTLS alike; Apple's 8.7.1's from this suite's two runs on macOS, which
+;; agreed with a probe's run there over HTTP/1.1, and with each other but
 ;; for the reset inside a large part, the race every lane holds.
 ;; An answer is the cell's, (one-of ANSWER ...) for a cell that races.
 (define rows
@@ -1786,9 +1783,8 @@
      (after-removed-h1 . (failed perform-failed 26))
      (after-fifo-h1 . (response 200 whole held))
      ;; The test origin's answer to the overrun, by Node's version: 92 under
-     ;; Node 20.10.0 and 24.18.0, 56 under 22.23.4, CI's runner's, in PR
-     ;; #52's run and 6 of 6 runs of research/m8/slice3/ci/. 7.85.0's is 92
-     ;; under 20.10.0 and 22.23.4.
+     ;; Node 20.10.0 and 24.18.0, 56 under 22.23.4, CI's runner's, in 7 of 7
+     ;; CI runs. 7.85.0's is 92 under 20.10.0 and 22.23.4.
      (after-grown-h2 . (one-of (failed perform-failed 92) (failed perform-failed 56)))
      (after-shrunk-h2 . (failed perform-failed 92))
      (after-removed-h2 . (failed perform-failed 26))
@@ -1890,7 +1886,7 @@
      measured)))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))
@@ -1900,7 +1896,7 @@
   'done
   scenarios-outcome)
 
-;; --- an abandoned handle keeps its mime (the M8 plan, section 3.4) ---------------------------
+;; --- an abandoned handle keeps its mime ------------------------------------------------------
 
 ;; library-path : -> String
 (define (library-path)
@@ -1926,7 +1922,7 @@
         (list '(engine-error failed) zero-counts))
   (list (abandon-child "abandon") (abandon-child "free")))
 
-;; --- no secret printed (the M8 plan, section 3.4) ----------------------------------------------
+;; --- no secret printed -------------------------------------------------------------------------
 
 (define secret "s3cr3t-M8-p4rt")
 

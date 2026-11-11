@@ -1,12 +1,12 @@
 /* tests/stall-getaddrinfo.c: a stand-in getaddrinfo that stalls the names
- * ending in one suffix (ADR-0019, amended 2026-10-25; M3 plan, section 6).
+ * ending in one suffix (ADR-0019).
  *
  * tests/test-engine.sps compiles it at test time as a shared object, and
  * loads it with LD_PRELOAD into a child Chez, tests/engine-stall.sps, so a
  * name lookup stalls as it does when a DNS server never answers. The
  * container has no resolver to stall: its lookups fail at once. On every
  * Linux libcurl recorded, this stalled libcurl's resolver thread as a
- * silent DNS server did in spike E1, scaled to the stall.
+ * silent DNS server does, scaled to the stall.
  *
  * The environment, read once, as the object loads:
  *   STALL_SUFFIX  a lookup of a name ending in it stalls; unset, none does
@@ -22,8 +22,8 @@
  * real one by dlsym(RTLD_NEXT, ...). On macOS it interposes, through an
  * __interpose section that DYLD_INSERT_LIBRARIES loads, and calls the real
  * one by name: dyld does not interpose the interposing image's own calls.
- * Whether that reaches the resolver Apple's libcurl uses is the Mac's probe
- * to show; test-engine runs the stall checks on Linux alone. */
+ * Whether that reaches the resolver Apple's libcurl uses is for a probe on
+ * macOS to show; test-engine runs the stall checks on Linux alone. */
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <errno.h>

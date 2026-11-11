@@ -1,21 +1,19 @@
 #!r6rs
 ;;; The suite for (curl)'s two URL functions for a redirect's Location,
 ;;; curl-url-resolve with a bytevector reference and curl-url-with-fragment
-;;; (the M5 plan, sections 3.1 and 5; ADR-0029).
+;;; (ADR-0029).
 ;;;
-;;; Its cases are M5 slice 2's measurement's (.plans/research/m5/location/),
-;;; written once, in all-cases:
+;;; Its cases are a measurement probe's, written once, in all-cases:
 ;;;
 ;;;   - (resolve BASE REFERENCE): curl-url-resolve. Each Location value the
 ;;;     probe's server wrote, as libcurl's header API hands it over, trimmed,
 ;;;     as bytes, against the probe's base for it, its port written as 40001;
 ;;;     then against a base with credentials and one with a fragment, as the
 ;;;     probe ran them; a lone CR, which 8.5.0 hands over for an empty value;
-;;;     a Latin-1 host, refused as not-utf-8; é as a string, sent as
-;;;     UTF-8, beside the same Latin-1 byte as bytes; and the review's eight,
-;;;     a Latin-1 byte, a control byte or a space in an absolute URL, which a
-;;;     reference's bytes, encoded first, make alike on every libcurl
-;;;     (ADR-0029, amended);
+;;;     a Latin-1 host, refused as not-utf-8; é as a string, sent as UTF-8,
+;;;     beside the same Latin-1 byte as bytes; and eight more, a Latin-1 byte, a
+;;;     control byte or a space in an absolute URL, which a reference's bytes,
+;;;     encoded first, make alike on every libcurl (ADR-0029);
 ;;;   - (fragment URL FRAGMENT): curl-url-with-fragment. The probe's three
 ;;;     URLs, each with its twenty fragments as a header's bytes, and as the
 ;;;     strings their text makes, "" and no bytes among them; and #f.
@@ -113,12 +111,11 @@
 (define (value-of name) (cadr (assoc name location-values)))
 
 ;; review-values : (Listof (List String String))
-;; Values the slice's review added, which the probe's server never wrote:
-;; a Latin-1 byte in an absolute URL's path, query, user and fragment, and
-;; behind a network path and a query alone; a control byte and a space in
-;; an absolute URL. Resolved raw, the first four came back as bytes that
-;; are not UTF-8, refused, where a relative path's came back encoded
-;; (ADR-0029, amended).
+;; Values the probe's server never wrote: a Latin-1 byte in an absolute URL's
+;; path, query, user and fragment, and behind a network path and a query alone;
+;; a control byte and a space in an absolute URL. Resolved raw, the first four
+;; came back as bytes that are not UTF-8, refused, where a relative path's came
+;; back encoded (ADR-0029).
 (define review-values
   '(("abs-latin1-path" "http://h.example/caf\xE9;") ("abs-latin1-query" "http://h.example/?q=caf\xE9;")
     ("abs-latin1-user" "http://caf\xE9;:p@h.example/") ("abs-latin1-frag" "http://h.example/p#caf\xE9;")

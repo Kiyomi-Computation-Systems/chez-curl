@@ -1,17 +1,15 @@
 #!r6rs
 ;;; The suite for (curl private engine): one Chez thread that owns a multi
-;;; handle and runs the transfers other threads submit (ADR-0012; M3 plan,
-;;; sections 3 and 5.3). Each check was watched failing on a mutant before
-;;; it counted (.plans/engine-mutation-log.md).
+;;; handle and runs the transfers other threads submit (ADR-0012).
 ;;;
 ;;;   - concurrency: many transfers on one engine, their drips overlapping
 ;;;     in time, every chunk on the engine's thread; two caller threads
 ;;;     awaiting together, each returning on its own thread;
 ;;;   - a dead pooled connection: one drip after eight whose connections the
 ;;;     raw face closed unannounced, each libcurl's answer, by version, a
-;;;     row of reuse-verdicts (ADR-0020, amended 2026-10-26). Checks that
-;;;     run drips together each make an engine of their own, so the suite's
-;;;     engine never pools more than one dead connection;
+;;;     row of reuse-verdicts (ADR-0020). Checks that run drips together
+;;;     each make an engine of their own, so the suite's engine never pools
+;;;     more than one dead connection;
 ;;;   - submit: each refusal raised at submit, with nothing queued, nothing
 ;;;     started and the counts unchanged; a submit to a stopped engine;
 ;;;   - cancel, in each of its three states, and racing a completion;
@@ -34,10 +32,10 @@
 ;;;     the floor, which has neither, stalls, the recorded limit. And the
 ;;;     engine's judgement of CURLMOPT_QUICK_EXIT's answer, over its domain.
 ;;;
-;;; The plan's load check, a child whose first reference to the library is
+;;; A load check, a child whose first reference to the library is
 ;;; make-curl-engine, is not here: a top-level program invokes the
-;;; libraries it imports, and theirs, before its first line, so no engine's
-;;; thread can make a first reference, and that child passed with
+;;; libraries it imports, and theirs, before its first line, so no
+;;; engine's thread can make a first reference, and that child passed with
 ;;; make-curl-engine's early reference removed, 20 runs of 20.
 ;;;
 ;;; Importing (curl) runs the load before this suite's first line, on this
@@ -251,7 +249,7 @@
 ;; sh -c CHILD-SCRIPT sh COMMAND...: COMMAND, its stdin at its end, under
 ;; GNU timeout (gtimeout on macOS), killed with SIGKILL after BOUND
 ;; seconds, exit 137; exit 125 with neither found. The shell's own stderr
-;; is /dev/null, so dash's "Killed" is not the command's (traps.md).
+;; is /dev/null, so dash's "Killed" is not the command's.
 (define (child-script bound)
   (string-append
    "t=$(command -v timeout || command -v gtimeout) || { echo 'engine child: no timeout' >&2; exit 125; }\n"
@@ -328,7 +326,7 @@
   (outcome (lambda () (curl-request-with-fault (make-curl-request "http://127.0.0.1/")
                                                (lambda (chunk) chunk)))))
 
-;; --- the thread rule (ADR-0012, decision 3) ----------------------------------------------
+;; --- the thread rule (ADR-0012) ----------------------------------------------------------
 
 ;; wrong-thread : (-> Any) -> Any
 ;; THUNK's &curl-wrong-thread as (WHO EXPECTED ACTUAL), or what it did.
@@ -378,7 +376,7 @@
 ;; linux? : Boolean
 ;; Whether this Chez runs on Linux: its machine type ends in le, as ta6le
 ;; and tarm64le do. The stall checks need LD_PRELOAD, which macOS lacks
-;; (ADR-0019, amended 2026-10-25).
+;; (ADR-0019).
 (define linux?
   (let* ((m (symbol->string (machine-type))) (n (string-length m)))
     (and (> n 2) (string=? (substring m (- n 2) n) "le"))))
@@ -390,17 +388,16 @@
 (define stall-ms 3000)
 
 ;; stall-verdicts : (Listof (Pairof String (Listof Entry)))
-;; Each recorded libcurl's verdicts, by version, measured (ADR-0019,
-;; amended 2026-10-25). An Entry is (WITHOUT MULTI TRANSFER CANCEL OTHER
-;; CANCEL-STOP TIMEOUT TIMEOUT-STOP STOP): the QUICK_EXIT setting the
-;; child's engines leave out, none, transfer or multi; what
-;; tests/engine-stall.sps must then print of the cancel engine's
-;; CURLMOPT_QUICK_EXIT, set, unknown or off, and whether its transfers set
-;; QUICK_EXIT, all four of them or none; then the verdict, prompt or
-;; stalled, of the cancel, of the transfer beside it, of that engine's stop,
-;; of a 500 ms timeout, of that engine's stop, and of a stop during the
-;; lookup. A stop after an event that waited for the lookup comes after the
-;; lookup, and is prompt.
+;; Each recorded libcurl's verdicts, by version, measured (ADR-0019). An
+;; Entry is (WITHOUT MULTI TRANSFER CANCEL OTHER CANCEL-STOP TIMEOUT
+;; TIMEOUT-STOP STOP): the QUICK_EXIT setting the child's engines leave out,
+;; none, transfer or multi; what tests/engine-stall.sps must then print of
+;; the cancel engine's CURLMOPT_QUICK_EXIT, set, unknown or off, and whether
+;; its transfers set QUICK_EXIT, all four of them or none; then the verdict,
+;; prompt or stalled, of the cancel, of the transfer beside it, of that
+;; engine's stop, of a 500 ms timeout, of that engine's stop, and of a stop
+;; during the lookup. A stop after an event that waited for the lookup comes
+;; after the lookup, and is prompt.
 ;; With both settings kept, 7.87.0 on returns promptly, and the floor
 ;; stalls, the recorded limit. Each prompt row has a control that stalls:
 ;; 8.5.0 without each transfer's QUICK_EXIT; 8.20.0's three stops without
@@ -423,13 +420,12 @@
 ;; Each recorded libcurl's answer, by version, as reuse-outcome names it, to
 ;; one drip submitted the moment eight drips live together have ended, on
 ;; an engine of its own, the raw face having closed each of their
-;; connections without saying so (ADR-0020, amended 2026-10-26). 7.85.0 to
-;; 8.20.0, Apple's 8.7.1 among them (printed on the maintainer's Mac,
-;; 2026-10-26), check an idle connection before reusing it, and drop the
-;; dead ones. 8.23.0 checks one only when it went back to the pool, or was last
-;; checked, 1 s or more before, however old it is: it reuses a dead one,
-;; retries on the next as each dies, and after five retries gives up with
-;; CURLE_SEND_ERROR, its error buffer saying so.
+;; connections without saying so (ADR-0020). 7.85.0 to 8.20.0, Apple's 8.7.1
+;; among them (printed on macOS), check an idle connection before reusing it,
+;; and drop the dead ones. 8.23.0 checks one only when it went back to the
+;; pool, or was last checked, 1 s or more before, however old it is: it
+;; reuses a dead one, retries on the next as each dies, and after five
+;; retries gives up with CURLE_SEND_ERROR, its error buffer saying so.
 (define reuse-verdicts
   '(("7.85.0" (response 200 "abcd"))
     ("8.5.0" (response 200 "abcd"))
@@ -544,7 +540,7 @@
       (stop-within e)
       (list 'running verdict))))
 
-;; The refusal no libcurl gives (ADR-0019, decision 2): every recorded one
+;; The refusal no libcurl gives (ADR-0019): every recorded one
 ;; answers CURLMOPT_QUICK_EXIT with CURLM_OK or CURLM_UNKNOWN_OPTION.
 (test-equal "an answer to CURLMOPT_QUICK_EXIT but CURLM_OK or CURLM_UNKNOWN_OPTION refuses the engine: make-curl-engine raises &curl-engine-error, reason failed, carrying curl_multi_setopt's code, for CURLM_BAD_HANDLE, 1, and CURLM_BAD_FUNCTION_ARGUMENT, 10, its multi handle and slot freed; given 0 or 6 it runs, set or unknown"
   (list '(engine-error failed "curl_multi_setopt answered a CURLMcode" 1)
@@ -644,7 +640,7 @@
                       (for-all (lambda (r) (eq? (caddr r) mine)) results))
                 (list 'unanswered-within-45-s (with-mutex mx (map cadr results)))))))))
 
-   ;; --- a dead pooled connection (ADR-0020, amended 2026-10-26) ------------------------------
+   ;; --- a dead pooled connection (ADR-0020) --------------------------------------------------
 
    ;; The raw face closes after each script and never says so, so each
    ;; drip's connection goes back to the pool dead. Eight drips live
@@ -653,9 +649,8 @@
    ;; its row of reuse-verdicts, and one with no row prints the row it would
    ;; need. On an engine of its own, whose pool starts empty. The drips last
    ;; about 200 ms, so they overlap unless their submits spread past that:
-   ;; then they would share connections, and leave fewer dead (the review's
-   ;; measurements, .plans/research/reuse/results). The check asserts that
-   ;; all eight were live together, by the engine's live count.
+   ;; then they would share connections, and leave fewer dead. The check
+   ;; asserts that all eight were live together, by the engine's live count.
    (let ((row (and (string? version) (assoc version reuse-verdicts)))
          (measured
           (on-own-engine
@@ -825,7 +820,7 @@
          (list answer (if (< cancel-ms 300) 'within-bound cancel-ms)
                (if (< stop-ms 300) 'within-bound stop-ms)))))
 
-   ;; --- a raise inside the loop (section 3.7) ---------------------------------------------
+   ;; --- a raise inside the loop -----------------------------------------------------------
 
    ;; Each step: what reaches it, the token's outcome, the engine's state, a
    ;; later submit's, a stop's time, and the counts.
@@ -839,9 +834,9 @@
               'at-once 0 #f running-counts)
         (let* ((faulty (make-faulty-curl-engine step))
                (t (curl-submit faulty (cond ((memq step '(cancel poll)) (request (drip 100 10)))
-                                            ;; The resume step is reached by a streamed
-                                            ;; response, paused, and a take that drains
-                                            ;; it (the M6 plan, section 3.4).
+                                            ;; The resume step is reached by a
+                                            ;; streamed response, paused, and a
+                                            ;; take that drains it.
                                             ((eq? step 'resume)
                                              (curl-request-with (request (drip 100 10)) 'stream-buffer 1))
                                             (else (request status))))))
@@ -858,9 +853,9 @@
             (curl-token-next-piece t 5000))
           ;; The first stop waits for the engine's thread to end its
           ;; cleanup; the second must return at once. A collection that
-          ;; lands in the second's window takes about 140 ms under Valgrind
-          ;; (measured in M5 slice 1, .plans/traps.md), so the window opens
-          ;; just after one, with none due.
+          ;; lands in the second's window takes about 140 ms under
+          ;; Valgrind, so the window opens just after one, with none
+          ;; due.
           (let* ((answer (awaited-within t 10000))
                  (later (outcome (lambda () (curl-submit faulty (request status)))))
                  (state (begin (stop-within faulty) (curl-engine-state faulty)))
@@ -935,11 +930,11 @@
 
    ;; --- the children ------------------------------------------------------------------------
 
-   ;; The collection bound (section 3.2; ADR-0013, amended 2026-10-25): a
-   ;; worker's 20 collections, back to back, beside an idle engine, and
-   ;; beside a caller awaiting a slow transfer. A plain poll would hold each
-   ;; up to about 500 polls of 1000 ms, and a wait that sleeps in a critical
-   ;; section would hold it for good: so 20 must end within 500 ms.
+   ;; The collection bound (ADR-0013): a worker's 20 collections, back to
+   ;; back, beside an idle engine, and beside a caller awaiting a slow
+   ;; transfer. A plain poll would hold each up to about 500 polls of 1000
+   ;; ms, and a wait that sleeps in a critical section would hold it for
+   ;; good: so 20 must end within 500 ms.
    (for-each
     (lambda (mode)
       (test-equal (string-append "beside " (if (eq? mode 'idle) "an idle engine" "a caller awaiting a 1 s drip")
@@ -956,9 +951,8 @@
               r))))
     '(idle await))
 
-   ;; Several awaiters at once, while collections run (ADR-0013, amended
-   ;; 2026-10-25): a wait that held the engine's mutex deadlocked here within
-   ;; 1 s, 3 runs of 3.
+   ;; Several awaiters at once, while collections run (ADR-0013): a wait that
+   ;; held the engine's mutex deadlocked here within 1 s, 3 runs of 3.
    (test-equal "four caller threads, each submitting and awaiting /status/200 for 2 s while their allocation collects, have hundreds of 200s, with collections among them, and end, in a child bounded at 60 s, whose counts are zero"
      (list 0 '(awaiters 4 hundreds collecting) (list 'counts zero-counts) "")
      (let ((r (run-child 60 "tests/engine-awaiters.sps" "together" "4" "2000" status)))
@@ -972,11 +966,11 @@
                    (cadr (cadr r)) (caddr r)))
            r)))
 
-   ;; The polling's cap (ADR-0013, amended 2026-10-25): a waiter wakes
-   ;; within its current sleep, 10 ms at most, of its token's completion. A
-   ;; watcher polling every 1 ms sees each completion; the await's return
-   ;; must follow it within 30 ms, on five drips of 500 ms, each long
-   ;; enough for the sleeps to reach their cap.
+   ;; The polling's cap (ADR-0013): a waiter wakes within its current sleep,
+   ;; 10 ms at most, of its token's completion. A watcher polling every 1 ms
+   ;; sees each completion; the await's return must follow it within 30 ms,
+   ;; on five drips of 500 ms, each long enough for the sleeps to reach
+   ;; their cap.
    (test-equal "five 500 ms drips awaited through curl-token-await each return within 30 ms of a watcher seeing them done: the polling's sleeps reach 10 ms and no more; in a child bounded at 60 s, its counts zero"
      (list 0 '(wake 5 within-cap) (list 'counts zero-counts) "")
      (let ((r (run-child 60 "tests/engine-awaiters.sps" "wake" "5" "0" (drip 5 100))))
@@ -1032,11 +1026,11 @@
                    (cadr (cadr r)) (caddr r)))
            r)))
 
-   ;; A stalled name lookup (ADR-0019, amended 2026-10-25): the stand-in,
-   ;; compiled here, then tests/engine-stall.sps under it for each entry of
-   ;; this libcurl's row of stall-verdicts. A libcurl with no row runs all
-   ;; three, fails by name, and prints the row it would need. On macOS,
-   ;; which has no LD_PRELOAD, nothing runs, and the suite says so.
+   ;; A stalled name lookup (ADR-0019): the stand-in, compiled here, then
+   ;; tests/engine-stall.sps under it for each entry of this libcurl's row
+   ;; of stall-verdicts. A libcurl with no row runs all three, fails by
+   ;; name, and prints the row it would need. On macOS, which has no
+   ;; LD_PRELOAD, nothing runs, and the suite says so.
    (if (not linux?)
        (begin
          (display "test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)")
@@ -1075,10 +1069,10 @@
                     (write (cons version measured) (current-error-port))
                     (newline (current-error-port)))))))))
 
-   ;; Ctrl-C (section 3.4): the child's main thread awaits a 2 s drip, and
-   ;; gets SIGINT 500 ms after it says it is ready. Its handler must run
-   ;; within one wait of the signal, long before the drip ends: a wait that
-   ;; answers Ctrl-C only when it ends runs it at about 2000 ms.
+   ;; Ctrl-C: the child's main thread awaits a 2 s drip, and gets SIGINT 500
+   ;; ms after it says it is ready. Its handler must run within one wait of
+   ;; the signal, long before the drip ends: a wait that answers Ctrl-C only
+   ;; when it ends runs it at about 2000 ms.
    (test-equal "a caller awaiting a 2 s drip answers SIGINT, sent about 500 ms in, by 1000 ms, its await then answers the drip, and its counts are zero"
      (list 0 '(interrupt within-bound (response 200)) (list 'counts zero-counts) "")
      (let ((r (run-interrupt-child (drip 20 100))))

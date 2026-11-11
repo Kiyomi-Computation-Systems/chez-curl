@@ -1,7 +1,6 @@
 #!r6rs
 ;;; The suite for (curl private url): URLs parsed, resolved and checked by
-;;; libcurl's own URL API (ADR-0008, amended 2026-10-19; M2 plan, section
-;;; 4.4).
+;;; libcurl's own URL API (ADR-0008).
 ;;;
 ;;; Its cases are ADR-0008's 16, against the base A, http://example.com/a/b/c?q=1,
 ;;; RFC 3986 section 5.4's 42 resolution examples, against the base R,
@@ -140,12 +139,11 @@
 ;; shared-answers : (Listof (List Case Answer))
 ;; The 60 cases every recorded libcurl answers alike: of ADR-0008's and the
 ;; RFC's, 51, on 7.85.0, 7.88.1, 8.5.0 (OpenSSL and GnuTLS) and 8.20.0
-;; (ADR-0008, amended 2026-10-19); of the non-ASCII ones, 9, on 7.85.0,
-;; 8.5.0 (both) and 8.20.0 (measured 2026-10-23). The RFC's examples give
-;; the RFC's answer, but //g, which every version writes http://g/, and the
-;; four the rows hold. Each non-ASCII answer holds its bytes raw, the host's
-;; ü included, with and without IDN, and € (measured 2026-10-23, fix round
-;; 2).
+;; (ADR-0008); of the non-ASCII ones, 9, on 7.85.0, 8.5.0 (both) and
+;; 8.20.0. The RFC's examples give the RFC's answer, but //g, which every
+;; version writes http://g/, and the four the rows hold. Each non-ASCII
+;; answer holds its bytes raw, the host's ü included, with and without IDN,
+;; and €.
 (define shared-answers
   (append
    `(((resolve ,base-a "../d?x=2") "http://example.com/a/d?x=2")
@@ -504,7 +502,7 @@
   `(bad-scheme 27 "example.com/x" a-message)
   (refusal (lambda () (url-resolve "example.com/x" "/root"))))
 
-;; --- the scheme check (ADR-0008, decision 2) -------------------------------------------------
+;; --- the scheme check (ADR-0008) -------------------------------------------------------------
 
 ;; scheme-check : String -> Any
 ;; STRING parsed, then held to http or https: accepted, or what was raised;
@@ -708,9 +706,8 @@
               ;; leaving the URL in either state. A sleep of no time there
               ;; could hand this thread the lock straight back: in 1 of 3
               ;; runs the flipper never ran, 0 of 1000 refused, where 1 ms
-              ;; gave 490 to 500 in each of 6 (M5 slice 1,
-              ;; .plans/research/m5/valgrind-yield/). Natively the flipper
-              ;; races each call from another core.
+              ;; gave 490 to 500 in each of 6. Natively the flipper races
+              ;; each call from another core.
               (let ((o (let ((a (begin (when (= (mod i 10) 0) (pause))
                                        (answer (list 'normalize s)))))
                          (cond ((equal? a '(refused-by-chez-curl embedded-nul)) 'refused)

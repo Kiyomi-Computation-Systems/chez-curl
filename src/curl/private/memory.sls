@@ -1,7 +1,6 @@
 #!r6rs
-;;; (curl private memory): counted foreign blocks (M2 plan, sections 3.2 and
-;;; 4.2). The only library check-seam lets import foreign-alloc and
-;;; foreign-free (ADR-0007).
+;;; (curl private memory): counted foreign blocks. The only library
+;;; check-seam lets import foreign-alloc and foreign-free (ADR-0007).
 ;;;
 ;;; A block is malloc'd memory, where Valgrind sees an overrun or a leak.
 ;;; Each one is counted as a block in (curl private counters) while it
@@ -13,7 +12,7 @@
 ;;; critical section, and so do its removal, free and count down: an
 ;;; interrupt that escapes, an engine's expiry say, cannot fall between them
 ;;; and leave a block no table and no count sees, nor leave the table's
-;;; mutex held (M2 fix round 2).
+;;; mutex held.
 ;;;
 ;;; It never loads libcurl.
 (library (curl private memory)

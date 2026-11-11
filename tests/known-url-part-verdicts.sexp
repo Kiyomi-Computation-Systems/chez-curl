@@ -1,8 +1,8 @@
-;; curl's answers to tests/test-url-parts' cases that vary by version (ADR-0028;
-;; the M5 plan, section 4.1). tests/test-url-parts.sps holds the answer every
-;; recorded libcurl agrees on for each other case. These are the cases on
-;; which they do not agree: one row per libcurl version a lane runs, each with
-;; that version's answer to every one of them.
+;; curl's answers to tests/test-url-parts' cases that vary by version
+;; (ADR-0028). tests/test-url-parts.sps holds the answer every recorded libcurl
+;; agrees on for each other case. These are the cases on which they do not
+;; agree: one row per libcurl version a lane runs, each with that version's
+;; answer to every one of them.
 ;;
 ;; A libcurl whose version has no row fails make test, wherever it runs, and
 ;; test-url-parts prints the row it would need on the error port, naming this

@@ -2,7 +2,7 @@
 ;;; tests/transfer-proxy.sps: one GET on an engine of its own, run in a
 ;;; child Chez of tests/test-transfer.sps, which sets http_proxy or
 ;;; all_proxy for the child alone, through its command, and clears no_proxy
-;;; and NO_PROXY there, never in its own environment (ADR-0024, decision 1).
+;;; and NO_PROXY there, never in its own environment (ADR-0024).
 ;;;
 ;;;   transfer-proxy.sps URL PROXY
 ;;;

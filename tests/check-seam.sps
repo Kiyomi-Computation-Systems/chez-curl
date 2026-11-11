@@ -6,7 +6,7 @@
 ;;;
 ;;;   (a) a (curl ...) library imports an (http-client ...) library;
 ;;;   (b) an (http-client ...) library imports a (curl ...) library that is not
-;;;       public. The public ones are public-curl: at first, (curl) alone;
+;;;       public. The public ones are public-curl: (curl) alone;
 ;;;   (c) a library imports (chezscheme) other than as (only (chezscheme)
 ;;;       name ...), or names in that list one that is not in
 ;;;       allowed-chez-names, or imports (rnrs eval). Those reach a library by
@@ -22,22 +22,22 @@
 ;;;       a library by a route this check does not read;
 ;;;   (f) a library imports, from (chezscheme), a name that only some libraries
 ;;;       may import, and is not one of them. library-only-chez-names holds
-;;;       each such name with the libraries that alone may import it. At first
-;;;       that was define-ftype, for (curl private layouts) alone; M2 adds
-;;;       foreign-alloc and foreign-free, for (curl private memory) alone,
-;;;       foreign-procedure and load-shared-object, for (curl private native)
-;;;       alone, and foreign-callable, foreign-callable-entry-point and
-;;;       lock-object, for (curl private transfer) alone. A function
-;;;       ftype, (define-ftype F (function (int) int)), binds a C entry point or
-;;;       makes a callable without foreign-procedure or foreign-callable, so it
-;;;       would dodge the conventions table (tests/foreign-conventions.sls) and
-;;;       the load's foreign-entry? check. define-ftype is the only way to one:
-;;;       an anonymous (function ...) in make-ftype-pointer or ftype-ref is
-;;;       invalid syntax, so those two need no rule. tests/test-constants.sps
-;;;       holds (curl private layouts) to define-ftype forms of structs of
-;;;       primitive-typed fields alone, exporting just their names, and
-;;;       requires this rule's entry to name that library alone, so no
-;;;       function ftype, and no macro that makes one, exists under src/;
+;;;       each such name with the libraries that alone may import it. Among them
+;;;       are define-ftype, for (curl private layouts) alone; foreign-alloc and
+;;;       foreign-free, for (curl private memory) alone, foreign-procedure and
+;;;       load-shared-object, for (curl private native) alone, and
+;;;       foreign-callable, foreign-callable-entry-point and lock-object, for
+;;;       (curl private transfer) alone. A function ftype, (define-ftype F
+;;;       (function (int) int)), binds a C entry point or makes a callable
+;;;       without foreign-procedure or foreign-callable, so it would dodge the
+;;;       conventions table (tests/foreign-conventions.sls) and the load's
+;;;       foreign-entry? check. define-ftype is the only way to one: an
+;;;       anonymous (function ...) in make-ftype-pointer or ftype-ref is invalid
+;;;       syntax, so those two need no rule. tests/test-constants.sps holds
+;;;       (curl private layouts) to define-ftype forms of structs of
+;;;       primitive-typed fields alone, exporting just their names, and requires
+;;;       this rule's entry to name that library alone, so no function ftype,
+;;;       and no macro that makes one, exists under src/;
 ;;;   (g) a library exports a name it imports from (chezscheme), as an
 ;;;       identifier or as the internal name of a (rename (internal
 ;;;       external)) spec. Otherwise a library rule (f) lets import a name
@@ -67,12 +67,12 @@
 ;;;       under the directory could satisfy rule (h) while another directory
 ;;;       supplied the library Chez loads.
 ;;;   (j) a (curl ...) library imports (curl unsupported), the hatch
-;;;       (ADR-0009, decision 1; the M4 plan, section 3.8). Rule (b) keeps it
-;;;       from every (http-client ...) library, and this rule from every
-;;;       (curl ...) one. It closes that route alone: the hatch's procedure
-;;;       is (curl private transfer)'s export too, which any (curl ...)
-;;;       library may import, so tests/test-unsupported.sps holds (curl)'s
-;;;       exports by what each is bound to.
+;;;       (ADR-0009). Rule (b) keeps it from every (http-client ...) library,
+;;;       and this rule from every (curl ...) one. It closes that route
+;;;       alone: the hatch's procedure is (curl private transfer)'s export
+;;;       too, which any (curl ...) library may import, so
+;;;       tests/test-unsupported.sps holds (curl)'s exports by what each is
+;;;       bound to.
 ;;;
 ;;; The lists are allowlists: a name or a library that is not on one fails,
 ;;; so a route nobody thought of is closed until a reviewer opens it.
@@ -146,21 +146,19 @@
 ;; the list to equal the names src/ imports, so an unused name cannot stay.
 ;; critical-section, and dynamic-wind for its critical? argument, keep an
 ;; interrupt that escapes from falling between a native object's making and
-;; its record, or its free and its record (M2 fix round 2): they run no code
-;; built at run time, and reach no library. current-time, time-second and
-;; time-nanosecond read the monotonic clock, for a bounded wait's deadline
-;; (M4 slice 2), and run no code either. foreign-entry answers an entry
-;; point's address, which native finds in /proc/self/maps to read the
-;; loaded libcurl's file (M4 slice 3): it calls nothing. ftype-sizeof and
-;; ftype-set! size and fill the struct curl_blob a blob option takes (M4
-;; slice 4): they write a field of a block, and run no code.
+;; its record, or its free and its record: they run no code built at run
+;; time, and reach no library. current-time, time-second and time-nanosecond
+;; read the monotonic clock, for a bounded wait's deadline, and run no code
+;; either. foreign-entry answers an entry point's address, which native
+;; finds in /proc/self/maps to read the loaded libcurl's file: it calls
+;; nothing. ftype-sizeof and ftype-set! size and fill the struct curl_blob a
+;; blob option takes: they write a field of a block, and run no code.
 ;; make-pseudo-random-generator and pseudo-random-generator-next! make and
-;; draw from a session's jitter generator (M5 slice 3): they run no code
-;; and reach no library, and Chez's random, which draws the same sequence
-;; in every process, stays out (the M5 plan, section 3.5).
-;; current-directory reads the working directory, against which a
-;; multipart body's relative path is resolved as the request is made (M8
-;; slice 3; ADR-0039, amended 2026-11-07): read alone, it runs no code.
+;; draw from a session's jitter generator: they run no code and reach no
+;; library, and Chez's random, which draws the same sequence in every
+;; process, stays out. current-directory reads the working directory,
+;; against which a multipart body's relative path is resolved as the request
+;; is made (ADR-0039): read alone, it runs no code.
 (define allowed-chez-names
   '(critical-section current-directory current-time define-ftype disable-interrupts display-condition
     dynamic-wind enable-interrupts file-regular? foreign-alloc foreign-callable
@@ -178,44 +176,40 @@
 ;; does fails.
 ;; define-ftype is the only way to a function ftype (see the header), so only
 ;; (curl private layouts), whose define-ftypes tests/test-constants.sps holds
-;; to structs, may import it. foreign-alloc and foreign-free belong to
-;; (curl private memory), whose blocks are counted (M2 plan, section 3.6):
-;; a block allocated anywhere else is one the counters cannot see.
-;; foreign-procedure belongs to (curl private native), the only library that
-;; calls into libcurl, and the one whose load checks each entry point with
-;; foreign-entry? before binding it; and so does foreign-entry, an entry
-;; point's address, so no other library reads where libcurl's code lives;
-;; and so does load-shared-object, so no
-;; other library can load a second libcurl, or anything else, into the
-;; process (ADR-0002, decision 3); and so does ftype-set!, which writes
-;; into foreign memory: native fills each struct curl_blob, in a counted
-;; block it frees (the M4 plan, section 3.8). foreign-callable,
+;; to structs, may import it. foreign-alloc and foreign-free belong to (curl
+;; private memory), whose blocks are counted: a block allocated anywhere else
+;; is one the counters cannot see. foreign-procedure belongs to (curl private
+;; native), the only library that calls into libcurl, and the one whose load
+;; checks each entry point with foreign-entry? before binding it; and so does
+;; foreign-entry, an entry point's address, so no other library reads where
+;; libcurl's code lives; and so does load-shared-object, so no other library
+;; can load a second libcurl, or anything else, into the process (ADR-0002);
+;; and so does ftype-set!, which writes into foreign memory: native fills each
+;; struct curl_blob, in a counted block it frees. foreign-callable,
 ;; foreign-callable-entry-point and lock-object belong to (curl private
-;; transfer), whose callables, write-body and, from M6, read-head, are each
-;; locked where it is defined and held to its row in
-;; tests/foreign-conventions.sls (M2 plan, sections 3.5 and 3.6): a callable
-;; made anywhere else is one no lock and no row covers. fork-thread belongs to (curl private engine), whose one thread
-;; runs every transfer submitted to it (M3 plan, section 3.9): a thread
-;; started anywhere else is one no engine owns. So do disable-interrupts
-;; and enable-interrupts, which the engine uses only to ask whether a wait
-;; may start: interrupts held off elsewhere could hide every Ctrl-C and
-;; collection request. make-pseudo-random-generator and
+;; transfer), whose callables, write-body, read-head, read-body, seek-body and
+;; prereq-body, are each locked where it is defined and held to its row in
+;; tests/foreign-conventions.sls: a callable made anywhere else is one no lock
+;; and no row covers. fork-thread
+;; belongs to (curl private engine), whose one thread runs every transfer
+;; submitted to it: a thread started anywhere else is one no engine owns. So
+;; do disable-interrupts and enable-interrupts, which the engine uses only to
+;; ask whether a wait may start: interrupts held off elsewhere could hide
+;; every Ctrl-C and collection request. make-pseudo-random-generator and
 ;; pseudo-random-generator-next! belong to (http-client private call), the
 ;; high level's library that holds the session: each session's generator is
-;; made there and drawn from there alone, under the session's mutex (the M5
-;; plan, sections 3.5 and 3.8). current-directory belongs to (curl private
-;; transfer), where a multipart body's path is resolved, once, as the
-;; request is made: a library that read it elsewhere could resolve a path
-;; again, against a directory a later chdir moved (ADR-0039, amended
-;; 2026-11-07). No library imports
-;; mutex-acquire, mutex-release, make-condition, condition-wait or
-;; condition-broadcast at all: every hold of a mutex is locked's, short and
-;; with interrupts off, and a wait polls, sleeping between holds, since a
-;; wait that held a mutex deadlocked with a collection (ADR-0013, amended
-;; 2026-10-25). Adding a name or a library is a reviewed
-;; change to the seam (ADR-0007). tests/test-check-seam.sps requires each name
-;; to be in allowed-chez-names, and each entry's libraries to be exactly the
-;; libraries under src/ that import the name, so no permission stays unused.
+;; made there and drawn from there alone, under the session's mutex.
+;; current-directory belongs to (curl private transfer), where a multipart
+;; body's path is resolved, once, as the request is made: a library that read
+;; it elsewhere could resolve a path again, against a directory a later chdir
+;; moved (ADR-0039). No library imports mutex-acquire, mutex-release,
+;; make-condition, condition-wait or condition-broadcast at all: every hold of
+;; a mutex is locked's, short and with interrupts off, and a wait polls,
+;; sleeping between holds, since a wait that held a mutex deadlocked with a
+;; collection (ADR-0013). Adding a name or a library is a reviewed change to
+;; the seam (ADR-0007). tests/test-check-seam.sps requires each name to be in
+;; allowed-chez-names, and each entry's libraries to be exactly the libraries
+;; under src/ that import the name, so no permission stays unused.
 (define library-only-chez-names
   '((define-ftype (curl private layouts))
     (foreign-alloc (curl private memory))

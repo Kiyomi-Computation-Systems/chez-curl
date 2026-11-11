@@ -1,8 +1,7 @@
 #!r6rs
-;;; The suite for the cookie jar (ADR-0035, amended twice; the M7 plan,
-;;; sections 3.1, 3.5, 3.6, 3.7 and 6.4), at both levels, against the test
-;;; origin's cookie route, whose log is the record of every Cookie header a
-;;; request carried, never a status:
+;;; The suite for the cookie jar (ADR-0035), at both levels, against the
+;;; test origin's cookie route, whose log is the record of every Cookie
+;;; header a request carried, never a status:
 ;;;
 ;;;   - the settings, as data: jar-settings and share-settings written out
 ;;;     whole, and the cookie-jar field's options;
@@ -25,7 +24,7 @@
 ;;;   - the high level: a session's cookies, across hosts and a redirect's
 ;;;     hops, read out and loaded, refused beside a Cookie or Host header,
 ;;;     its jar freed with it;
-;;;   - what varies by version (the M7 plan, section 3.7; ADR-0017's rule):
+;;;   - what varies by version (ADR-0017's rule):
 ;;;     the read-out lines the load refuses, a loaded line whose expiry has
 ;;;     passed, 7.85.0's head left open by what it writes before its Cookie
 ;;;     line, a long URL or a long User-Agent, Domain=localhost
@@ -240,9 +239,9 @@
 ;; MEASURE's answer: the row's value and the measurement; with no row,
 ;; (a-row-for KEY), which no measurement gives, and (no-row-for KEY
 ;; measured M), so the failure names the libcurl and prints the row it
-;; lacks (ADR-0017; AGENTS.md's by-version trap). TAG names the table, on
-;; stdout with the key and the measurement, as evidence of what ran, and
-;; on the error port with the row a libcurl with none would need.
+;; lacks (ADR-0017). TAG names the table, on stdout with the key and the
+;; measurement, as evidence of what ran, and on the error port with the
+;; row a libcurl with none would need.
 (define (by-version rows tag key measure)
   (let ((row (assoc key rows))
         (measured (guard (e (#t (list 'raised (describe e)))) (measure))))
@@ -260,8 +259,8 @@
 ;; spawn : (-> Any) -> (-> (U (List 'answered Any) #f))
 ;; THUNK on a thread of its own, its answer, or what it raised as
 ;; (raised D), kept under a mutex; and a reader of it, #f until it is
-;; there. Whatever the thread raises is its answer, so no thread dies with
-;; a waiter left (AGENTS.md).
+;; there. Whatever the thread raises is its answer, so no thread dies
+;; with a waiter left.
 (define (spawn thunk)
   (let ((box (vector #f)) (lock (make-mutex)))
     (fork-thread
@@ -280,7 +279,7 @@
 (define (joined reader ms)
   (or (wait-for reader ms) (list 'not-answered ms)))
 
-;; --- the settings, as data (ADR-0035, decisions 1 and 2) ---------------------------------
+;; --- the settings, as data (ADR-0035) ----------------------------------------------------
 
 (test-equal "jar-settings, written out whole: SHARE at the jar's share, then COOKIEFILE at \"\"; and none for no jar"
   '((("SHARE" . 4660) ("COOKIEFILE" . "")) ())
@@ -294,7 +293,7 @@
   '(cookie-jar "SHARE" "COOKIEFILE")
   (assq 'cookie-jar request-field-options))
 
-;; --- the load's rule (ADR-0035, amended 2026-11-04, decisions 7 and 8) --------------------
+;; --- the load's rule (ADR-0035) -----------------------------------------------------------
 
 ;; The base line: every field a non-default value, which the rule takes.
 (define base-fields '("#HttpOnly_.b.a.localhost" "TRUE" "/p/q" "TRUE" "1893456000" "nm" "v1"))
@@ -608,7 +607,7 @@
           (condition-irritants (raised (lambda () (cookie-line-bytes 'w line))))
           (condition-irritants (raised (lambda () (cookie-line-bytes 'w (list line 'x))))))))
 
-;; --- the key (ADR-0035; the M7 plan, section 3.1) -------------------------------------
+;; --- the key (ADR-0035) ---------------------------------------------------------------
 
 ;; The suite's own engine and jar, for the checks that need a jar alone.
 (define key-engine (guard (e (#t (list 'raised (describe e)))) (make-curl-engine)))
@@ -918,12 +917,11 @@
 ;; refused-readout-rows: the read-out lines a load refuses, by version:
 ;; a server's Path=, Path=TRUE, Path=FALSE and Path=rel, and a tab in a
 ;; name or a value. 7.85.0 and 8.5.0 list the paths as given; 7.85.0
-;; lists a tab as an eighth field (the slice's measurement, table 5x).
-;; And a server's prefixed cookies in a case not the prefix's own, none
-;; Secure, a __host- one with a path and a __HOST- one with a domain:
-;; listed on 7.85.0, 8.20.0 and 8.23.0, dropped at the Set-Cookie on
-;; 8.5.0; and a tab in a server's Path, eight fields on 7.85.0, dropped
-;; elsewhere (the slice's review; ADR-0035, decision 10).
+;; lists a tab as an eighth field. And a server's prefixed cookies in a
+;; case not the prefix's own, none Secure, a __host- one with a path and
+;; a __HOST- one with a domain: listed on 7.85.0, 8.20.0 and 8.23.0,
+;; dropped at the Set-Cookie on 8.5.0; and a tab in a server's Path,
+;; eight fields on 7.85.0, dropped elsewhere (ADR-0035).
 (define refused-readout-rows
   '(("8.20.0" . (("path-empty" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("value-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-secure-lower" (("a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__secure-a=1\"") ("prefix-SECURE-upper" (("a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__SECURE-b=1\"") ("prefix-host-path" (("a.localhost\tFALSE\t/cookies\tFALSE\t0\t__host-c\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__host-c=1\"") ("prefix-HOST-domain" ((".a.localhost\tTRUE\t/\tFALSE\t0\t__HOST-d\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__HOST-d=1\"") ("path-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0")))
     ("8.23.0" . (("path-empty" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("value-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-secure-lower" (("a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__secure-a=1\"") ("prefix-SECURE-upper" (("a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__SECURE-b=1\"") ("prefix-host-path" (("a.localhost\tFALSE\t/cookies\tFALSE\t0\t__host-c\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__host-c=1\"") ("prefix-HOST-domain" ((".a.localhost\tTRUE\t/\tFALSE\t0\t__HOST-d\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__HOST-d=1\"") ("path-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0")))
@@ -934,7 +932,7 @@
 
 ;; expired-rows: a loaded line whose expiry, 1, has passed: listed until
 ;; the next cookie is added on 7.85.0 and 8.5.0, dropped at once on
-;; 8.20.0 and 8.23.0 (ADR-0035, decision 7).
+;; 8.20.0 and 8.23.0 (ADR-0035).
 (define expired-rows
   '(("8.20.0" . (() ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1")))
     ("8.23.0" . (() ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1")))
@@ -950,8 +948,7 @@
 ;; Authorization and User-Agent among it. Past the cap it writes Cookie:
 ;; and no line's end, the head never ends, and the transfer waits for its
 ;; bound, 28, the origin logging the head left open; the rest send it
-;; whole, 200 (ADR-0035, amended twice, from verify/cap-url.c and the
-;; slice's review).
+;; whole, 200 (ADR-0035).
 (define open-head-rows
   '(("8.20.0" . (200 200 (a-request a-request) 200 200 (a-request a-request)))
     ("8.23.0" . (200 200 (a-request a-request) 200 200 (a-request a-request)))
@@ -962,7 +959,7 @@
 
 ;; domain-localhost-rows: Domain=localhost set at a.localhost, kept on a
 ;; libcurl without PSL and dropped on one with it; and set at localhost
-;; itself, host-only on 8.5.0 (the M7 plan, section 3.7).
+;; itself, host-only on 8.5.0.
 (define domain-localhost-rows
   '(("8.20.0/psl" . ((() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0")))
     ("8.23.0/no-psl" . ((((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0")))
@@ -978,7 +975,7 @@
 ;; days, held from 8.20.0; Max-Age=-1, dropped from 8.20.0, kept as a
 ;; session cookie on 7.85.0, listed with expiry 1 and not sent on 8.5.0;
 ;; and a cookie deleted by Max-Age=0, still listed with expiry 1 on
-;; 7.85.0 and 8.5.0 until the next request (the M7 plan, section 3.7).
+;; 7.85.0 and 8.5.0 until the next request.
 (define matrix-rows
   '(("8.20.0" . (((("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t/\tFALSE\t0\tpr\t1" #f) ("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tpe\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1\"") ((("a.localhost\tFALSE\t/\tFALSE\twithin-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") (() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1"))))
     ("8.23.0" . (((("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t/\tFALSE\t0\tpr\t1" #f) ("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tpe\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1\"") ((("a.localhost\tFALSE\t/\tFALSE\twithin-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") (() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1"))))
@@ -1101,7 +1098,7 @@
                     answer))))
           (lambda () (curl-engine-stop e)))))
 
-    ;; --- the lifetime (the M7 plan, section 3.5) ------------------------------------------
+    ;; --- the lifetime ---------------------------------------------------------------------
 
     (test-equal "a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are a read-out and a load; the two end 200; the last to end frees the jar's handle and the share, the jar closed, holding none"
       (list 2 'closing 1 3 '(request-refused curl-submit cookie-jar cookie-jar cookie-jar-closed)
@@ -1317,7 +1314,7 @@
                             (lambda () (refused (lambda () (curl-cookie-jar-cookies (make-curl-cookie-jar e)))))
                             (lambda () (curl-engine-stop e))))))
 
-    ;; --- the high level (the M7 plan, section 3.1) ----------------------------------------
+    ;; --- the high level -------------------------------------------------------------------
 
 
     (test-equal "a session with cookies: its calls carry the jar across requests and hosts, three labels deep; http-session-cookies reads it out, http-session-load-cookies! loads into it, and its refusal names the line's index; the log whole"
@@ -1359,7 +1356,7 @@
             (let ((e (raised (lambda () (http-get s (route o "a.localhost" "" "h3" "") 'headers '(("Cookie" . "mine=1")))))))
               (list (log-lines o "h3") (refusal-of e) (http-exchange? e)))))))
 
-    ;; --- what varies by version (the M7 plan, section 3.7) --------------------------------
+    ;; --- what varies by version -----------------------------------------------------------
 
     (let ((cases '(("path-empty" "p%3D1%3B%20Path%3D") ("path-true" "p%3D1%3B%20Path%3DTRUE")
                    ("path-false" "p%3D1%3B%20Path%3DFALSE") ("path-rel" "p%3D1%3B%20Path%3Drel")
@@ -1460,7 +1457,7 @@
       (test-equal (string-append "the default path, Path=rel and Path=, the 400-day cap, Max-Age=-1 and a deleted cookie, by libcurl " (written version) "'s row: each read-out, and the next request's Cookie headers")
         (car answer) (cadr answer)))
 
-    ;; --- no exit printing a cookie's value (ADR-0035; the M7 plan, section 3.5) ---------
+    ;; --- no exit printing a cookie's value (ADR-0035) -----------------------------------
 
     (test-equal "no exit prints a cookie's value, loaded or a server's: every refusal, cookie-line's, cookie-beside-jar's, cookie-jar-closed's and cookie-jar-engine's; a transfer's failure, its bound's, holding the jar; the jar, the request, the token, the response holding Set-Cookie, the session, the high level's response and its redirect error; as write, display and display-condition print them"
       '()
@@ -1507,7 +1504,7 @@
           (lambda () (curl-engine-stop e) (curl-engine-stop other)))))))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (call-with-origin (lambda (o) (scenarios o) 'done))))
@@ -1516,7 +1513,7 @@
   'done
   scenarios-outcome)
 
-;; --- the high level's refusals, and its engine stopped (the M7 plan, section 3.1) ---------
+;; --- the high level's refusals, and its engine stopped ------------------------------------
 
 (test-equal "cookies is a boolean: 1, \"yes\" and a list are refused as make-http-session, not-a-boolean, field cookies, named by their kind; a call that names cookies is refused, unknown-key; nothing native is made"
   (list '(http-refused cookies 1 not-a-boolean) '(http-refused cookies (kind string) not-a-boolean)
@@ -1550,7 +1547,7 @@
           (call-with-http-session (lambda (plain) (refused (lambda () (http-session-cookies plain)))))
           (call-with-http-session (lambda (plain) (refused (lambda () (http-session-load-cookies! plain '()))))))))
 
-;; --- an abandoned handle keeps its share (the M7 plan, section 3.5) ------------------------
+;; --- an abandoned handle keeps its share ---------------------------------------------------
 
 ;; abandon-child : String -> Any
 ;; tests/jar-abandon.sps in a child Chez, with HOW, abandon or free: what

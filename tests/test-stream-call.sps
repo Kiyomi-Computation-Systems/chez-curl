@@ -1,12 +1,10 @@
 #!r6rs
-;;; The suite for the high level's streams (ADR-0031, amended 2026-10-31;
-;;; ADR-0032, amended; the M6 plan, sections 3.6 and 6.2):
+;;; The suite for the high level's streams (ADR-0031 and ADR-0032):
 ;;; call-with-response-port, a producer as a call's body with body-length,
 ;;; the head's step, hops cancelled at their heads or read whole, at most
 ;;; once, next-request's stream keys, stream-in-group, the bound across
 ;;; PROC's reading, libcurl's HTTP/2 3xx that never ends, and the thread
-;;; rule. Each check was watched failing, on a mutant or before its code
-;;; (build/m6s3b/mutants.md).
+;;; rule.
 ;;;
 ;;;   - with no origin: call-with-response-port's refusals; a head's
 ;;;     response refused by http-response-text; stream-in-group, by go and
@@ -38,12 +36,12 @@
 ;;; Every check on a raw face makes its own session: the raw scripts close
 ;;; after each answer without saying so (ADR-0020). A suite cannot tell
 ;;; whether it runs under the memory gate's Valgrind, so every bound holds
-;;; there too (the M6 plan, section 6.1, as measured: a call that ended on
-;;; its own took 5,797 ms at most under Valgrind). Where libcurl's answer
-;;; varies by version, a row holds it, and a libcurl with no row fails,
-;;; printing what it measured. Every expected value is one the code under
-;;; test cannot produce by failing: SRFI-64 makes #f of a raise in the
-;;; actual expression, so none is #f.
+;;; there too (as measured: a call that ended on its own took 5,797 ms at
+;;; most under Valgrind). Where libcurl's answer varies by version, a row
+;;; holds it, and a libcurl with no row fails, printing what it measured.
+;;; Every expected value is one the code under test cannot produce by
+;;; failing: SRFI-64 makes #f of a raise in the actual expression, so none
+;;; is #f.
 (import (rnrs)
         (srfi :64)
         (only (chezscheme) sleep make-time current-time time-second time-nanosecond getenv
@@ -152,7 +150,7 @@
 
 ;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
 ;; PROC of each of ITEMS, first to last: map calls its procedure in no
-;; fixed order (traps.md).
+;; fixed order.
 (define (in-order proc items)
   (let loop ((rest items) (answers '()))
     (if (null? rest)
@@ -382,7 +380,7 @@
 ;; sh -c CHILD-SCRIPT sh COMMAND...: COMMAND, its stdin at its end, under
 ;; GNU timeout (gtimeout on macOS), killed with SIGKILL after 120 s, exit
 ;; 137. The shell's own stderr is /dev/null, so dash's "Killed" is not the
-;; command's (traps.md).
+;; command's.
 (define child-script
   (string-append
    "t=$(command -v timeout || command -v gtimeout) || { echo 'stream-call child: no timeout' >&2; exit 125; }\n"
@@ -414,9 +412,9 @@
 ;; with-held-session : (Session -> Any) -> Any
 ;; PROC's answer, on a session of its own whose engine holds a streamed
 ;; body's prerequest callable 200 ms once connected, before the request is
-;; sent, made by (http-client private call)'s new-http-session, as the
-;; slice's measurement holds it (research/m6/slice3/): an answer written as
-;; the connection is accepted is then read before libcurl's first ask.
+;; sent, made by (http-client private call)'s new-http-session, so that an
+;; answer written as the connection is accepted is read before libcurl's
+;; first ask.
 (define (with-held-session proc)
   (let ((s (new-http-session (make-curl-engine-holding-prereq 200)
                              (session-defaults (list (cons 'proxy #f) (cons 'ca-file ca)
@@ -445,7 +443,7 @@
 ;; retained-bytes : -> Natural
 ;; The bytes Chez's heap holds once two collections of every generation
 ;; have run, each at a rendezvous of every thread: collect alone raises
-;; while another thread is active (traps.md).
+;; while another thread is active.
 (define (retained-bytes)
   (parameterize ((collect-request-handler (lambda () (collect (collect-maximum-generation)))))
     (collect-rendezvous)
@@ -602,7 +600,7 @@
 
 ;; a-policy-made : (U Retry (List 'raised String))
 ;; Made under a guard, as every top-level definition that can raise is: a
-;; raise there would kill the suite, naming no test (traps.md).
+;; raise there would kill the suite, naming no test.
 (define a-policy-made
   (guard (e (#t (list 'raised (describe e))))
     (make-http-retry 'attempts 3 'backoff-ms 100 'jitter #f 'statuses '(503)
@@ -1000,10 +998,10 @@
                                       (lambda (r p) (set! port p) (get-bytevector-some p) (raise 'escaped)))))))
             (list answer (if (and port (port-closed? port)) 'closed (list 'open port)) (live-ends s)))))))
 
-  ;; --- drive-last-token's record, a test seam's (the slice's fourth review):
-  ;; a call's token, and the private copy of a whole body its plan holds,
-  ;; never outlive the call through the seam. A 64 MiB body, as the review's
-  ;; probe sent: held after the call, the heap kept 64.1 MB more.
+  ;; --- drive-last-token's record, a test seam's: a call's token, and the
+  ;; private copy of a whole body its plan holds, never outlive the call
+  ;; through the seam. A 64 MiB body, as a probe sent it: held after the call,
+  ;; the heap kept 64.1 MB more.
   (test-equal "raw: drive-last-token records a streamed call's token only while a test arms it, and lets it go as the call ends: a 64 MiB whole body's post through call-with-response-port, unarmed, leaves the seam #f inside PROC and after, and under 16 MiB more retained once collected; armed, the seam answers the call's token inside PROC, #f once the call has ended, and again under 16 MiB retained"
     '((unarmed #f #f retained-under-16-mib) (armed in-proc-token #f retained-under-16-mib))
     (guard (e (#t (list 'raised (describe e))))
@@ -1027,12 +1025,12 @@
              (armed (one "sc-retain-armed" #t)))
         (list unarmed armed))))
 
-  ;; --- the shell's draws (the M6 plan, section 3.6): one a transfer, read
-  ;; at its head, the hop's step taking that same draw. Through drive-stream
-  ;; itself, with a sequenced draw that counts its calls, 0.1 then 0.9, and a
-  ;; jittered policy whose backoff, 2,000 ms, fits a 1,500 ms bound at 0.1
-  ;; of it and passes it at 0.9: the first 503's retry is taken only when
-  ;; its step reads the head's draw, 0.1; a fresh one, 0.9, answers the 503.
+  ;; --- the shell's draws: one a transfer, read at its head, the hop's step
+  ;; taking that same draw. Through drive-stream itself, with a sequenced
+  ;; draw that counts its calls, 0.1 then 0.9, and a jittered policy whose
+  ;; backoff, 2,000 ms, fits a 1,500 ms bound at 0.1 of it and passes it at
+  ;; 0.9: the first 503's retry is taken only when its step reads the head's
+  ;; draw, 0.1; a fresh one, 0.9, answers the 503.
   (for-each
    (lambda (spec)
      (test-equal (string-append "raw: " (car spec) ": the hop stepped with the draw its head read, one draw a transfer: the 503's retry taken at 0.1 of the backoff, the retry's 200 handed to PROC, two draws for two transfers")
@@ -1147,8 +1145,8 @@
                   (whole (sink-fields (latin-1 (http-response-body r))) 2000)))))))
 
   ;; On 8.7.0 and 8.7.1 the request size is unknown, so a post's failure is
-  ;; never retried there (ADR-0022, amended; test-retry's
-  ;; unknown-size-versions): the Mac's run made one transfer.
+  ;; never retried there (ADR-0022; test-retry's unknown-size-versions):
+  ;; Apple's 8.7.1 made one transfer.
   (test-equal (string-append "a producer is never called for a refused connect, and the connect is retried, as nothing was sent: three transfers, the low level's 7, with &http-exchange; on 8.7.0 and 8.7.1, whose request size is unknown, one, on " version-text)
     (list 0 (list 'raised '(curl-transfer-error connect perform-failed 7)
                   (list 'exchange 'post nowhere '() (if (member version '("8.7.0" "8.7.1")) 1 3))))
@@ -1163,7 +1161,7 @@
   ;; 2,000, so a put of its first 500 bytes shows; the cancel is read where
   ;; the raise is made, by the caller's handler, before the call's own wind
   ;; could cancel; the puts by the token's count, the low level's, and what
-  ;; reached the server by the sink's record (the slice's fourth review).
+  ;; reached the server by the sink's record.
   (test-equal "raw: a body short of its body-length fails the call by the low level's body-length-mismatch, alike on every libcurl; a piece past it, 1,500 bytes on 1,500 against 2,000, is &http-request-error, field body, its value the producer, body-length-mismatch, its irritants the body-length and the piece's length, as the low level's are, with the call's context; no transfer live where the caller's handler sees the raise; nothing of that piece put, the token's puts 1,500 bytes and the sink's read 1,500 at most; neither producer called after its end"
     (list (list 'raised '(curl-transfer-error none body-length-mismatch 42)
                 (list 'exchange 'post (url-of o 'raw "/raw/sink?key=sc-short") '() 1))
@@ -1220,12 +1218,11 @@
               (list (producer-after-eof short) (producer-after-eof long))))))
 
   ;; The producer is asked for its end at once once its puts take the
-  ;; body-length whole, room or none (ADR-0031, decision 2). The piece that
-  ;; takes it is 32 MiB, to a sink that reads nothing for 60 s: the kernel
-  ;; takes a few MB of it, so libcurl never has room again before the
-  ;; bound, and only an ask made at once, not on room, meets the piece past
-  ;; the length. Asked on room, the drive waited out the bound; the races
-  ;; that killed that mutant before were won both ways (mutants.md).
+  ;; body-length whole, room or none (ADR-0031). The piece that takes it is
+  ;; 32 MiB, to a sink that reads nothing for 60 s: the kernel takes a few
+  ;; MB of it, so libcurl never has room again before the bound, and only
+  ;; an ask made at once, not on room, meets the piece past the length.
+  ;; A drive that asked on room would wait out the bound.
   (test-equal "raw: once a producer's puts take its body-length whole, it is asked for its end at once, room or none: a 32 MiB piece, the whole length, to a sink that reads nothing for 60 s, then a piece more: &http-request-error, body-length-mismatch, with the call's context, at the producer's second call, well within the call's bound of 10 s, though libcurl never has room again"
     (list (list 'raised '(http-error) '(http-request-error body the-producer body-length-mismatch)
                 (list 'exchange 'post (url-of o 'raw "/raw/sink?key=sc-at-length&hold=60000") '() 1))
@@ -1457,12 +1454,11 @@
             (list (if (< used 1000) 'under-1000-ms used)
                   (whole (sink-fields (latin-1 (http-response-body r))) 2000)))))))
 
-  ;; --- a failure with no head after the producer was called (the slice's
-  ;; review): the raw face's cut script ends the connection once 64 KiB of
-  ;; the body have come, with nothing written. No head says libcurl asked;
-  ;; the drive's own call of the producer counts it as called, so no retry
-  ;; takes the call. The code moves between runs, 52 and 56 (the review's
-  ;; probe, build/m6s3r/probe-reset-tree.log), so its class is held, not it.
+  ;; --- a failure with no head after the producer was called: the raw
+  ;; face's cut script ends the connection once 64 KiB of the body have
+  ;; come, with nothing written. No head says libcurl asked; the drive's own
+  ;; call of the producer counts it as called, so no retry takes the call.
+  ;; The code moves between runs, 52 and 56, so its class is held, not it.
   (test-equal "raw: a failure with no head, after the producer was called: under a policy that retries a post's send-receive failure, the call raises the transfer's own failure, perform-failed, of the send-receive class, one transfer, never retried; the producer called; the origin saw one upload"
     (list (list 'raised '(curl-transfer-error send-receive perform-failed)
                 (list 'exchange 'post (url-of o 'raw "/raw/cut?key=sc-cut&after=65536") '() 1))
@@ -1540,10 +1536,10 @@
 
   ;; --- keyboard interrupts that escape inside the port's read, in a child
   ;; (tests/stream-call-escape.sps): each planted at a critical section's
-  ;; end, where a pending one runs (traps.md), PROC catching it and reading
-  ;; on. A, the producer's answer; B, the body's end, its response held
-  ;; live until a read after the escape has fed; C, a refusal; D, a put; E,
-  ;; produce!'s before thunk, the producer not yet entered.
+  ;; end, where a pending one runs, PROC catching it and reading on. A, the
+  ;; producer's answer; B, the body's end, its response held live until a
+  ;; read after the escape has fed; C, a refusal; D, a put; E, produce!'s
+  ;; before thunk, the producer not yet entered.
   ;; Each case is shown short: A, D and E, (BYTES BAD RAISES); B, (TEXT
   ;; RAISES); C, its RAISES alone, the bytes echoed before the refusal moving
   ;; between runs; then the call's outcome, the producer's calls and its
@@ -1578,7 +1574,7 @@
               (let ((c (filter (lambda (d) (and (pair? d) (eq? (car d) 'counts))) (cadr r))))
                 (if (pair? c) (cadr (car c)) r))))))
 
-  ;; --- the thread rule (the M6 plan, section 3.8)
+  ;; --- the thread rule
   (test-equal "the thread rule: the producer, PROC and every read of the port run on this thread, the caller's, never the engine's"
     '(this-thread this-thread (end 1048576 #f))
     (guard (e (#t (list 'raised (describe e))))
@@ -1595,13 +1591,11 @@
                         seen)))))))))
 
   ;; --- libcurl's HTTP/2 3xx that never ends while a body is owed
-  ;; (ADR-0031, amended 2026-10-31): on 8.20.0 and 8.23.0 a 3xx over HTTP/2
-  ;; that arrives before the body is sent whole never ends but at the
-  ;; call's bound; 7.85.0, 8.5.0 and Apple's 8.7.1 end it with the 3xx. Each
-  ;; row is the slice's measurement (research/m6/slice3/, verify/), 8.7.1's
-  ;; the Mac's run (research/m6/slice3-build/results/). A final 303, with
-  ;; redirects #f, its Location kept: (PRODUCER WHOLE), each 303 and its
-  ;; body, or 28 at the bound.
+  ;; (ADR-0031): on 8.20.0 and 8.23.0 a 3xx over HTTP/2 that arrives before
+  ;; the body is sent whole never ends but at the call's bound; 7.85.0,
+  ;; 8.5.0 and Apple's 8.7.1 end it with the 3xx. Each row is measured,
+  ;; 8.7.1's on macOS. A final 303, with redirects #f, its Location kept:
+  ;; (PRODUCER WHOLE), each 303 and its body, or 28 at the bound.
   (let ((rows '(("7.85.0" (303 (text "early 303\n")) (303 "early 303\n"))
                 ("8.5.0" (303 (text "early 303\n")) (303 "early 303\n"))
                 ("8.7.1" (303 (text "early 303\n")) (303 "early 303\n"))
@@ -1641,15 +1635,15 @@
              (row (and (string? version) (assoc version rows))))
         (if row measured (list 'no-row-for version 'measured measured)))))
 
-  ;; --- a head before libcurl's first ask, on the held engine (the M6
-  ;; plan, section 6.1): the raw face, armed, answers the next connection as
-  ;; it accepts it; the engine holds the prerequest callable 200 ms once
-  ;; connected, so the answer is read before libcurl's first ask on 7.85.0
-  ;; and 8.5.0, whose head's bit is then #f; 8.7.1, 8.20.0 and 8.23.0 ask
-  ;; with the request's head, once the hold ends and before the head is
-  ;; read, and their bit is #t. 8.7.1's row is the Mac's run; its 200 read
-  ;; after-the-head once, and is held to either, as 8.20.0's and 8.23.0's
-  ;; are, since a row from one run cannot show a cell that splits.
+  ;; --- a head before libcurl's first ask, on the held engine: the raw
+  ;; face, armed, answers the next connection as it accepts it; the engine
+  ;; holds the prerequest callable 200 ms once connected, so the answer is
+  ;; read before libcurl's first ask on 7.85.0 and 8.5.0, whose head's bit
+  ;; is then #f; 8.7.1, 8.20.0 and 8.23.0 ask with the request's head, once
+  ;; the hold ends and before the head is read, and their bit is #t. 8.7.1's
+  ;; row is from macOS; its 200 read after-the-head once, and is held to
+  ;; either, as 8.20.0's and 8.23.0's are, since a row from one run cannot
+  ;; show a cell that splits.
   (let ((rows '(("7.85.0" (followed 200 whole-body ((307 #f #f ()))) (200 "early 200\n" after-the-head))
                 ("8.5.0" (followed 200 whole-body ((307 #f #f ()))) (200 "early 200\n" after-the-head))
                 ("8.7.1" (body-not-replayable 307) (200 "early 200\n" either))
@@ -1709,7 +1703,7 @@
            (native-counts))))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))

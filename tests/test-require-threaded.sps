@@ -321,9 +321,9 @@
   'defined
   (if (member refusal-library library-names) 'defined 'absent))
 
-;; The libraries slice 3 wrote. A scan of the wrong directory, or of an
-;; empty one, finds none of them. (curl) lies in src/ itself, outside
-;; src/curl/private, so a scan rooted there misses it.
+;; The libraries named here. A scan of the wrong directory, or of an empty one,
+;; finds none of them. (curl) lies in src/ itself, outside src/curl/private, so
+;; a scan rooted there misses it.
 (test-equal "the scan read src/: (curl), conditions, constants, discovery, libcurl-info, load-state, native and verify"
   '(read read read read read read read read)
   (map (lambda (name) (if (member name library-names) 'read 'missed))

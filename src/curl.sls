@@ -254,7 +254,7 @@
    ;; libcurl's URL API. A string is sent as UTF-8. A bytevector, a header's
    ;; bytes, a Location header's Latin-1 string as bytes, has each byte at
    ;; or below 0x20, 0x7F and each above encoded as upper-case %XX first, as
-   ;; curl-url-with-fragment's has (ADR-0029, amended).
+   ;; curl-url-with-fragment's has (ADR-0029).
    ;; curl-url-with-fragment : String (U String Bytevector #f) -> String
    ;; (curl-url-with-fragment URL FRAGMENT): URL with its fragment replaced
    ;; by FRAGMENT, or cleared by #f or an empty one. A bytevector, a header's
@@ -282,8 +282,8 @@
    ;; first three as 0; through the engine, 7.85.0 reported a connect of
    ;; 10 to 37 microseconds on a connection reused once the transfer before
    ;; had ended, and 0 after its head alone, where 8.5.0, 8.20.0 and 8.23.0
-   ;; reported 0 (M7 slice 1). A streamed response's body is #f: its token
-   ;; held the pieces.
+   ;; reported 0. A streamed response's body is #f: its token held the
+   ;; pieces.
    curl-response? curl-response-status curl-response-http-version
    curl-response-effective-url curl-response-headers curl-response-body
    curl-response-timings
@@ -312,10 +312,10 @@
    ;; credentials; its who is curl-request-check where a
    ;; submit's is curl-submit. It copies no body and queues nothing, so a
    ;; batch can be checked before any of it is submitted; an engine's own
-   ;; state can still refuse the submit (ADR-0023, amended 2026-10-28). A
-   ;; request shares its strings and lists with its caller, so the check
-   ;; holds for them as they were when it ran: a submit checks its own
-   ;; copies again, and refuses one changed since.
+   ;; state can still refuse the submit (ADR-0023). A request shares its
+   ;; strings and lists with its caller, so the check holds for them as they
+   ;; were when it ran: a submit checks its own copies again, and refuses
+   ;; one changed since.
    make-curl-engine curl-engine? curl-engine-stop curl-submit curl-request-check
 
    ;; --- the cookie jar (ADR-0035) ------------------------------------------
@@ -518,7 +518,7 @@
    ;; curl-transfer-error-request-size : &curl-transfer-error -> (U Natural #f)
    ;;   the bytes of request sent: 0 when none was; #f when it is unknown,
    ;;   a transfer cancelled or stopped, or one that ran on libcurl 8.7.0 or
-   ;;   8.7.1, whose count is broken, the Mac's among them; for a multipart
+   ;;   8.7.1, whose count is broken, Apple's among them; for a multipart
    ;;   body, the head alone on 7.85.0 and 8.5.0, the head and the body
    ;;   from 8.20.0
    ;; curl-transfer-error-connect-code : &curl-transfer-error -> (U Positive-Integer #f)

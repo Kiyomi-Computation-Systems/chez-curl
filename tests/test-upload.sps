@@ -1,10 +1,8 @@
 #!r6rs
-;;; The suite for a streamed request body at the low level (ADR-0030,
-;;; ADR-0032; the M6 plan, sections 3.3 to 3.5 and 5.2): body stream and
-;;; body-length, the token's room, puts, end and count, the read, seek and
-;;; prerequest callables, at most once, and the send side of the paced poll.
-;;; Each check was watched failing, on a mutant or before its code
-;;; (build/m6s2b/mutants.md).
+;;; The suite for a streamed request body at the low level (ADR-0030 and
+;;; ADR-0032): body stream and body-length, the token's room, puts, end and
+;;; count, the read, seek and prerequest callables, at most once, and the
+;;; send side of the paced poll.
 ;;;
 ;;;   - each method's framing, sized and chunked, the body whole by its hash,
 ;;;     over the http, raw, https and h2 faces, a streamed delete's
@@ -45,9 +43,9 @@
 ;;; does every check that reads a pool.
 ;;;
 ;;; A suite cannot tell whether it runs under the memory gate's Valgrind, so
-;;; every bound holds there too (the plan's section 5.1, as measured). Every
-;;; expected value is one the code under test cannot produce by failing:
-;;; SRFI-64 makes #f of a raise in the actual expression, so none is #f.
+;;; every bound holds there too (as measured). Every expected value is one
+;;; the code under test cannot produce by failing: SRFI-64 makes #f of a
+;;; raise in the actual expression, so none is #f.
 (import (rnrs)
         (srfi :64)
         (only (chezscheme) fork-thread make-mutex with-mutex sleep make-time current-time
@@ -240,7 +238,7 @@
 ;; sh -c CHILD-SCRIPT sh COMMAND...: COMMAND, its stdin at its end, under
 ;; GNU timeout (gtimeout on macOS), killed with SIGKILL after 60 s, exit
 ;; 137. The shell's own stderr is /dev/null, so dash's "Killed" is not the
-;; command's (traps.md).
+;; command's.
 (define child-script
   (string-append
    "t=$(command -v timeout || command -v gtimeout) || { echo 'upload child: no timeout' >&2; exit 125; }\n"
@@ -333,16 +331,15 @@
     (list room puts)))
 
 ;; fill-until-stalled : Token Natural -> (U (List #f Natural) List)
-;; The pattern put in 64 KiB pieces, each with a bound of 500 ms, until
-;; the buffer is full and libcurl takes nothing through a put: the put
-;; answers #f at its bound, and the bytes handed, read before it, are as
-;; they were, so the buffer held what refused the put for its whole
-;; bound. It asks no more of the kernel: a kernel full on loopback can
-;; let more in later, and on CI's runner had by the end of each of a fill's
-;; one-second rounds (traps.md), so a quiet past the put's bound never
-;; came. A put that answers #f
-;; while libcurl took bytes is tried again. Answers (#f AT), AT the offset
-;; of the piece not taken; (never-full N) once N bytes were taken.
+;; The pattern put in 64 KiB pieces, each with a bound of 500 ms, until the
+;; buffer is full and libcurl takes nothing through a put: the put answers
+;; #f at its bound, and the bytes handed, read before it, are as they were,
+;; so the buffer held what refused the put for its whole bound. It asks no
+;; more of the kernel: a kernel full on loopback can let more in later, and
+;; on CI's runner had by the end of each of a fill's one-second rounds, so
+;; a quiet past the put's bound never came. A put that answers #f while
+;; libcurl took bytes is tried again. Answers (#f AT), AT the offset of the
+;; piece not taken; (never-full N) once N bytes were taken.
 ;; It prints (fill ANSWER AT ms MS retried ((AT MS) ...) mib (MS ...)):
 ;; how it ended, where and how long after its start, each put that answered
 ;; #f while libcurl took bytes, and when each MiB was taken.
@@ -511,7 +508,7 @@
         (let ((t (curl-submit engine (make-curl-request "http://127.0.0.1:1/" 'method 'post 'proxy #f
                                                         'timeout-ms 5000 'body 'stream))))
           ;; let*: each step after the last, whatever order list's
-          ;; arguments would be evaluated in (traps.md).
+          ;; arguments would be evaluated in.
           (let* ((first (raised (lambda () (curl-token-put-piece! t (pattern-piece 0 3) 0))))
                  (end (raised (lambda () (curl-token-end-body! t) 'unspecified)))
                  (after (raised (lambda () (curl-token-put-piece! t (pattern-piece 3 3) 0))))
@@ -533,8 +530,8 @@
         (list put room end (curl-token-body-count t) (outcome-of t))))))
 
 ;; owned-by-stream : (Listof String)
-;; A streamed body's options, owned (the M6 plan, section 3.3): its read,
-;; seek and prerequest callables and their data, and FRESH_CONNECT.
+;; A streamed body's options, owned: its read, seek and prerequest
+;; callables and their data, and FRESH_CONNECT.
 (define owned-by-stream
   '("READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT"))
 
@@ -674,10 +671,10 @@
                     (list passed (curl-engine-passed-resumes engine)))
                 (whole (sink-line t) 20000))))))
 
-  ;; --- "once": a put or an end queues a resume when the transfer is
-  ;; paused for sending, once (the M6 plan, section 3.3), the flag deciding.
-  ;; Two puts while the engine is held reach one turn; so do a put and an
-  ;; end. With a resume per put, that turn carries out two.
+  ;; --- "once": a put or an end queues a resume when the transfer is paused
+  ;; for sending, once, the flag deciding. Two puts while the engine is held
+  ;; reach one turn; so do a put and an end. With a resume per put, that
+  ;; turn carries out two.
   (for-each
    (lambda (row)
      (test-equal (string-append "a resume is queued once per pause: " (car row)
@@ -705,29 +702,27 @@
                      count (whole (sink-line t) n))))))))
    '(("two puts" "once-two") ("a put and an end" "once-end")))
 
-  ;; --- the head's body-asked bit (the M6 plan, section 3.2; ADR-0032,
-  ;; decision 3): whether libcurl had asked for a streamed body by the final
-  ;; head, read in the hold that publishes it. Measured 5 runs of 5 on each
-  ;; of the five Linux libcurls (build/m6s2b/logs/asked-*.log): #t for every
+  ;; --- the head's body-asked bit (ADR-0032): whether libcurl had asked for
+  ;; a streamed body by the final head, read in the hold that publishes it.
+  ;; Measured 5 runs of 5 on each of the five Linux libcurls: #t for every
   ;; streamed body libcurl asks for, a server's answer before it reads the
   ;; body included, since the first ask comes with the head or as it is
-  ;; sent; #f for a whole body, none, and a length of 0, which libcurl
-  ;; never asks for. No case's answer moves by version. The raw face's
-  ;; answer, written as the head arrives, races libcurl's first ask: under
-  ;; Valgrind on CI's runner it came first once, the bit #f
-  ;; (research/ci-first-run), so raw-answer's bit is whether the read
-  ;; callable was ever asked, as with the answer written at accept below:
-  ;; 7.85.0 and 8.5.0 stop sending once they read a final answer with a
-  ;; close. HTTP/2's answer races it too: under Valgrind on 8.5.0 it came
-  ;; first in 4 of 20 runs of M7 slice 4's tree and 5 of 20 of main's, and
-  ;; libcurl then never asked, the bit #f (research/m7/slice4/races). So
-  ;; h2-answer's server holds its answer, hold=KEY, until this thread has
-  ;; seen the read callable asked, and releases KEY: the ask comes first by
-  ;; construction, nothing put by the head. It ends the body, empty, and
-  ;; waits for the read callable to answer the end, before the release: on
-  ;; 8.5.0 an HTTP/2 transfer paused for sending can read nothing more
-  ;; (traps.md): under Valgrind a held answer to a body left paused hung 7
-  ;; times in 160, and the unheld answer once in 120.
+  ;; sent; #f for a whole body, none, and a length of 0, which libcurl never
+  ;; asks for. No case's answer moves by version. The raw face's answer,
+  ;; written as the head arrives, races libcurl's first ask: under Valgrind
+  ;; on CI's runner it came first once, the bit #f, so raw-answer's bit is
+  ;; whether the read callable was ever asked, as with the answer written at
+  ;; accept below: 7.85.0 and 8.5.0 stop sending once they read a final
+  ;; answer with a close. HTTP/2's answer races it too: under Valgrind on
+  ;; 8.5.0 it came first in 9 of 40 runs, over two builds, and libcurl
+  ;; then never asked, the bit #f. So h2-answer's server holds
+  ;; its answer, hold=KEY, until this thread has seen the read callable
+  ;; asked, and releases KEY: the ask comes first by construction, nothing
+  ;; put by the head. It ends the body, empty, and waits for the read
+  ;; callable to answer the end, before the release: on 8.5.0 an HTTP/2
+  ;; transfer paused for sending can read nothing more: under Valgrind a
+  ;; held answer to a body left paused hung 7 times in 160, and the unheld
+  ;; answer once in 120.
   (test-equal "the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, the answer held until the read callable was asked and the empty body ended; over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for"
     '((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
     (map (lambda (row)
@@ -782,21 +777,20 @@
            (none http "/seen?key=asked-none" none #f)
            (zero http "/sink?key=asked-zero" stream 0))))
 
-  ;; --- the body-asked bit with the answer first (M6 slice 2, round 4):
-  ;; the raw face, armed by /raw/arm, writes its answer to its next
-  ;; connection as it accepts it, before reading a byte. Whether that
-  ;; answer lands before libcurl sends its request is a race: libcurl won
-  ;; it in 100 of 100 native runs on the five Linux libcurls, and lost it
-  ;; in 20 of 20 for 8.5.0 under Valgrind (build/m6s2b/asked2/lane-*.log,
-  ;; vg-unheld.log). An engine whose prerequest callable holds 200 ms once
+  ;; --- the body-asked bit with the answer first: the raw face, armed by
+  ;; /raw/arm, writes its answer to its next connection as it accepts it,
+  ;; before reading a byte. Whether that answer lands before libcurl sends
+  ;; its request is a race: libcurl won it in 100 of 100 native runs on
+  ;; the five Linux libcurls, and lost it in 20 of 20 for 8.5.0 under
+  ;; Valgrind. An engine whose prerequest callable holds 200 ms once
   ;; connected decides it: the answer lands first, and 7.85.0 and 8.5.0,
   ;; which read before they send, stop sending without asking, while
   ;; 8.20.0 and 8.23.0 ask with the head; 20 of 20 on each lane, 8.5.0
-  ;; under Valgrind too (held-*.log, vg-held.log). Each case, a streamed
-  ;; post of 1,000 bytes with a stream-buffer, nothing put by its head:
-  ;; (FRAMING STATUS BIT ASK OUTCOME HOLDS), ASK asked when the read
-  ;; callable was ever called, never when not, and HOLDS the hold seam's
-  ;; count on the case's own engine.
+  ;; under Valgrind too. Each case, a streamed post of 1,000 bytes with a
+  ;; stream-buffer, nothing put by its head: (FRAMING STATUS BIT ASK
+  ;; OUTCOME HOLDS), ASK asked when the read callable was ever called,
+  ;; never when not, and HOLDS the hold seam's count on the case's own
+  ;; engine.
   (let ((arm-first
          (lambda (own status framing)
            (let ((armed (curl-token-await
@@ -851,9 +845,9 @@
                    m)))
            cases)))
 
-  ;; --- a done from a put means the token is done (the M6 plan, section
-  ;; 3.1): the request stream closes as the engine's thread reads the
-  ;; outcome, before it completes the token, so a put in between waits.
+  ;; --- a done from a put means the token is done: the request stream
+  ;; closes as the engine's thread reads the outcome, before it completes
+  ;; the token, so a put in between waits.
   (test-equal "a put whose request stream has closed waits until its token is done: on an engine whose thread stalls 1,000 ms between reading an outcome and completing its token, a put made once the stream closed answers #f at a bound of 100 ms, and another, with a bound of 5,000, answers done only once the token is done, its outcome readable at once, the piece not taken"
     '(closed-not-done #f done waited (response 200 http/1.1) 10)
     (on-own-engine (lambda () (make-curl-engine-stalling-completion 1000))
@@ -943,14 +937,13 @@
               (if (pair? c) (cadr (car c)) r)))))
 
   ;; --- the put's commit, a timer swept across its call a tick at a time,
-  ;; twice, to 20 ticks past it (the M6 plan, section 3.5; slice 1's take
-  ;; sweep, C10's): an expiry inside the put's section waits for a later
-  ;; event check, so an escape before the commit leaves the count as it was
-  ;; and the piece is put again, and one after leaves it counted; the body
-  ;; whole either way. The planted control, the split plant, commits after
-  ;; the section in two plain writes with a loop between, where an expiry
-  ;; leaves the tail moved and the piece uncounted, and the piece put again
-  ;; then gives the wrong bytes.
+  ;; twice, to 20 ticks past it: an expiry inside the put's section waits
+  ;; for a later event check, so an escape before the commit leaves the
+  ;; count as it was and the piece is put again, and one after leaves it
+  ;; counted; the body whole either way. The planted control, the split
+  ;; plant, commits after the section in two plain writes with a loop
+  ;; between, where an expiry leaves the tail moved and the piece
+  ;; uncounted, and the piece put again then gives the wrong bytes.
   (let ((sweep
          (lambda (plant)
            (on-own-engine make-curl-engine
@@ -1021,7 +1014,7 @@
                 r 'not-whole)
             r))))
 
-  ;; --- the put's stress test: the second review's full-duplex producer
+  ;; --- the put's stress test: a full-duplex producer
   (test-equal "the put's stress test: 4,000 pieces of 16 bytes, each put once the read callable has handed the last, chunked: no piece waits 500 ms untaken while the send is paused with no resume queued, and the body is whole"
     '(0 put whole-body)
     (on-own-engine make-curl-engine
@@ -1122,7 +1115,7 @@
           (list first (if handed 'handed (curl-token-upload-stats t)) past (outcome-of t)
                 (curl-token-put-piece! t (pattern-piece 1000 1) 10) (curl-token-body-count t))))))
 
-  ;; --- at most once (ADR-0032, amended)
+  ;; --- at most once (ADR-0032)
   (let ((pooled
          (lambda (make then key n)
            ;; On an engine MAKE made: GET /close-after?then=THEN on the http
@@ -1146,8 +1139,8 @@
 
     ;; By version: the prerequest callable's calls when the seek refuses
     ;; libcurl's rewind. Apple's 8.7.1 drops the rewind's result and goes
-    ;; on to a second attempt, which the prerequest callable refuses (the
-    ;; plan's section 2.4); the Linux libcurls end at the seek.
+    ;; on to a second attempt, which the prerequest callable refuses; the
+    ;; Linux libcurls end at the seek.
     (let ((attempt-rows '(("7.85.0" . 1) ("8.5.0" . 1) ("8.7.1" . 2) ("8.20.0" . 1) ("8.23.0" . 1))))
       (test-equal (string-append "at most once, by a test seam that leaves FRESH_CONNECT off: the streamed post reuses the marked connection, the origin reads it whole and cuts it, and libcurl's resend is refused by the seek, body-not-replayable, of no class, with one request at the origin; the prerequest callable's calls as "
                                  (if (string? version) version (written version))
@@ -1251,25 +1244,20 @@
       (wait-for (lambda () (equal? (native-counts) running-counts)) 10000)
       (list read prereq seek (native-counts))))
 
-  ;; --- an answer while the body is sent, by version (the plan's section
-  ;; 3.7; the measurement's item 1). Each cell: whether the transfer ended
-  ;; within 1 s with nothing put, own, or waited, and the status it ended
-  ;; with, or 28 at the bound, once the producer put the rest. Measured:
-  ;; an own end within 9.2 ms, a waiting one 0.6 to 8.3 ms after its first
-  ;; put. 8.20.0's HTTP/2 200 then ends 200 or 55, split between runs, and
-  ;; so does 8.7.1's, so each cell asserts the wait alone. 8.5.0's HTTP/2 413 waited in every
-  ;; native run, but under the memory gate's Valgrind ended on its own in 1
-  ;; of 10 cells (build/m6s2b/logs/memlock-1.log), so its kind is either,
-  ;; and its status alone held; so is its raw kept 413's, which ended on
-  ;; its own, chunked, under CI's memory job at M7 slice 2's cf3a567, the
-  ;; 413 beating libcurl's first ask for the body (AGENTS.md), where every
-  ;; earlier run waited
-  ;; (.plans/research/m7/slice2/verify/results/ci-memory-cf3a567.log). Apple's 8.7.1's row is the Mac's two runs
-  ;; on slice 2's PR, its framings alike in every cell but HTTP/2's 200,
-  ;; 200 in the first, 55 sized in the second
-  ;; (.plans/research/m6/slice2-build/results/mac-8.7.1-*.log). A
-  ;; libcurl with no row fails, naming its version, and showing every cell
-  ;; it measured.
+  ;; --- an answer while the body is sent, by version. Each cell: whether the
+  ;; transfer ended within 1 s with nothing put, own, or waited, and the
+  ;; status it ended with, or 28 at the bound, once the producer put the rest.
+  ;; Measured: an own end within 9.2 ms, a waiting one 0.6 to 8.3 ms after its
+  ;; first put. 8.20.0's HTTP/2 200 then ends 200 or 55, split between runs,
+  ;; and so does 8.7.1's, so each cell asserts the wait alone. 8.5.0's HTTP/2
+  ;; 413 waited in every native run, but under the memory gate's Valgrind
+  ;; ended on its own in 1 of 10 cells, so its kind is either, and its status
+  ;; alone held; so is its raw kept 413's, which ended on its own, chunked,
+  ;; under CI's memory job, the 413 beating libcurl's first ask for the body,
+  ;; where every earlier run waited. Apple's 8.7.1's row is from two runs on
+  ;; macOS, its framings alike in every cell but HTTP/2's 200, 200 in the
+  ;; first, 55 sized in the second. A libcurl with no row fails, naming its
+  ;; version, and showing every cell it measured.
   (let ((answer-cases
          '((raw-413-close raw "/raw/answer?status=413&close=1")
            (raw-413-keep raw "/raw/answer?status=413&close=0")
@@ -1347,7 +1335,7 @@
                                '(sized chunked)))
                         (cdr row)))))))
 
-  ;; --- the paced poll on the send side (ADR-0012, amended 2026-10-29)
+  ;; --- the paced poll on the send side (ADR-0012)
   (let ((probe-turns
          (lambda (engine mark)
            ;; ENGINE's next 50 turns probed: (POLLS FAST MOVED PACED SLEPT).
@@ -1415,11 +1403,10 @@
              (list 'unpaced (if (and (list? r) (= (length r) 5) (> (list-ref r 1) 0) (= (list-ref r 3) 0))
                                 'none (list (and t #t) r)))))))))
 
-  ;; The send side's CPU: 7.85.0's poll spins through a paused HTTP/2
-  ;; upload once DATA has gone, in 8 runs of 10 with pacing off, measured on
-  ;; the floor lane through the engine (build/m6s2b/control/), so no
-  ;; pacing-off control can rely on it; the probe seam above holds the
-  ;; rule on every libcurl.
+  ;; The send side's CPU: 7.85.0's poll spins through a paused HTTP/2 upload
+  ;; once DATA has gone, in 8 runs of 10 with pacing off, measured on the
+  ;; floor lane through the engine, so no pacing-off control can rely on it;
+  ;; the probe seam above holds the rule on every libcurl.
   (test-equal "the paced poll: the process's CPU through a 2 s pause of an HTTP/2 upload, 4,096 bytes sent first, then the send paused throughout, nothing put, is under 500 ms on every libcurl, 7.85.0 too, whose poll spins there; then the rest, put, arrives whole"
     '(#t #t under-500-ms whole-body)
     (on-own-engine make-curl-engine
@@ -1439,9 +1426,8 @@
                   (whole (sink-line t) 8192)))))))
 
   ;; --- throughput: 64 MiB in 64 KiB puts, within 60 s, the bound the
-  ;; memory gate's Valgrind needs; the plan measured up to 1,998.56 ms
-  ;; natively and 6,501.68 ms under Valgrind (section 5.1, as measured).
-  ;; Each run's time goes to stdout.
+  ;; memory gate's Valgrind needs; measured up to 1,998.56 ms natively
+  ;; and 6,501.68 ms under Valgrind. Each run's time goes to stdout.
   (for-each
    (lambda (face)
      (test-equal (string-append (symbol->string face) ": 64 MiB in 64 KiB puts, sized and chunked, whole by its hash at the origin, each within 60 s")
@@ -1460,7 +1446,7 @@
             '(sized chunked))))
    '(http https h2))
 
-  ;; --- the thread rule (the plan's section 3.8; ADR-0012, decision 4)
+  ;; --- the thread rule (ADR-0012)
   (test-equal "the thread rule: every put runs on this thread, the producer's, never the engine's, and so does the mailbox's callback; the read callable's log gives each verdict's threads, the engine's alone, on an engine of its own"
     (list 'puts-here 'callback-here 'reads-engine-alone 'whole-body)
     (on-own-engine make-curl-engine
@@ -1497,8 +1483,7 @@
   ;; 2 ms, each piece 2 ms after the last, so the engine's thread waits in
   ;; its __collect_safe poll between the read callable's calls, and the
   ;; collector runs there. Without lock-object a collection moves the
-  ;; callable's code, and libcurl calls where it was (the M2 plan, section
-  ;; 5.1.1).
+  ;; callable's code, and libcurl calls where it was.
   (test-equal "the read callable's lock: 1,000 pieces of 20 bytes, 2 ms apart, beside a thread that collects every 2 ms: the body whole, ten collections or more while the transfer was live"
     '(whole-body collected-while-live)
     (on-own-engine make-curl-engine
@@ -1583,7 +1568,7 @@
            (native-counts))))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))

@@ -1,16 +1,15 @@
 #!r6rs
-;;; The suite for (floors) and tests/check-floors.sps, the program behind
-;;; `make check-floors` (harness plan, section 3, item 5), and for the CI
-;;; scripts that read the floors file or hold the workflows. packaging/floors.sexp
-;;; is the one file that writes the Chez, libcurl and Node floors, and
-;;; check-floors holds README.org to it, and every file under CI's workflow
-;;; directory: CI states no floor, so no line of any file there may contain
-;;; either floor's version text, nor name the two env keys that once held
-;;; them. The build scripts read the floors from the file themselves
-;;; (scripts/ci/floor.sh), so an env value or a matrix value in a workflow
-;;; cannot change what CI builds. Without this suite, deleting a rule would
-;;; leave `make test` green: the real README, workflows and floors file break
-;;; none of them.
+;;; The suite for (floors) and tests/check-floors.sps, the program behind `make
+;;; check-floors`, and for the CI scripts that read the floors file or hold the
+;;; workflows. packaging/floors.sexp is the one file that writes the Chez,
+;;; libcurl and Node floors, and check-floors holds README.org to it, and every
+;;; file under CI's workflow directory: CI states no floor, so no line of any
+;;; file there may contain either floor's version text, nor name the two env
+;;; keys that once held them. The build scripts read the floors from the file
+;;; themselves (scripts/ci/floor.sh), so an env value or a matrix value in a
+;;; workflow cannot change what CI builds. Without this suite, deleting a rule
+;;; would leave `make test` green: the real README, workflows and floors file
+;;; break none of them.
 ;;;
 ;;; Four layers, each asserting whole values written by hand here, never read
 ;;; back from the code under test: a substring would pass whenever another
@@ -1592,8 +1591,7 @@
 
 ;; current-curl : String
 ;; The current libcurl build-curl.sh --current pins, written out here
-;; (ADR-0020, amended 2026-10-26): a change to it is a reviewed change, and
-;; shows in this diff.
+;; (ADR-0020): a change to it is a reviewed change, and shows in this diff.
 (define current-curl "8.23.0")
 
 (tree-row "build-curl.sh: the checked-in libcurl floor has a pinned sum: it reaches the download of its tarball"

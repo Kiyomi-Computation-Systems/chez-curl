@@ -1,7 +1,7 @@
 #!/bin/sh
 # `make check-memory-gate`: proves that `make test-memory` fails on planted
-# memory defects, and holds its one suppression honest (ADR-0014, amended
-# 2026-10-16). One case per property:
+# memory defects, and holds its one suppression honest (ADR-0014). One case
+# per property:
 #
 #   a  plain        each plant, run without Valgrind, exits 0 and prints
 #                   only its line, so a red gate can only mean Valgrind
@@ -96,19 +96,18 @@
 #                   program or a missing feature would (fails); one that
 #                   prints "ok", then exits 2 (ok-fails); and one that exits
 #                   0, printing nothing (silent)
-#   n  shards       CI runs the gate in two shards (ADR-0014, amended
-#                   2026-11-06), and what each runs is read from
-#                   test-memory's own run, a stand-in for Valgrind running
-#                   nothing: with no MEMORY_SHARD it runs every suite in
-#                   tests/, in order (all); MEMORY_SHARD=1 and 2 each run a
-#                   list of their own, and the two run every suite in tests/
-#                   once between them, and nothing else, each suite's
-#                   command to Valgrind e's (split). It refuses a
-#                   MEMORY_SHARD but 1 or 2 (refused), one beside a
-#                   MEMORY_SUITES on its command line or in the environment
-#                   (beside), and a shard's list, MEMORY_RUN or
-#                   MEMORY_RUN_NAME set from outside (lists), running no
-#                   suite
+#   n  shards       CI runs the gate in two shards (ADR-0014), and what
+#                   each runs is read from test-memory's own run, a
+#                   stand-in for Valgrind running nothing: with no
+#                   MEMORY_SHARD it runs every suite in tests/, in order
+#                   (all); MEMORY_SHARD=1 and 2 each run a list of their
+#                   own, and the two run every suite in tests/ once
+#                   between them, and nothing else, each suite's command
+#                   to Valgrind e's (split). It refuses a MEMORY_SHARD but
+#                   1 or 2 (refused), one beside a MEMORY_SUITES on its
+#                   command line or in the environment (beside), and a
+#                   shard's list, MEMORY_RUN or MEMORY_RUN_NAME set from
+#                   outside (lists), running no suite
 #   o  ci           .github/workflows/ci.yml runs make test-memory in two
 #                   jobs, one per shard, each line exactly "run: make
 #                   test-memory MEMORY_SHARD=1" or "=2", each job running
@@ -738,8 +737,7 @@ $(count_line 1 0 1 0)"
   want_in "$out" " suppressed: " "test-memory's own output, the suppressed total"
   # The entry's own count, from Valgrind's used_suppression line: the total
   # holds default.supp's too, and the load's mime probe, whose
-  # curl_mime_init draws a boundary, grew it by dtv-addr-tail's one block
-  # (M8 slice 3's build, research/m8/slice3/build/).
+  # curl_mime_init draws a boundary, grew it by dtv-addr-tail's one block.
   entry_used=$(grep 'used_suppression: .* guix-glibc-locpath ' "$(vlog_of "$more")" 2>/dev/null)
   case $entry_used in
     *" bytes in 2 blocks") ;;

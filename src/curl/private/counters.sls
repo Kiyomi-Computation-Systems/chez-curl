@@ -1,9 +1,9 @@
 #!r6rs
 ;;; (curl private counters): a count of every native object chez-curl
-;;; holds, by kind (ADR-0014, decision 7, amended; M2 plan, section 3.2).
+;;; holds, by kind (ADR-0014).
 ;;;
 ;;; Each count rises when an object of its kind is made, and falls when it
-;;; is freed. The counts are per process in M2. They sit behind one mutex,
+;;; is freed. The counts are per process. They sit behind one mutex,
 ;;; since two threads may each make and free objects at once. There is no
 ;;; reset: a suite compares the counts before and after, and
 ;;; (curl-testing)'s suite-exit-status fails a suite whose counts are not
@@ -12,7 +12,7 @@
 ;;;
 ;;; Each count is read and written under the mutex, inside a critical
 ;;; section (locked, below): no interrupt that escapes can leave the mutex
-;;; held (M2 fix round 2).
+;;; held.
 ;;;
 ;;; It never loads libcurl, so any suite can import it. R6RS forbids
 ;;; assigning an exported variable, so the counts are reached through
@@ -30,14 +30,14 @@
   ;;   block        a foreign block, from (curl private memory)
   ;;   easy         an easy handle, from curl_easy_init
   ;;   url          a CURLU handle, from curl_url
-  ;;   slist        a string list (M2, slice 2)
+  ;;   slist        a string list
   ;;   curl-string  a string libcurl made, for curl_free
-  ;;   transfer     a transfer (M2, slice 2)
-  ;;   multi        a multi handle, an engine's (M3, slice 2)
-  ;;   share        a share, a cookie jar's (M7, slice 4)
+  ;;   transfer     a transfer
+  ;;   multi        a multi handle, an engine's
+  ;;   share        a share, a cookie jar's
   ;;   mime         a mime handle, a multipart body's, made with its
-  ;;                transfer's easy handle (M8, slice 3); its parts are its
-  ;;                own, not counted
+  ;;                transfer's easy handle; its parts are its own,
+  ;;                not counted
   (define native-kinds '(block easy url slist curl-string transfer multi share mime))
 
   ;; The counts, one per kind, in native-kinds order, and the mutex every

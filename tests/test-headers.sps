@@ -1,7 +1,6 @@
 #!r6rs
-;;; The suite for the cap on a transfer's response headers (ADR-0040,
-;;; amended twice; the M8 plan, sections 3.3, 3.7 and 3.8): 1,000 header
-;;; lines and 102,400 bytes over the whole transfer, counted by the header
+;;; The suite for the cap on a transfer's response headers (ADR-0040): 1,000
+;;; header lines and 102,400 bytes over the whole transfer, counted by the header
 ;;; callable every transfer sets, and refused there as header-limit, a
 ;;; reason of &curl-too-large, against the test origin's head routes, their
 ;;; bytes held by test-origin and test-origin-tls.
@@ -31,15 +30,15 @@
 ;;;     trailers among a response's headers. A
 ;;;     libcurl with no row fails by name, and prints the row it measured.
 ;;;
-;;; Every refusal is read from the outcome by its reason and its class, never
-;;; by its code, which the table alone holds: 8.5.0 ends a transfer whose
-;;; HTTP/2 trailer the callable refused 0, and 8.7.1 ends one whose HTTP/2
-;;; head line it refused 56. Each transfer runs on an engine of its own, stopped after
-;;; it, so no connection outlives its test: the raw face closes after each
-;;; answer without saying so, and 8.23.0 reuses such a connection unchecked
-;;; (traps.md). Every computation that can raise runs under a guard that
-;;; names what was raised, and no expected value is #f: SRFI-64 makes #f of
-;;; a raise in the actual expression.
+;;; Every refusal is read from the outcome by its reason and its class, never by
+;;; its code, which the table alone holds: 8.5.0 ends a transfer whose HTTP/2
+;;; trailer the callable refused 0, and 8.7.1 ends one whose HTTP/2 head line it
+;;; refused 56. Each transfer runs on an engine of its own, stopped after it, so
+;;; no connection outlives its test: the raw face closes after each answer
+;;; without saying so, and 8.23.0 reuses such a connection unchecked. Every
+;;; computation that can raise runs under a guard that names what was raised,
+;;; and no expected value is #f: SRFI-64 makes #f of a raise in the actual
+;;; expression.
 (import (rnrs)
         (srfi :64)
         (only (chezscheme) parameterize)
@@ -226,15 +225,14 @@
 ;; --- the per-version table (ADR-0017) ----------------------------------------------------
 
 ;; varying-cases : (Listof (List Symbol Symbol String))
-;; The cases whose answers vary by version, each a buffered GET on a face:
-;; the cap's own refusal over HTTP/1.1, of an HTTP/2 head and of an HTTP/2
-;; trailer, by its code; libcurl's refusals before a line reaches the
-;; callable (the M8 plan, section 3.8, as slice 2 measured it): a line of
-;; 102,400 bytes over HTTP/1.1, over HTTP/2 Huffman-coded and raw; an
-;; HTTP/2 head of 131,072 bytes, past 7.85.0's 128 KiB; one past nghttp2's
-;; limit, 307,199 bytes of 256-byte lines; HTTP/2 trailers past nghttp2's
-;; limit; a trailer line of 5,000 bytes over HTTP/1.1, and over HTTP/2, the
-;; response's headers holding it on 7.85.0; and 6,000 HTTP/2 trailers.
+;; The cases whose answers vary by version, each a buffered GET on a face: the
+;; cap's own refusal over HTTP/1.1, of an HTTP/2 head and of an HTTP/2 trailer,
+;; by its code; libcurl's refusals before a line reaches the callable: a line of
+;; 102,400 bytes over HTTP/1.1, over HTTP/2 Huffman-coded and raw; an HTTP/2
+;; head of 131,072 bytes, past 7.85.0's 128 KiB; one past nghttp2's limit,
+;; 307,199 bytes of 256-byte lines; HTTP/2 trailers past nghttp2's limit; a
+;; trailer line of 5,000 bytes over HTTP/1.1, and over HTTP/2, the response's
+;; headers holding it on 7.85.0; and 6,000 HTTP/2 trailers.
 (define varying-cases
   '((cap-h1 raw "/raw/head?n=1001")
     (cap-h2-head h2 "/head?n=1001")
@@ -250,15 +248,13 @@
     (trailers-6000-h2 h2 "/head?n=2&tn=6000")))
 
 ;; rows : (Listof (Pair String (Listof (Pair Symbol Answer))))
-;; Each libcurl's answer to every varying case, written out: the Linux
-;; libcurls' measured through the engine by M8 slice 2, two runs each,
-;; every one alike (research/m8/slice2/README.md, results/probe-*.log);
-;; 8.5.0 with OpenSSL and with GnuTLS alike; Apple's 8.7.1's from the caps
-;; probe's two runs on the Mac (research/m8/caps/results/mac-8.7.1-1.log
-;; and -2.log), its cap mode's, libcurl and a header callback alone. An
-;; answer is answer-of's, (one-of ANSWER ...) for a cell that races. The
-;; header-limit rows read the recorded reason; the code beside it is
-;; libcurl's answer to the refusal.
+;; Each libcurl's answer to every varying case, written out: the Linux libcurls'
+;; measured through the engine, two runs each, every one alike; 8.5.0 with
+;; OpenSSL and with GnuTLS alike; Apple's 8.7.1's from a probe's two runs on
+;; macOS, its cap mode's, libcurl and a header callback alone. An answer is
+;; answer-of's, (one-of ANSWER ...) for a cell that races. The header-limit rows
+;; read the recorded reason; the code beside it is libcurl's answer to the
+;; refusal.
 (define rows
   '(("7.85.0"
      (cap-h1 refused header-limit 23 too-large #f)
@@ -399,13 +395,12 @@
    '(raw h2) '(17 13) '(102362 102366))
 
   ;; --- a status line is exempt only at a head's start ---------------------------------
-  ;; Lines named HTTP/1.1 x-000001 on begin as a status line does, HTTP/1.1
-  ;; and a space, and libcurl takes each as a header, on every libcurl
-  ;; measured (research/m8/slice2/build/fix/): mid-head, each is a header
-  ;; line. A trailer section's first line starts a section, where a status
-  ;; line would be exempt: named HTTP/x, it is a header line. And an HTTP/1.0
-  ;; status line is exempt as HTTP/1.1's is. HTTP/2 refuses a / in a name,
-  ;; so these are HTTP/1.1's alone.
+  ;; Lines named HTTP/1.1 x-000001 on begin as a status line does, HTTP/1.1 and a
+  ;; space, and libcurl takes each as a header, on every libcurl measured:
+  ;; mid-head, each is a header line. A trailer section's first line starts a
+  ;; section, where a status line would be exempt: named HTTP/x, it is a header
+  ;; line. And an HTTP/1.0 status line is exempt as HTTP/1.1's is. HTTP/2 refuses
+  ;; a / in a name, so these are HTTP/1.1's alone.
   (test-equal "HTTP/1.1: 1,000 header lines named HTTP/1.1 x-NNNNNN, as a status line begins, are taken, buffered and streamed; 1,001 are refused, header-limit: a status line is exempt at a head's start alone"
     (list (list taken-1000 (list taken-1000 '(head 200 1000) '(eof 0)))
           (list capped capped-stream))
@@ -469,14 +464,13 @@
                                                 'credentials '(digest "user" "secret")))))
               '("a.n=499&b.n=500" "a.n=499&b.n=501" "a.n=250&a.line=256&b.n=250&b.line=256")))))
    '(raw h2))
-  ;; A 417 and its resend, buffered alone, a caller's Expect: 100-continue:
-  ;; a stream refuses it. The resend gets a 100 Continue first, a head of
-  ;; no lines. Under the memory gate's Valgrind, 8.20.0 resent on a new
-  ;; connection once (M8 slice 2's build), so the route holds its 417 by
-  ;; key, one per request here, not by connection. libcurl's wait for the
-  ;; 417 is raised through the hatch past the transfer's bound, so the body
-  ;; never goes first, and the body is digits, never a letter the route
-  ;; would read as the next request's start.
+  ;; A 417 and its resend, buffered alone, a caller's Expect: 100-continue: a
+  ;; stream refuses it. The resend gets a 100 Continue first, a head of no lines.
+  ;; Under the memory gate's Valgrind, 8.20.0 resent on a new connection once, so
+  ;; the route holds its 417 by key, one per request here, not by connection.
+  ;; libcurl's wait for the 417 is raised through the hatch past the transfer's
+  ;; bound, so the body never goes first, and the body is digits, never a letter
+  ;; the route would read as the next request's start.
   (test-equal "HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines of 256 bytes, refused, the bytes across both"
     (list '(response 200 500) capped capped)
     (map (lambda (spec)
@@ -560,7 +554,7 @@
   'done)
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
-;; origin after: SRFI-64 keeps one result per runner (traps.md).
+;; origin after: SRFI-64 keeps one result per runner.
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))
     (parameterize ((origin-pki pki))

@@ -1,22 +1,22 @@
 #!r6rs
 ;;; The suite for the calling conventions of chez-curl's foreign procedures
-;;; and callables (ADR-0013, harness plan §3 item 3). (foreign-conventions)
-;;; reads every source file under src/ as data, evaluating nothing, finds
-;;; each foreign-procedure and foreign-callable, and holds its conventions
-;;; against conventions-table, whose rows cite the decision records. So a
-;;; call that blocks bound plain, such as curl_easy_perform in M2, fails here
-;;; at once, as does memcpy bound __collect_safe.
+;;; and callables (ADR-0013). (foreign-conventions) reads every source file
+;;; under src/ as data, evaluating nothing, finds each foreign-procedure and
+;;; foreign-callable, and holds its conventions against conventions-table,
+;;; whose rows cite the decision records. So a call that blocks bound plain,
+;;; such as curl_easy_perform, fails here at once, as does memcpy bound
+;;; __collect_safe.
 ;;;
-;;; It also holds every type to an allowlist (ADR-0013, amended): Chez's
-;;; immediate and address types, and (* NAME) or (& NAME) for an ftype
-;;; (curl private layouts) defines. Anything else, a macro's pattern
-;;; variable included, is unreadable. The other types hand C a pointer into
-;;; Chez's heap, where Valgrind sees nothing, and come in three kinds: a
-;;; bytevector's data (u8*, u16*, u32*) needs a row marked
-;;; (bytevector-crossing CITATION), which M2's checked wrapper adds first; a
-;;; string Chez copied into its heap needs a row marked (string-not-kept
-;;; CITATION), which the two loading bindings that take a name carry; and
-;;; scheme-object is never allowed.
+;;; It also holds every type to an allowlist (ADR-0013): Chez's immediate
+;;; and address types, and (* NAME) or (& NAME) for an ftype (curl private
+;;; layouts) defines. Anything else, a macro's pattern variable included, is
+;;; unreadable. The other types hand C a pointer into Chez's heap, where
+;;; Valgrind sees nothing, and come in three kinds: a bytevector's data
+;;; (u8*, u16*, u32*) needs a row marked (bytevector-crossing CITATION),
+;;; which the checked wrapper's memcpy carries; a string Chez copied into
+;;; its heap needs a row marked (string-not-kept CITATION), which the two
+;;; loading bindings that take a name carry; and scheme-object is never
+;;; allowed.
 ;;;
 ;;; The reader fails closed. Every occurrence of the symbols
 ;;; foreign-procedure and foreign-callable must be accounted for: in an
@@ -26,8 +26,8 @@
 ;;; (define name ...). So must every occurrence of a known wrapper's name:
 ;;; as the head of a use in code, outside every macro, or as the name its
 ;;; one define-syntax defines. Anything else is named, with its file and
-;;; form: the review's three routes to a plain curl_easy_setopt, a quoted
-;;; use, an alias and an argument, among them.
+;;; form: the three routes to a plain curl_easy_setopt, a quoted use, an
+;;; alias and an argument, among them.
 ;;;
 ;;; A row may name the one way its entry must be bound, (bound-by BINDER).
 ;;; ADR-0001's five variadic rows name bind-variadic, so a binding of one
@@ -37,19 +37,18 @@
 ;;; src/: a binder, a known wrapper, or plain, which neither builds a
 ;;; binding nor takes its operands apart. Written as a procedure, a plain
 ;;; macro hands its input to nothing but a syntax-violation call in tail
-;;; position, and its library imports no procedure that could take the
-;;; input apart, or build a binding from strings: A6, A9, A10 and A12 did.
-;;; A macro can take apart a form it is handed, or its own template, and
-;;; bind what it rebuilds while the reader reads the form as written: A5
-;;; and FPA4 did. So any other
-;;; define-syntax, and every let-syntax and letrec-syntax, is named. Those
-;;; three keywords stand only at the head of a form written in code, and no
-;;; listed macro's template puts a pattern variable at a form's head: the
-;;; review's load-step clause, handed define-syntax, defined a macro there.
+;;; position, and its library imports no procedure that could take the input
+;;; apart, or build a binding from strings: A6, A9, A10 and A12 did. A macro
+;;; can take apart a form it is handed, or its own template, and bind what
+;;; it rebuilds while the reader reads the form as written: A5 and FPA4 did.
+;;; So any other define-syntax, and every let-syntax and letrec-syntax, is
+;;; named. Those three keywords stand only at the head of a form written in
+;;; code, and no listed macro's template puts a pattern variable at a form's
+;;; head: a load-step with a flat second clause, handed define-syntax,
+;;; defines a macro there (the review-route fixture).
 ;;; A case clause's datum list is data, so it names no binding Chez never
-;;; makes. Each fixture tree has its own table, whose third kind, any,
-;;; holds a macro the tree uses to test another rule; known-macros has
-;;; none.
+;;; makes. Each fixture tree has its own table, whose third kind, any, holds
+;;; a macro the tree uses to test another rule; known-macros has none.
 ;;;
 ;;; Every rule has a fixture tree under tests/fixtures/conventions/<case>/,
 ;;; and each case asserts the reader's whole answer, the bindings it found
@@ -60,17 +59,16 @@
 ;;;
 ;;; ADR-0001's variadic entries, curl_easy_setopt, curl_easy_getinfo,
 ;;; curl_multi_setopt, curl_share_setopt and curl_formadd, must carry
-;;; (__varargs_after 2).
-;;; x86-64 and Linux arm64 pass variadic arguments as they pass named ones,
-;;; so a binding without it works there; only Apple arm64 shows it failing.
-;;; This suite is what fails on every platform: make check-variadic removes
-;;; the convention from bind-variadic's template, in a copy, and requires
-;;; this suite to name each of its seven uses as a mismatch, curl_easy_setopt
-;;; three times, curl_easy_getinfo, curl_multi_setopt, curl_share_setopt and
-;;; curl_formadd once each; then from each use alone, bound through
-;;; bind-required, and requires it to name that one binding, a mismatch and
-;;; a wrong binder. curl_share_setopt is bound from M7 slice 4, for an int,
-;;; and curl_formadd from M8 slice 3, for the load's mime probe's form.
+;;; (__varargs_after 2). x86-64 and Linux arm64 pass variadic arguments as
+;;; they pass named ones, so a binding without it works there; only Apple
+;;; arm64 shows it failing. This suite is what fails on every platform: make
+;;; check-variadic removes the convention from bind-variadic's template, in
+;;; a copy, and requires this suite to name each of its seven uses as a
+;;; mismatch, curl_easy_setopt three times, curl_easy_getinfo,
+;;; curl_multi_setopt, curl_share_setopt and curl_formadd once each; then
+;;; from each use alone, bound through bind-required, and requires it to
+;;; name that one binding, a mismatch and a wrong binder. curl_share_setopt
+;;; is bound for an int, and curl_formadd for the load's mime probe's form.
 ;;;
 ;;; Each call into the library runs under `outcome`, so a raise is a value
 ;;; to compare, never a #f from SRFI-64 nor a suite that dies unnamed.
@@ -340,8 +338,8 @@
              (callable-not-defined ,c "(foreign-callable (lambda (e) e) (int) int)")))
 
      ;; --- a known wrapper's name, unaccounted ---
-     ;; The review's three routes to a plain curl_easy_setopt, each with an
-     ;; unused use of bind-variadic that keeps the count, then each place.
+     ;; Three routes to a plain curl_easy_setopt, each with an unused use of
+     ;; bind-variadic that keeps the count, then each place.
      (list "wrapper-unquoted"
            "the review's A1: bind-required under an unquote, in a quasiquote, which is data"
            (listed 'binder "curl/n.sls" 'bind-required 'bind-variadic)
@@ -1105,12 +1103,11 @@
              (filter (lambda (b) (equal? (car b) key)) (car (cadr src-check))))
         src-check)))
 
-;; ADR-0001, decision 1: once per value type, each through bind-variadic,
-;; whose template carries the convention; curl_multi_setopt for a long
-;; alone (ADR-0001, amended 2026-10-25), curl_share_setopt for an int
-;; alone (M7 slice 4), and curl_formadd for the load's form of one field,
-;; two string options and CURLFORM_END (M8 slice 3). make check-variadic
-;; removes it there, and requires this suite to fail.
+;; ADR-0001: once per value type, each through bind-variadic, whose template
+;; carries the convention; curl_multi_setopt for a long alone,
+;; curl_share_setopt for an int alone, and curl_formadd for the load's form of
+;; one field, two string options and CURLFORM_END. make check-variadic removes
+;; it there, and requires this suite to fail.
 (test-equal "the scan of src/ finds curl_easy_setopt bound three times, once per value type, curl_easy_getinfo once, curl_multi_setopt once, for a long, curl_share_setopt once, for an int, and curl_formadd once, for the load's form of one field, each through bind-variadic with (__varargs_after 2)"
   '(("curl_easy_setopt" ((((__varargs_after 2)) bind-variadic)
                          (((__varargs_after 2)) bind-variadic)
@@ -1183,9 +1180,9 @@
           scheme-object (* f) (* g) (& f) (& g)))
   (outcome (lambda () (readable-types '(f g)))))
 
-;; The rows this slice adds, written out here, not read from the table: a
-;; row loosened along with its binding, curl_url_set made __collect_safe or
-;; memcpy's mark removed, would otherwise pass.
+;; The rows for strlen, the URL API and memcpy, written out here, not read
+;; from the table: a row loosened along with its binding, curl_url_set made
+;; __collect_safe or memcpy's mark removed, would otherwise pass.
 (define cannot-block-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: Calls that cannot block stay plain.")
 
@@ -1202,8 +1199,9 @@
          '("strlen" "curl_url" "curl_url_cleanup" "curl_url_set" "curl_url_get"
            "curl_url_strerror" "curl_free" "memcpy"))))
 
-;; ADR-0001's decision 1, written out here, not read from the table: a row
-;; loosened along with the binding it holds would otherwise pass.
+;; ADR-0001's sentence on the variadic entries, written out here, not read
+;; from the table: a row loosened along with the binding it holds would
+;; otherwise pass.
 (define variadic-citation
   ".plans/decisions/0001-bind-libcurl-directly.md: Variadic entry points are bound once per value type, with `(__varargs_after 2)`.")
 
@@ -1230,7 +1228,7 @@
                   (member '(bound-by bind-variadic) (cdddr row))))
             conventions-table)))
 
-;; ADR-0013's decision 1, and spike E1's finding, written out here, not
+;; ADR-0013's sentences on the calls that can block, written out here, not
 ;; read from the table: a row loosened along with its binding, a call that
 ;; can block made plain or its binder dropped, would otherwise pass.
 (define can-block-citation
@@ -1239,19 +1237,17 @@
   ".plans/decisions/0013-collect-safe-blocking-calls.md: `curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block, so each is `__collect_safe`.")
 (define e1-plain-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: These stay plain: `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`, `curl_multi_info_read`, and `curl_easy_cleanup` of a handle removed from a multi handle the caller made.")
-;; curl_easy_pause, the engine's resume (the M6 plan, section 3.4): its
-;; replay runs the callables inside it, as a perform does, and a replay of
-;; a gzip body ran 21.647 ms, holding another thread's collection when the
-;; call was plain (the plan's section 4.1, as measured).
+;; curl_easy_pause, the engine's resume: its replay runs the callables
+;; inside it, as a perform does, and a replay of a gzip body ran 21.647 ms,
+;; holding another thread's collection when the call was plain.
 (define pause-citation
   ".plans/decisions/0012-engine-thread-owns-every-handle.md: so the callbacks run on the engine's thread, inside that call, as inside a perform.")
 ;; curl_mime_filedata stats its path, and on 7.85.0 and 8.5.0 accesses it
-;; (the M8 plan, section 3.9): ADR-0013's decision 1.
+;; (ADR-0013).
 (define filedata-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: A libcurl call that can block is a `__collect_safe` foreign procedure.")
 
-;; The calls that can block (M3 plan, section 3.2), each bound through
-;; bind-blocking.
+;; The calls that can block, each bound through bind-blocking.
 (define blocking-entries
   '("curl_multi_poll" "curl_multi_perform" "curl_multi_remove_handle" "curl_multi_cleanup"))
 
@@ -1280,7 +1276,7 @@
   (map (lambda (key) (list key (bound-via key)))
        (append blocking-entries '("curl_easy_pause" "curl_mime_filedata" "curl_easy_perform"))))
 
-;; ADR-0013's decision 2, as spike E1 held it, written out here.
+;; ADR-0013's sentence on the engine's write callable, written out here.
 (define callback-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: So the engine's write callable is `__collect_safe`, as its perform is.")
 
@@ -1324,9 +1320,8 @@
   (map (lambda (key) (list key (bound-via key)))
        '("curl_easy_strerror" "curl_easy_nextheader" "curl_slist_append" "curl_slist_free_all")))
 
-;; Spike E1's plain rows (M3 slice 1; ADR-0013, accepted), written out
-;; here, not read from the table: a row loosened along with its binding
-;; would otherwise pass.
+;; The multi calls' rows (ADR-0013), written out here, not read from the
+;; table: a row loosened along with its binding would otherwise pass.
 (test-equal "the table's rows for what spike E1 measured: curl_multi_perform, curl_multi_remove_handle and curl_multi_cleanup __collect_safe, through bind-blocking, and curl_multi_init, curl_multi_add_handle, curl_multi_wakeup, curl_multi_info_read and curl_easy_cleanup plain, each citing ADR-0013's acceptance, with no mark"
   (append (map (lambda (key) (list key '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking)))
                '("curl_multi_perform" "curl_multi_remove_handle" "curl_multi_cleanup"))
@@ -1347,8 +1342,8 @@
        '("curl_multi_init" "curl_multi_add_handle" "curl_multi_wakeup" "curl_multi_info_read"
          "curl_multi_strerror")))
 
-;; The mime API but curl_mime_filedata, and curl_formfree (M8 slice 3):
-;; each a call into libcurl's own memory, which waits on nothing.
+;; The mime API but curl_mime_filedata, and curl_formfree: each a call
+;; into libcurl's own memory, which waits on nothing.
 (test-equal "the table's rows for curl_mime_init, curl_mime_free, curl_mime_addpart, curl_mime_name, curl_mime_data, curl_mime_filename, curl_mime_type and curl_formfree are plain, citing ADR-0013's cannot-block sentence, with no mark and no binder"
   (map (lambda (key) (list key '() cannot-block-citation))
        '("curl_mime_init" "curl_mime_free" "curl_mime_addpart" "curl_mime_name" "curl_mime_data"
@@ -1379,7 +1374,7 @@
 (define not-kept-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: `curl_easy_option_by_name` and `curl_easy_header` read their name argument during the call, and keep no pointer to it.")
 
-;; M2's checked copies add the first bytevector-crossing mark, memcpy's.
+;; The checked wrapper's bytevector-crossing mark is memcpy's.
 (test-equal "the table marks exactly curl_easy_option_by_name and curl_easy_header, each string-not-kept, citing what their callees keep, and memcpy, the bytevector crossing, citing the one checked wrapper"
   `(("curl_easy_option_by_name" (string-not-kept ,not-kept-citation))
     ("curl_easy_header" (string-not-kept ,not-kept-citation))
