@@ -6,35 +6,29 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **M8, multipart, the header cap, the docs and v0.1.0:** in progress. The
-  [M8 plan](2026-11-06-m8-plan.md) merged as PR #49 (`74d7aca`), CI passing all eight jobs on it.
-  Six slices now: the memory job in two; the header cap; multipart; the docs; headers and JSON;
-  the release. Slices 1 to 5 are merged: the memory job in two as PR #50 (`9fdb9f3`), the header
-  cap as PR #51 (`bd54721`), multipart as PR #52 (`fb62a0b`), the docs as PR #53 (`9d2f573`),
-  headers and JSON as PR #54 (`d6ca0ba`); their close-outs are below. Slice 6, the release, is in
-  progress on `feat/m8-release`. The maintainer made the repository public on 2026-11-08, after
-  `main`'s push run for `d6ca0ba` was stopped by the account's billing: the records that say it is
-  private are amended on this slice. Built: CHANGELOG.md's 0.1.0 entry, `Akku.manifest` at 0.1.0,
-  and `test-manifest` holding it to the changelog's latest release. Reviewed (Opus, read-only):
-  no blocker; three majors, each reproduced or read against the suites' rows, and fixed: a
-  refused URL's reason moves with the version, a head can meet libcurl's own limit before the
-  cap, and seven changelog shapes passed the reader, a release appended below an older one among
-  them. The reader now holds the heading's level and indent, fences, the versions' order and the
-  dates; sixteen mutants of it fail it but one, which is equivalent
-  ([research](research/m8/slice6/verify/)). Three doc passages and README.org's Status
-  corrected. CI's main chain passed in the container. The Mac's `make test` at `08eca49`: 44 of
-  46, a check in `test-curl-testing` and one in `test-origin-tls` failing on OpenSSL 4.1.0's new
-  `Public-Key:` line, Homebrew having moved the Mac from 3.6.3
-  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-openssl41.log)). Reproduced in the container
-  with a static OpenSSL 4.0.0, and fixed: `p256-key-text` gives the line by `openssl version`,
-  and its three mutants fail ([research](research/m8/slice6/verify/openssl4/)); the trap is
-  recorded. The Mac's rerun at `f59f7ef`, under OpenSSL 4.1.0: 46 of 46
-  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-2.log)), the multipart reset race answering
-  55 this time, which its row holds.
+- **M8, multipart, the header cap, the docs and v0.1.0:** **done on 2026-11-11.** Its six slices
+  are merged (PRs #50 to #55): the memory job in two, the header cap, multipart, the docs, headers
+  and JSON, and the release, per the [M8 plan](2026-11-06-m8-plan.md), merged as PR #49
+  (`74d7aca`). A sweep of the comments followed as PR #56 (`ecfdbf1`), and `v0.1.0` is tagged on
+  it, signed and annotated. The Mac ran `make test` on every slice. The repository has been public
+  since 2026-11-08. Their close-outs are below.
+  - **Decided by the maintainer, 2026-11-11,** each the recommended option: the comments in
+    `src/` and `tests/` speak to a developer, a bare ADR number kept as a pointer to why; test
+    names, printed messages and the tables' `where` strings keep their wording for now; no Mac
+    run for that sweep, since no code changed; then the tag, on its squash.
   - **Decided by the maintainer, 2026-11-10,** the recommended option where one was given: the
     repository stays public; v0.1.0 is the tag alone, no GitHub Release and no Akku; a Linux
     arm64 lane, free in a public repository, waits past M8, so 0.1.0 claims Linux amd64 and macOS
     arm64 as planned (ADR-0038, amended 2026-11-10).
+  - **Carried past M8:**
+    - a Linux arm64 lane (ADR-0038, amended 2026-11-10);
+    - M7's still carried, under M7 below: the curl bug report, slice 1's floor flake, and #47's
+      fix round's six minors;
+    - README.org's install steps clone `main`, not the tag;
+    - no `.akkuignore`, which both siblings have, for when Akku is decided;
+    - what the comment sweep left: about 50 test names and printed messages that still cite
+      plans, slices or reviews, the tables' `where` strings, and the comments in `scripts/`, the
+      `Makefile` and `.github/`.
   - **Decided by the maintainer, 2026-11-08,** each the recommended option: a slice before the
     release, headers and a JSON API, so 0.1.0's docs hold it; jsonparse as one pinned submodule,
     byte-machine nested in it, a dependency of one example alone; one page, Headers and JSON.
@@ -275,6 +269,108 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-11 — M8 slice 6: the 0.1.0 release (PR #55, `2f83de9`), tagged `v0.1.0` on `ecfdbf1`
+
+- **Decided by the maintainer, 2026-11-10,** the recommended option where one was given: the
+  repository stays public; v0.1.0 is the signed tag alone, no GitHub Release and no Akku; a Linux
+  arm64 lane waits past M8 (ADR-0038, amended 2026-11-10). On 2026-11-11: the comment sweep
+  before the tag, and the tag on its squash.
+- **Built** (the plan, §3.6): CHANGELOG.md's 0.1.0 entry, in Keep a Changelog's form, what each
+  area adds and its known limitations; `Akku.manifest` at 0.1.0; `test-manifest` holding the
+  manifest's version to the changelog's latest release, its reader refusing a release heading at
+  another level, indented, out of order by version or date, or badly dated, and reading no
+  heading inside a fence; slice 5's close-out. And, from the Mac's first run, `p256-key-text`:
+  OpenSSL 4 writes a P-256 key as `Public-Key: (256 bit field, 128 bit security level)`, where
+  OpenSSL 3 and LibreSSL write `(256 bit)`.
+- **Watched failing:** my 7 mutants on the first reader, each caught, and 16 on the rewritten
+  one, each caught but one, which is equivalent; `p256-key-text`'s 3.
+- **Reviewed** (Opus, read-only): no blocker; three majors, each reproduced or read against the
+  suites' rows, and fixed: a refused URL's reason moves with the version; a head can meet
+  libcurl's own limit before the cap; seven changelog shapes passed the reader, a release
+  appended below an older one among them. The review's 20 shapes each give the right answer now.
+  Its minors are answered, among them the public date, 2026-11-08 by the commits' clock.
+- **Checked:** CI's main chain in the container, three times, 46 of 46 each; `make check-pins` on
+  the host; a static OpenSSL 4.0.0 in the container failing the old suites' two checks and
+  passing the fixed ones ([research](research/m8/slice6/verify/openssl4/)). The Mac at `08eca49`:
+  44 of 46 under OpenSSL 4.1.0
+  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-openssl41.log)); at `f59f7ef`, 46 of 46
+  ([log](research/m8/slice6/mac/mac-8.7.1-make-test-2.log)).
+- **CI:** at `96e7605`, all nine passed ([jobs](research/m8/slice6/ci/pr55-run-43003943605-jobs.txt)):
+  `memory-1` 18 min 14 s, `memory-2` 17 min 33 s.
+- **The release, as §3.6 lists it:**
+  1. `main`'s push run for `2f83de9`, read: all nine passed
+     ([jobs](research/m8/slice6/ci/main-run-43007331172-jobs.txt)), `memory-1` 15 min 45 s,
+     `memory-2` 20 min 48 s.
+  2. The squash's tree, `124030b`, the same as the tested branch's.
+  3. Then, by the maintainer's choice, the comment sweep, merged as PR #56 (`ecfdbf1`), its tree
+     the same as its branch's; its close-out is below.
+  4. `v0.1.0` on `ecfdbf1`, annotated and signed by the release key, made and pushed by me when
+     the maintainer asked, 2026-11-11.
+  5. CI's run on the tag, read: all nine passed
+     ([jobs](research/m8/slice6/ci/tag-v0.1.0-run-43140488154-jobs.txt)), `memory-1` 17 min 51 s,
+     `memory-2` 20 min 12 s.
+
+  CHANGELOG.md's entry keeps 2026-11-10, the day it was written.
+- **Subagents,** each Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | changelog writer | 191k | 7 min |
+  | adversarial review | 297k | 16 min |
+- **Learned:**
+  - my first reader passed seven shapes the review planted: I had mutated my own rules, not
+    inputs I had not imagined;
+  - a summary inherits its sources' overreach: the changelog took "alike on every libcurl" from
+    `docs/errors.md`, and the suites' by-version rows caught it;
+  - the Mac's tools move under it: Homebrew moved `openssl` from 3.6.3 to 4.1.0 between two
+    slices' runs, and a static build in the container reproduced the failure in two runs;
+  - a record takes the commits' local date, never CI's UTC day.
+
+### 2026-11-11 — comments for developers, before the tag (PR #56, `ecfdbf1`)
+
+- **Asked by the maintainer, 2026-11-11:** every comment in `src/` and `tests/` for a developer
+  reading the code, not a way post for whoever built it. **Decided,** each the recommended
+  option: a bare ADR number stays, as a pointer to why, its amendment dates and decision numbers
+  gone; comments alone, so test names, printed messages and the tables' `where` strings keep
+  their wording; no Mac run, since no code changed.
+- **Changed:** 109 files, comments alone. Gone: milestones, slices and plan sections; reviews and
+  audits as provenance; paths into `research/` and `build/`; pointers to `traps.md` and
+  AGENTS.md; dates of the work, the maintainer, and the Mac as a machine. History reads in the
+  present tense. Fixed on the way: `check-seam.sps` named two of the five callables
+  `transfer.sls` locks.
+- **Checked:** every edited Scheme file reads as the same datums as its `main` copy, so no code,
+  string or test name changed; the shell, JS and `.supp` files changed in comment lines alone;
+  the C files compile to the same code. Each check failed on planted edits first. In the
+  container: `make test`, 46 of 46, before the review's fixes and after; `check-test-fails`,
+  `check-variadic`, `check-dev`, `check-clean`, and `check-memory-gate`'s 45 cases.
+- **Reviewed** (Opus, read-only): the `check-seam.sps` comment, false before the sweep; one
+  research case id left; 23 minors, dangling referents and history in the past tense. All fixed.
+- **CI:** at `298e2c0`, all nine passed ([jobs](research/m8/slice6/ci/pr56-run-43032415214-jobs.txt)):
+  `memory-1` 18 min 6 s, `memory-2` 13 min 36 s. `main`'s push run for `ecfdbf1` failed all nine
+  at apt, before any build: the runners could not resolve `azure.archive.ubuntu.com`. The
+  maintainer chose a rerun, which passed all nine
+  ([jobs](research/m8/slice6/ci/main-run-43036302250-jobs.txt)): `memory-1` 21 min 21 s,
+  `memory-2` 17 min 4 s.
+- **Subagents:** seven on disjoint file groups, each Sonnet, and a review on Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | `transfer.sls` | 318k | 13 min |
+  | engine, conditions, native, constants | 275k | 11 min |
+  | the rest of `src/` | 282k | 12 min |
+  | 5 suites | 206k | 9 min |
+  | 9 suites | 336k | 18 min |
+  | 15 suites and scripts | 252k | 15 min |
+  | 68 smaller files | 261k | 18 min |
+  | adversarial review (Opus) | 391k | 12 min |
+- **Learned:**
+  - a reader that skips comments proves a comment-only change: the Scheme reader's datums, before
+    and after;
+  - agents briefed with a search pattern find what it names: spike E1, a mutation log and "watched
+    failing on a mutant" stayed until my scan of every comment line;
+  - parallel agents share the session's scratchpad, and two overwrote each other's helper
+    scripts: a brief names each agent's own scratch directory.
 
 ### 2026-11-08 — M8 slice 5: headers and a JSON API, with jsonparse (PR #54, `d6ca0ba`)
 
