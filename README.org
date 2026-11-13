@@ -2,14 +2,15 @@
 
 [[https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/workflows/ci.yml][https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/workflows/ci.yml/badge.svg]]
 
-An HTTP Client for Chez Scheme built on libcurl.
+An HTTP Client for Chez Scheme built on [[https://curl.se/libcurl/][libcurl]].
 
 #+begin_quote
 ✨ *AI Disclosure:* LLMs are used extensively in the planning and development of this project.
 #+end_quote
 
-chez-curl is an HTTP client for Chez Scheme. It binds libcurl through Chez's
-foreign interface, and checks what you hand it before any of it reaches C.
+chez-curl is an HTTP client for Chez Scheme. It binds
+[[https://curl.se/libcurl/][libcurl]] through Chez's foreign interface, and checks what you hand it
+before any of it reaches C.
 
 It has two levels:
 
@@ -31,7 +32,7 @@ chez-curl 0.1.0 is its first release. Its suites run on:
 
 - Linux on amd64, on curl's own 7.85.0 and 8.23.0, built from source, Ubuntu's
   8.5.0 with OpenSSL and with GnuTLS, and Guix's 8.20.0;
-- macOS on arm64, with Apple's libcurl 8.7.1.
+- macOS on arm64, with Apple's [[https://curl.se/libcurl/][libcurl]] 8.7.1.
 
 Linux on arm64 and macOS on amd64 have not run them. Windows is not
 supported. [[file:docs/libcurl-versions.md][What varies by libcurl]] lists each behaviour in which these
@@ -53,15 +54,15 @@ examples call; a program using chez-curl never needs it. The tests also need
 ** Installing
 
 Clone a release's tag, and put its =src= directory on Chez's library path.
-There is nothing to build: libcurl is loaded when your program runs.
+There is nothing to build: [[https://curl.se/libcurl/][libcurl]] is loaded when your program runs.
 
 #+begin_src sh
 git clone --branch v0.1.0 https://github.com/Kiyomi-Computation-Systems/chez-curl.git
 scheme --libdirs chez-curl/src --program app.sps
 #+end_src
 
-chez-curl finds the system's libcurl; =CHEZ_CURL_LIBCURL= names another, by
-its absolute path. The [[file:docs/quickstart.md][quick start]] says more.
+chez-curl finds the system's [[https://curl.se/libcurl/][libcurl]]; =CHEZ_CURL_LIBCURL= names another,
+by its absolute path. The [[file:docs/quickstart.md][quick start]] says more.
 
 ** A taste
 
