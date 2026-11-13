@@ -9,6 +9,10 @@ At the high level, a request group does it, and `http-parallel` does it for a
 list. At the low level, submit many requests to one engine and await their
 tokens, or take them from a mailbox ([The low level](low-level.md)).
 
+The examples on this page call the test server: start it first, with
+`node tests/origin.mjs`, and give an example the address after `"http":` in
+the line it prints, not `raw`'s or `h2c`'s ([The examples](README.md#the-examples)).
+
 ```scheme example=examples/group.sps
     ;; http-parallel: a list of calls, at most two at once; the responses
     ;; come back in the list's order, whichever ends first.

@@ -1,12 +1,18 @@
 #!r6rs
 ;;; json-api.sps: a JSON API, called with the headers it insists on. The
-;;; origin's /json stands in for one: it answers 406 unless Accept names
+;;; test server's /json stands in for one: it answers 406 unless Accept names
 ;;; application/json, and refuses a body unless its Content-Type does. This
 ;;; sends JSON that jsonparse writes, decodes what comes back, and prints a
 ;;; few lines. It needs jsonparse, a submodule: on the host, once,
 ;;; git submodule update --init --recursive, then make deps, which links it
-;;; into build/scheme-libs. Run it from the repository's root, URL the test
-;;; server's base URL with no trailing / (docs/README.md says how to start one):
+;;; into build/scheme-libs.
+;;; Start the test server first, from the repository's root, in a terminal
+;;; of its own, and leave it running:
+;;;   node tests/origin.mjs
+;;; It prints one line, {"node":...,"http":"127.0.0.1:PORT","raw":...}, PORT
+;;; a new one at each start, and serves until Ctrl-D. Then run this from the
+;;; root, URL being http:// and the address after "http": (raw's and h2c's
+;;; speak other protocols), with no trailing /:
 ;;;   scheme --libdirs src:build/scheme-libs --program examples/json-api.sps URL
 (import (rnrs) (http-client) (jsonparse easy))
 

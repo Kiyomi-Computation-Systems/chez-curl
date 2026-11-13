@@ -1,8 +1,14 @@
 #!r6rs
 ;;; form-and-params.sps: params on a GET's query, and a form as a POST's body.
-;;; The origin's /echo answers with the request it got; this prints a few lines.
-;;; Run it from the repository's root, URL the test server's base URL with no
-;;; trailing / (docs/README.md says how to start one):
+;;; The test server's /echo answers with the request it got; this prints a
+;;; few lines.
+;;; Start the test server first, from the repository's root, in a terminal
+;;; of its own, and leave it running:
+;;;   node tests/origin.mjs
+;;; It prints one line, {"node":...,"http":"127.0.0.1:PORT","raw":...}, PORT
+;;; a new one at each start, and serves until Ctrl-D. Then run this from the
+;;; root, URL being http:// and the address after "http": (raw's and h2c's
+;;; speak other protocols), with no trailing /:
 ;;;   scheme --libdirs src --program examples/form-and-params.sps URL
 (import (rnrs) (http-client))
 

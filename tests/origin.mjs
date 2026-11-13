@@ -1,6 +1,9 @@
-// tests/origin.mjs: chez-curl's test origin (ADR-0005). One ES module, Node's
-// standard library only, for Node 20 and later (measured on 20.10.0 and
-// 24.18.0).
+// tests/origin.mjs: chez-curl's test origin (ADR-0005), the test server the
+// suites and examples/ call. One ES module, Node's standard library only, for
+// Node 20 and later (measured on 20.10.0 and 24.18.0). make test starts its
+// own; to run an example by hand, start it with no argument and give the
+// example the address after "http": in the line it prints (docs/README.md,
+// "The examples").
 //
 // The contract:
 //   - `node tests/origin.mjs [--pki DIR | --selftest [PLANT]]`. With no

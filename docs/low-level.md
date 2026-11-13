@@ -5,6 +5,10 @@ runs it, on a thread of its own, and hands you a token at once. The token
 gives you the response when the transfer ends. Nothing is followed or retried
 for you.
 
+The examples on this page call the test server: start it first, with
+`node tests/origin.mjs`, and give an example the address after `"http":` in
+the line it prints, not `raw`'s or `h2c`'s ([The examples](README.md#the-examples)).
+
 ```scheme example=examples/engine-and-tokens.sps
 ;; One engine: a thread of its own, which runs every transfer submitted.
 (define engine (make-curl-engine))

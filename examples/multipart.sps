@@ -1,8 +1,14 @@
 #!r6rs
 ;;; multipart.sps: a multipart/form-data POST of a string, bytes and a file.
-;;; The origin's /parts reports each part it got; this prints those lines.
-;;; Run it from the repository's root, URL the test server's base URL with no
-;;; trailing / (docs/README.md says how to start one):
+;;; The test server's /parts reports each part it got; this prints those
+;;; lines.
+;;; Start the test server first, from the repository's root, in a terminal
+;;; of its own, and leave it running:
+;;;   node tests/origin.mjs
+;;; It prints one line, {"node":...,"http":"127.0.0.1:PORT","raw":...}, PORT
+;;; a new one at each start, and serves until Ctrl-D. Then run this from the
+;;; root, URL being http:// and the address after "http": (raw's and h2c's
+;;; speak other protocols), with no trailing /:
 ;;;   scheme --libdirs src --program examples/multipart.sps URL
 (import (rnrs) (http-client))
 
