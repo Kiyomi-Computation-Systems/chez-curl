@@ -11,7 +11,7 @@ the examples' test server alone.
 ## Get it
 
 ```sh
-git clone https://github.com/Kiyomi-Computation-Systems/chez-curl.git
+git clone --branch v0.1.1 https://github.com/Kiyomi-Computation-Systems/chez-curl.git
 ```
 
 There is no build step. chez-curl is Scheme source that loads libcurl when
