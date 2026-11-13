@@ -1,9 +1,14 @@
 #!r6rs
 ;;; stream-download.sps: a response's body read from a port as it arrives,
-;;; never held whole. The origin's /pattern/N sends N bytes, byte i being
-;;; i mod 251; this counts them and checks each.
-;;; Run it from the repository's root, URL the test server's base URL with no
-;;; trailing / (docs/README.md says how to start one):
+;;; never held whole. The test server's /pattern/N sends N bytes, byte i
+;;; being i mod 251; this counts them and checks each.
+;;; Start the test server first, from the repository's root, in a terminal
+;;; of its own, and leave it running:
+;;;   node tests/origin.mjs
+;;; It prints one line, {"node":...,"http":"127.0.0.1:PORT","raw":...}, PORT
+;;; a new one at each start, and serves until Ctrl-D. Then run this from the
+;;; root, URL being http:// and the address after "http": (raw's and h2c's
+;;; speak other protocols), with no trailing /:
 ;;;   scheme --libdirs src --program examples/stream-download.sps URL
 (import (rnrs) (http-client))
 

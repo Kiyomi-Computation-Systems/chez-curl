@@ -1,9 +1,14 @@
 #!r6rs
 ;;; stream-upload.sps: with (curl), a PUT whose body is put a piece at a
-;;; time while the transfer runs. The origin's /sink reads the body and
-;;; answers one summary line; this prints a few of its fields.
-;;; Run it from the repository's root, URL the test server's base URL with no
-;;; trailing / (docs/README.md says how to start one):
+;;; time while the transfer runs. The test server's /sink reads the body
+;;; and answers one summary line; this prints a few of its fields.
+;;; Start the test server first, from the repository's root, in a terminal
+;;; of its own, and leave it running:
+;;;   node tests/origin.mjs
+;;; It prints one line, {"node":...,"http":"127.0.0.1:PORT","raw":...}, PORT
+;;; a new one at each start, and serves until Ctrl-D. Then run this from the
+;;; root, URL being http:// and the address after "http": (raw's and h2c's
+;;; speak other protocols), with no trailing /:
 ;;;   scheme --libdirs src --program examples/stream-upload.sps URL
 (import (rnrs) (curl))
 

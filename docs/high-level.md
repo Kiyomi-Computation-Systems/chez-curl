@@ -4,6 +4,10 @@ A session holds one engine, and the defaults its calls share. A call takes
 its session first, blocks its thread until the response, and answers it
 whatever the status: a status is data.
 
+The examples on this page call the test server: start it first, with
+`node tests/origin.mjs`, and give an example the address after `"http":` in
+the line it prints, not `raw`'s or `h2c`'s ([The examples](README.md#the-examples)).
+
 ```scheme example=examples/quick-start.sps
 (call-with-http-session
  (lambda (session)

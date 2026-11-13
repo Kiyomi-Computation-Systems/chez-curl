@@ -34,8 +34,8 @@ chez-curl 0.1.0 is its first release. Its suites run on:
 - macOS on arm64, with Apple's libcurl 8.7.1.
 
 Linux on arm64 and macOS on amd64 have not run them. Windows is not
-supported. [[file:docs/libcurl-versions.md][What varies by libcurl]] lists each behaviour that differs by
-version.
+supported. [[file:docs/libcurl-versions.md][What varies by libcurl]] lists each behaviour in which these
+libcurls differ.
 
 The API may change in any release before 1.0. [[file:CHANGELOG.md][CHANGELOG.md]] lists what each
 release changes.
@@ -46,13 +46,17 @@ release changes.
 - libcurl 7.85.0 or later, built with TLS
 - Node.js 20 or later, for the tests
 
+Node.js runs the test server, =tests/origin.mjs=, which the tests and the
+examples call; a program using chez-curl never needs it. The tests also need
+=openssl= and GNU =timeout=.
+
 ** Installing
 
-Clone the repository, and put its =src= directory on Chez's library path.
+Clone a release's tag, and put its =src= directory on Chez's library path.
 There is nothing to build: libcurl is loaded when your program runs.
 
 #+begin_src sh
-git clone https://github.com/Kiyomi-Computation-Systems/chez-curl.git
+git clone --branch v0.1.0 https://github.com/Kiyomi-Computation-Systems/chez-curl.git
 scheme --libdirs chez-curl/src --program app.sps
 #+end_src
 
@@ -61,8 +65,12 @@ its absolute path. The [[file:docs/quickstart.md][quick start]] says more.
 
 ** A taste
 
-=examples/quick-start.sps=, given the test server's base URL, with no trailing
-=/= ([[file:docs/quickstart.md][quick start]]):
+=examples/quick-start.sps= calls the test server, so start that first, from
+the repository's root, and leave it running: =node tests/origin.mjs=. It
+prints a line of addresses, a new port at each start; the example takes
+=http://= and the one after ~"http":~, not =raw='s or =h2c='s, as its base
+URL, with no trailing =/=
+([[file:docs/quickstart.md][quick start]]):
 
 #+begin_src scheme :example examples/quick-start.sps
 (import (rnrs) (http-client))

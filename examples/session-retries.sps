@@ -3,8 +3,13 @@
 ;;; retry policy. The test server's /parts?key=K&fail=2 answers 503 to K's
 ;;; first two requests, then 200. It counts K for as long as it runs, so
 ;;; each run takes a key it has never counted.
-;;; Run it from the repository's root, URL the test server's base URL with no
-;;; trailing / (docs/README.md says how to start one):
+;;; Start the test server first, from the repository's root, in a terminal
+;;; of its own, and leave it running:
+;;;   node tests/origin.mjs
+;;; It prints one line, {"node":...,"http":"127.0.0.1:PORT","raw":...}, PORT
+;;; a new one at each start, and serves until Ctrl-D. Then run this from the
+;;; root, URL being http:// and the address after "http": (raw's and h2c's
+;;; speak other protocols), with no trailing /:
 ;;;   scheme --libdirs src --program examples/session-retries.sps URL
 (import (rnrs) (http-client))
 

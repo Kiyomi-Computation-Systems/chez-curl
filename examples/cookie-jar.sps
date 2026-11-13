@@ -1,9 +1,15 @@
 #!r6rs
 ;;; cookie-jar.sps: with (curl), a cookie jar that keeps what a server sets,
-;;; sends it back, and takes lines loaded into it. The origin's /cookies
-;;; sets the cookies its set= names, and /echo answers the request it got.
-;;; Run it from the repository's root, URL the test server's base URL with no
-;;; trailing / (docs/README.md says how to start one):
+;;; sends it back, and takes lines loaded into it. The test server's
+;;; /cookies sets the cookies its set= names, and /echo answers the request
+;;; it got.
+;;; Start the test server first, from the repository's root, in a terminal
+;;; of its own, and leave it running:
+;;;   node tests/origin.mjs
+;;; It prints one line, {"node":...,"http":"127.0.0.1:PORT","raw":...}, PORT
+;;; a new one at each start, and serves until Ctrl-D. Then run this from the
+;;; root, URL being http:// and the address after "http": (raw's and h2c's
+;;; speak other protocols), with no trailing /:
 ;;;   scheme --libdirs src --program examples/cookie-jar.sps URL
 (import (rnrs) (curl))
 

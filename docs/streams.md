@@ -3,6 +3,10 @@
 A stream moves a body a piece at a time, so a big download or upload is
 never held whole. Each level streams both ways.
 
+The examples on this page call the test server: start it first, with
+`node tests/origin.mjs`, and give an example the address after `"http":` in
+the line it prints, not `raw`'s or `h2c`'s ([The examples](README.md#the-examples)).
+
 ## Reading a response as it arrives
 
 **At the high level,** `call-with-response-port` makes the call, and hands

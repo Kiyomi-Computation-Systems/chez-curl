@@ -118,11 +118,14 @@ R6RS one, through `(jsonparse easy)`.
 **Getting jsonparse:** it is a submodule of this repository, for the example
 alone, with byte-machine, which its parser imports, a submodule of its own.
 Fetch both once, on a clone, and link them into `build/scheme-libs`; then
-run the example against the test server ([the examples](README.md#the-examples)):
+start the test server, in a terminal of its own, and run the example against
+the address after `"http":` in the line it prints
+([the examples](README.md#the-examples)):
 
 ```sh
 git submodule update --init --recursive
 make deps
+node tests/origin.mjs        # in its own terminal; prints the http address
 scheme --libdirs src:build/scheme-libs --program examples/json-api.sps http://127.0.0.1:PORT
 ```
 

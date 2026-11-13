@@ -74,9 +74,12 @@ node tests/origin.mjs
 ```
 
 It prints one line, such as `{"node":...,"http":"127.0.0.1:40001",...}`, and
-serves until its input ends: Ctrl-D, or Ctrl-C. Its `http` is the server's
-address. The example takes its base URL, `http://127.0.0.1:40001` here, with
-no trailing `/`, since it adds its own path. In another terminal:
+serves until its input ends: Ctrl-D, or Ctrl-C. Leave it running. The address
+after `"http":` is the one an example takes; `raw` and `h2c` are other faces,
+which speak other protocols. The system picks each port, a new one at each
+start, so use the one yours prints. The example takes its base URL,
+`http://127.0.0.1:40001` here, with no trailing `/`, since it adds its own
+path. In another terminal:
 
 ```sh
 scheme --libdirs src --program examples/quick-start.sps http://127.0.0.1:40001

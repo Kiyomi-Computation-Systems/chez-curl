@@ -5,6 +5,10 @@ raises when it was refused before it was sent; when its transfer failed; when
 an answer came past what you allowed, a body past `body-limit` or headers past
 the cap; and when it met a redirect it will not follow.
 
+The examples on this page call the test server: start it first, with
+`node tests/origin.mjs`, and give an example the address after `"http":` in
+the line it prints, not `raw`'s or `h2c`'s ([The examples](README.md#the-examples)).
+
 ```scheme example=examples/errors.sps
     ;; A 404 is an answer, not an error.
     (show (http-response-status (http-get session (url "/status/404"))))

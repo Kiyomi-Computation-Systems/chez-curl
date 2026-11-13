@@ -4,6 +4,10 @@
 retries only by a policy you give. Each request a redirect or a retry makes
 is a transfer of its own.
 
+The examples on this page call the test server: start it first, with
+`node tests/origin.mjs`, and give an example the address after `"http":` in
+the line it prints, not `raw`'s or `h2c`'s ([The examples](README.md#the-examples)).
+
 ```scheme example=examples/session-retries.sps
 (call-with-http-session 'timeout-ms 10000
                         'retry (make-http-retry 'attempts 3 'backoff-ms 10 'statuses '(503))

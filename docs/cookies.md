@@ -4,6 +4,10 @@ A cookie jar keeps the cookies servers set, and sends them back where they
 belong. Nothing keeps cookies unless you ask: no request sends or stores one
 without a jar.
 
+The examples on this page call the test server: start it first, with
+`node tests/origin.mjs`, and give an example the address after `"http":` in
+the line it prints, not `raw`'s or `h2c`'s ([The examples](README.md#the-examples)).
+
 ## At the high level
 
 A session made with `cookies #t` keeps a jar on its engine. Every call of the
