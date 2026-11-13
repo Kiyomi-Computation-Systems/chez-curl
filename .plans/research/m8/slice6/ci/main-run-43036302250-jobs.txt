@@ -1,0 +1,25 @@
+run 43036302250 at ecfdbf1532fc5e1abaeb6c000e5ffec0230bd4de
+failure
+main (checks and suites, Chez built from source)	failure	2026-11-11T14:12:54Z	2026-11-11T14:20:32Z
+current (the suites against the current libcurl, built from source)	failure	2026-11-11T14:12:54Z	2026-11-11T14:20:33Z
+memory-1 (the Valgrind gate, shard 1 of 2)	failure	2026-11-11T14:12:54Z	2026-11-11T14:20:31Z
+floor-disabled-api (header API disabled, make build must refuse it)	failure	2026-11-11T14:12:54Z	2026-11-11T14:20:36Z
+nothreads (every public library is refused on a Chez without threads)	failure	2026-11-11T14:12:55Z	2026-11-11T14:20:27Z
+floor (the suites against libcurl at its floor)	failure	2026-11-11T14:12:54Z	2026-11-11T14:20:31Z
+floor-disabled-api (options API disabled, make build must refuse it)	failure	2026-11-11T14:12:55Z	2026-11-11T14:20:33Z
+memory-2 (the Valgrind gate, shard 2 of 2)	failure	2026-11-11T14:12:54Z	2026-11-11T14:20:32Z
+gnutls (the suites against the runner's GnuTLS libcurl)	failure	2026-11-11T14:12:54Z	2026-11-11T14:20:32Z
+
+attempt 1: every job failed at "Install the packages in packaging/debian-prereqs.txt", apt exit 100: "Temporary failure resolving 'azure.archive.ubuntu.com'" from 14:16Z (the runners' DNS), before any build or suite ran.
+
+attempt 2 (rerun of the failed jobs, requested 2026-11-11 ~14:25Z, started 01:14Z the next day):
+success
+gnutls (the suites against the runner's GnuTLS libcurl)	success	2026-11-12T01:14:18Z	2026-11-12T01:24:39Z
+current (the suites against the current libcurl, built from source)	success	2026-11-12T01:14:19Z	2026-11-12T01:23:40Z
+floor-disabled-api (options API disabled, make build must refuse it)	success	2026-11-12T01:14:19Z	2026-11-12T01:14:47Z
+nothreads (every public library is refused on a Chez without threads)	success	2026-11-12T01:14:19Z	2026-11-12T01:14:48Z
+main (checks and suites, Chez built from source)	success	2026-11-12T01:14:18Z	2026-11-12T01:27:35Z
+floor-disabled-api (header API disabled, make build must refuse it)	success	2026-11-12T01:14:19Z	2026-11-12T01:14:43Z
+memory-2 (the Valgrind gate, shard 2 of 2)	success	2026-11-12T01:14:18Z	2026-11-12T01:31:22Z
+floor (the suites against libcurl at its floor)	success	2026-11-12T01:14:18Z	2026-11-12T01:24:58Z
+memory-1 (the Valgrind gate, shard 1 of 2)	success	2026-11-12T01:14:18Z	2026-11-12T01:35:39Z

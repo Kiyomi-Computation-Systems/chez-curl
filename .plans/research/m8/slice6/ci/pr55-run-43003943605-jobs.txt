@@ -1,0 +1,11 @@
+run 43003943605 at 96e7605cf44b366f00d39f1689872e268cedcfde
+success
+floor-disabled-api (options API disabled, make build must refuse it)	success	2026-11-11T10:28:48Z	2026-11-11T10:29:15Z
+floor-disabled-api (header API disabled, make build must refuse it)	success	2026-11-11T10:28:48Z	2026-11-11T10:29:15Z
+nothreads (every public library is refused on a Chez without threads)	success	2026-11-11T10:28:48Z	2026-11-11T10:29:09Z
+memory-2 (the Valgrind gate, shard 2 of 2)	success	2026-11-11T10:28:48Z	2026-11-11T10:46:21Z
+memory-1 (the Valgrind gate, shard 1 of 2)	success	2026-11-11T10:28:48Z	2026-11-11T10:47:02Z
+main (checks and suites, Chez built from source)	success	2026-11-11T10:28:48Z	2026-11-11T10:42:20Z
+gnutls (the suites against the runner's GnuTLS libcurl)	success	2026-11-11T10:28:48Z	2026-11-11T10:38:03Z
+current (the suites against the current libcurl, built from source)	success	2026-11-11T10:28:48Z	2026-11-11T10:37:45Z
+floor (the suites against libcurl at its floor)	success	2026-11-11T10:28:49Z	2026-11-11T10:39:36Z
