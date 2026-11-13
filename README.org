@@ -28,7 +28,7 @@ thread.
 
 ** Status
 
-chez-curl 0.1.0 is its first release. Its suites run on:
+chez-curl's suites run on:
 
 - Linux on amd64, on curl's own 7.85.0 and 8.23.0, built from source, Ubuntu's
   8.5.0 with OpenSSL and with GnuTLS, and Guix's 8.20.0;
@@ -57,7 +57,7 @@ Clone a release's tag, and put its =src= directory on Chez's library path.
 There is nothing to build: [[https://curl.se/libcurl/][libcurl]] is loaded when your program runs.
 
 #+begin_src sh
-git clone --branch v0.1.0 https://github.com/Kiyomi-Computation-Systems/chez-curl.git
+git clone --branch v0.1.1 https://github.com/Kiyomi-Computation-Systems/chez-curl.git
 scheme --libdirs chez-curl/src --program app.sps
 #+end_src
 

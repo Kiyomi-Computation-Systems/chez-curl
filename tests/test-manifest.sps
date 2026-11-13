@@ -11,7 +11,10 @@
 ;;;     pinned version;
 ;;;   - Akku.lock's chez-srfi url holds that version;
 ;;;   - the package is chez-curl, and its version is CHANGELOG.md's latest
-;;;     release, so a release that bumps one alone fails.
+;;;     release, so a release that bumps one alone fails;
+;;;   - each git clone line of README.org and docs/quickstart.md, one in each,
+;;;     clones that version's tag, so a reader who follows either gets the
+;;;     release the changelog names, and a release that forgets either fails.
 ;;;
 ;;; CHANGELOG.md is read as Keep a Changelog writes it: `## [Unreleased]`
 ;;; first, then each release's `## [X.Y.Z] - YYYY-MM-DD`, the newest first,
@@ -442,6 +445,22 @@
 (test-equal "Akku.manifest's version is CHANGELOG.md's latest release"
   (refusal (lambda () (latest-release (file-lines "CHANGELOG.md"))))
   (cadr (cadr (the-form 'akku-package "Akku.manifest"))))
+
+;; clone-lines : String -> (Listof String)
+;; Every line of PATH that holds git clone, whole.
+(define (clone-lines path)
+  (filter (lambda (line) (contains? line "git clone")) (file-lines path)))
+
+;; The expected value is computed under a guard: SRFI-64 does not catch a
+;; raise there.
+(test-equal "README.org and docs/quickstart.md each clone Akku.manifest's version's tag, on one git clone line"
+  (refusal
+   (lambda ()
+     (let ((line (string-append "git clone --branch v"
+                                (cadr (cadr (the-form 'akku-package "Akku.manifest")))
+                                " https://github.com/Kiyomi-Computation-Systems/chez-curl.git")))
+       (list (list "README.org" line) (list "docs/quickstart.md" line)))))
+  (map (lambda (path) (cons path (clone-lines path))) '("README.org" "docs/quickstart.md")))
 
 (test-end "manifest")
 

@@ -6,6 +6,10 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
+- **0.1.1, a documentation release:** in progress on `release/v0.1.1`. The libraries are
+  0.1.0's; the docs PR #58 (`c0bb0d2`) is its change. `test-manifest` now holds README.org's
+  and the quick start's clone lines to `Akku.manifest`'s version's tag, so a release bumps
+  them with the manifest and the changelog, or fails.
 - **M8, multipart, the header cap, the docs and v0.1.0:** **done on 2026-11-11.** Its six slices
   are merged (PRs #50 to #55): the memory job in two, the header cap, multipart, the docs, headers
   and JSON, and the release, per the [M8 plan](2026-11-06-m8-plan.md), merged as PR #49
@@ -24,7 +28,6 @@ close-out under **Close-outs**, newest first.
     - a Linux arm64 lane (ADR-0038, amended 2026-11-10);
     - M7's still carried, under M7 below: the curl bug report, slice 1's floor flake, and #47's
       fix round's six minors;
-    - README.org's install steps clone `main`, not the tag;
     - no `.akkuignore`, which both siblings have, for when Akku is decided;
     - what the comment sweep left: about 50 test names and printed messages that still cite
       plans, slices or reviews, the tables' `where` strings, and the comments in `scripts/`, the
@@ -269,6 +272,29 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-12 — the examples' test server, in the docs (PR #58, `c0bb0d2`)
+
+- **Decided by the maintainer, 2026-11-12:** Node stays the test server, said plainly to run it
+  alone, never a program using chez-curl. Rejected: chez-http-server, HTTP/1.x only by design,
+  so it cannot cover the HTTP/2 and TLS faces 15 of the 46 suites use (ADR-0005 and ADR-0011
+  stand).
+- **Changed:** each example's head comment, README.org, the docs index, the quick start and each
+  page with an example say to start `node tests/origin.mjs` first and to take the address after
+  `"http":`; the index marks `json-api.sps`'s `make deps` and library path. README.org: Node's
+  role, `openssl` and GNU `timeout` for the tests, its Status's libcurl sentence, the install
+  step cloning the tag, and libcurl linked to curl.se. `origin.mjs`'s header names the examples.
+- **Found by the maintainer, following the docs on the Mac:** `h2c`'s address, the last of the
+  three the server prints, answers HTTP/1.1 with HTTP/2 frames, "Unsupported protocol"; and
+  `json-api.sps` run with the others' `--libdirs src` finds no `(jsonparse easy)`. Both are
+  named in the docs now.
+- **Checked:** every example the same datums, `origin.mjs` changed in comment lines alone;
+  `check-floors`, `make test` 46 of 46, `check-test-fails`; `test-docs`, `test-examples` and
+  `test-reference` on the final wording. CI at `7ba4e58`, all nine passed; `main`'s push run for
+  `c0bb0d2`, all nine passed.
+- **Learned:** a scripted run of the docs parsed the right address for itself, and so never met
+  the reader's choice among three: walk run instructions as a reader would, and try the
+  plausible wrong picks.
 
 ### 2026-11-11 — M8 slice 6: the 0.1.0 release (PR #55, `2f83de9`), tagged `v0.1.0` on `ecfdbf1`
 

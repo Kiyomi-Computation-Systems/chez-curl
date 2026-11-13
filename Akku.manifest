@@ -13,7 +13,7 @@
 ;; the prompt can simply be declined, after which no script runs and the
 ;; install still reports success. There is nothing to build, since no C is
 ;; compiled (ADR-0001). See chez-cmark-gfm's ADR-0017.
-(akku-package ("chez-curl" "0.1.0")
+(akku-package ("chez-curl" "0.1.1")
   (synopsis "An HTTP client for Chez Scheme, built on libcurl")
   (authors "Kiyomi Computation Systems LLC")
   (homepage "https://github.com/Kiyomi-Computation-Systems/chez-curl")
