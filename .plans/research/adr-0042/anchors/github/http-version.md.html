@@ -1,0 +1,50 @@
+<div id="file" class="md" data-path="docs/http-version.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Choosing the HTTP version</h1><a id="user-content-choosing-the-http-version" class="anchor" aria-label="Permalink: Choosing the HTTP version" href="#choosing-the-http-version"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A request's <code>http-version</code> asks for one. Sessions and calls take it too: a
+call's replaces its session's, and a redirect keeps it.</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(make-curl-request &quot;https://example.com/&quot; 'http-version 'http/2)
+(http-get session &quot;http://127.0.0.1:8080/&quot; 'http-version 'http/2-prior-knowledge)"><pre>(make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span> <span class="pl-c1">'http-version</span> <span class="pl-c1">'http/2</span>)
+(http-get session <span class="pl-s"><span class="pl-pds">"</span>http://127.0.0.1:8080/<span class="pl-pds">"</span></span> <span class="pl-c1">'http-version</span> <span class="pl-c1">'http/2-prior-knowledge</span>)</pre></div>
+<ul dir="auto">
+<li><strong><code>#f</code>, the default,</strong> lets libcurl choose: HTTP/2 over <code>https://</code> when the
+server offers it, else HTTP/1.1.</li>
+<li><strong><code>http/1.1</code></strong> asks for HTTP/1.1 alone. A server that speaks only HTTP/2
+refuses it.</li>
+<li><strong><code>http/2</code></strong> gets HTTP/2 over <code>https://</code> when the server offers it, agreed in
+the TLS handshake, else HTTP/1.1. Over <code>http://</code> it sends HTTP/1.1, with no
+<code>Upgrade</code>.</li>
+<li><strong><code>http/2-prior-knowledge</code></strong> speaks HTTP/2 from the first byte, to an
+<code>http://</code> server you know speaks it.
+<ul dir="auto">
+<li>With an <code>https://</code> URL it is refused when you submit,
+<code>prior-knowledge-over-https</code>: use <code>http/2</code> there. A redirect to
+<code>https://</code> fails the call the same way.</li>
+<li>An HTTP/1.1 server fails it, with a code that
+<a href="libcurl-versions.md#the-http-version">varies by libcurl</a>, and on timing.</li>
+<li>Beside a proxy URL it is refused when you submit,
+<code>prior-knowledge-through-proxy</code>. Through the environment's proxy, when
+the request does not tunnel, libcurl ignores it and sends HTTP/1.1 to the
+proxy (<a href="auth-and-proxies.md">Auth and proxies</a>).</li>
+</ul>
+</li>
+</ul>
+<p dir="auto"><code>curl-response-http-version</code> and <code>http-response-http-version</code> tell which
+version answered: <code>http/1.0</code>, <code>http/1.1</code>, <code>http/2</code> or <code>http/3</code>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Connections</h2><a id="user-content-connections" class="anchor" aria-label="Permalink: Connections" href="#connections"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><strong>Requests started together open a connection each.</strong> chez-curl never sets
+libcurl's <code>PIPEWAIT</code>, so they do not wait to share one HTTP/2 connection. A
+request started later reuses an open one.</li>
+<li><strong>Two prior-knowledge requests batched together</strong> share one connection on
+libcurl 7.85.0, and open two from 8.5.0.</li>
+<li><strong>On libcurl 8.7.0 and 8.7.1, the Mac's,</strong> the engine turns multiplexing
+off, so a request started while another runs opens its own connection.
+There one failing or paused HTTP/2 stream would fail the others sharing its
+connection.</li>
+<li><strong>A reused connection keeps its version.</strong> Over <code>http://</code>, a request with
+<code>#f</code> or <code>http/2</code> to a server the engine already holds an HTTP/2 connection
+to, made by prior knowledge, reuses it, and reads HTTP/2.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The hatch</h2><a id="user-content-the-hatch" class="anchor" aria-label="Permalink: The hatch" href="#the-hatch"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>(curl unsupported)</code> refuses the options that set or change the version:
+<a href="hatch.md">The hatch</a> lists them, and the few it leaves.</p>
+</article></div>

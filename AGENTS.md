@@ -20,6 +20,9 @@
 * libcurl
 * jsonparse, for `examples/json-api.sps` alone: the `vendor/jsonparse`
   submodule, byte-machine nested in it (ADR-0041)
+* chez-cmark-gfm, and the system cmark-gfm library, for the docs site alone:
+  the archive `Akku.lock` pins, which `make site-deps` fetches once on the
+  host (ADR-0042)
 
 ### Guix development container
 
@@ -31,8 +34,9 @@
   agents or tokens, and no network but loopback (ADR-0006).
 * Verify it with `make check-guix`, run on the host.
 * The container exports `CHEZ` (the real `scheme` binary), `CC` (gcc; the
-  toolchain has no `cc`) and `CHEZ_CURL_LIBCURL` (the profile's
-  `libcurl.so.4`, ADR-0002). It sets no `LD_LIBRARY_PATH`.
+  toolchain has no `cc`), `CHEZ_CURL_LIBCURL` (the profile's
+  `libcurl.so.4`, ADR-0002) and `CHEZ_CMARK_GFM_LIBS` (the profile's two
+  cmark-gfm libraries, for the docs site). It sets no `LD_LIBRARY_PATH`.
 * Anything that needs the network or git runs on the host: fetches, pushes,
   downloads, `make check-pins`, and `git submodule update --init --recursive`,
   which a fresh clone needs once before `make deps`. The container has no git.
@@ -46,7 +50,13 @@
   before starting slice work. `/.superpowers/` is git-ignored plugin scratch,
   not the ledger.
 * Add entries to `CHANGELOG.md` for each release
-* `/docs` is for user facing documentation only.
+* `/docs` is for user facing documentation only. `make site` renders it
+  into `build/site/` through `site/` and `build-site.sps`, and `pages.yml`
+  deploys it to GitHub Pages on a `v*` tag (ADR-0042). `make check-site`
+  holds the nav to `docs/README.md`'s "The pages", and the site's links and
+  anchors. The site's suites, `tests/site-*.sps`, run on apt's Chez in CI,
+  below the floor, so they import nothing under `src/` and exit through
+  `(site-testing)`.
 * Documentation should be very concise, focused, to the point, ELI5 style.
 * Every export of `(curl)`, `(curl unsupported)` and `(http-client)` needs an
   entry in `docs/reference.md` (`tests/test-reference.sps`). A Scheme block in

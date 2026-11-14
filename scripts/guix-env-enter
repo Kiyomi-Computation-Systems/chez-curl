@@ -9,6 +9,12 @@
 #   CC                 the profile's gcc: gcc-toolchain installs no cc
 #   CHEZ_CURL_LIBCURL  the profile's libcurl.so.4, by absolute path, so no
 #                      suite depends on discovery (ADR-0002)
+#   CHEZ_CMARK_GFM_LIBS
+#                      the profile's cmark-gfm and its extensions library,
+#                      by absolute path, for chez-cmark-gfm, which renders
+#                      the docs site (ADR-0042): without it, chez-cmark-gfm
+#                      searches /usr/lib and the like, which the container
+#                      doesn't have
 #
 # It sets no LD_LIBRARY_PATH. Nothing here loads a library by bare name,
 # and with it unset no such load can work by accident.
@@ -28,9 +34,12 @@ need() {
 need "$GUIX_ENVIRONMENT/bin/scheme"
 need "$GUIX_ENVIRONMENT/bin/gcc"
 need "$GUIX_ENVIRONMENT/lib/libcurl.so.4"
+need "$GUIX_ENVIRONMENT/lib/libcmark-gfm.so"
+need "$GUIX_ENVIRONMENT/lib/libcmark-gfm-extensions.so"
 
 export CHEZ="$GUIX_ENVIRONMENT/bin/scheme"
 export CC="$GUIX_ENVIRONMENT/bin/gcc"
 export CHEZ_CURL_LIBCURL="$GUIX_ENVIRONMENT/lib/libcurl.so.4"
+export CHEZ_CMARK_GFM_LIBS="$GUIX_ENVIRONMENT/lib/libcmark-gfm.so:$GUIX_ENVIRONMENT/lib/libcmark-gfm-extensions.so"
 
 exec "$@"

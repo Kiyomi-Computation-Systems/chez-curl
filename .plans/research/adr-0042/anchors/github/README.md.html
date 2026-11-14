@@ -1,0 +1,125 @@
+<div id="file" class="md" data-path="docs/README.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">chez-curl</h1><a id="user-content-chez-curl" class="anchor" aria-label="Permalink: chez-curl" href="#chez-curl"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">An HTTP client for <a href="https://cisco.github.io/ChezScheme/" rel="nofollow">Chez Scheme</a>, built
+on <a href="https://curl.se/libcurl/" rel="nofollow">libcurl</a>.</p>
+<p dir="auto">It has two levels, and a program may use either, or both:</p>
+<ul dir="auto">
+<li><strong><code>(http-client)</code>, the high level.</strong> A session, and a call per request:
+<code>http-get</code>, <code>http-post</code> and the rest. It follows redirects by its own rules,
+retries by a policy you give it, keeps cookies, and streams both ways.</li>
+<li><strong><code>(curl)</code>, the low level.</strong> A request is data. An engine runs it on a
+thread of its own and hands you a token, which gives you the response.
+<code>(http-client)</code> is built on it.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Ideas to keep in mind</h2><a id="user-content-ideas-to-keep-in-mind" class="anchor" aria-label="Permalink: Ideas to keep in mind" href="#ideas-to-keep-in-mind"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><strong>A status is data.</strong> A 404 or a 503 is an answer, not an error. A call
+raises when it was refused, when its transfer failed, when an answer passed
+a limit you set, and when it met a redirect it will not follow
+(<a href="errors.md">Errors</a>).</li>
+<li><strong>One engine thread runs many requests.</strong> To make many at once you need no
+thread per request: a group, or many tokens, on your one thread.</li>
+<li><strong>What you pass is checked before it is sent,</strong> and a refusal names the
+field and the reason, never your password or your cookie.</li>
+<li><strong>Close what you open.</strong> A session, an engine and a cookie jar hold native
+objects: <code>call-with-http-session</code> closes its session for you.</li>
+<li><strong>libcurl's version shows through</strong> in a few places, each one listed.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The pages</h2><a id="user-content-the-pages" class="anchor" aria-label="Permalink: The pages" href="#the-pages"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><a href="quickstart.md">Quick start</a>: from a clone to a first request.</li>
+<li><a href="high-level.md">The high level</a>: sessions, verbs, responses, bodies,
+forms, multipart, params, timeouts and limits.</li>
+<li><a href="headers-and-json.md">Headers and JSON</a>: setting a request's headers,
+reading a response's, and calling a JSON API.</li>
+<li><a href="redirects-and-retries.md">Redirects and retries</a>: what a call follows, and
+what a policy retries.</li>
+<li><a href="auth-and-proxies.md">Auth and proxies</a>: credentials, and proxies by URL
+and by the environment.</li>
+<li><a href="cookies.md">Cookies</a>: a session's cookies, and jars.</li>
+<li><a href="http-version.md">Choosing the HTTP version</a>: HTTP/1.1, HTTP/2, and prior
+knowledge.</li>
+<li><a href="streams.md">Streams</a>: reading a response, and sending a body, as each
+goes.</li>
+<li><a href="groups.md">Groups</a>: many calls at once on one thread.</li>
+<li><a href="low-level.md">The low level</a>: engines, requests, tokens, mailboxes, and
+URLs.</li>
+<li><a href="errors.md">Errors</a>: each condition type and reason, and how to handle one.</li>
+<li><a href="tls-and-environment.md">TLS and the environment</a>: CA files, the variables
+read, and finding libcurl.</li>
+<li><a href="libcurl-versions.md">What varies by libcurl</a>: every behaviour that differs
+by version, as measured.</li>
+<li><a href="hatch.md">The hatch</a>: <code>(curl unsupported)</code>, for libcurl options chez-curl
+does not wrap.</li>
+<li><a href="reference.md">Reference</a>: every export, its type, what it raises.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The examples</h2><a id="user-content-the-examples" class="anchor" aria-label="Permalink: The examples" href="#the-examples"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><a href="../examples"><code>examples/</code></a> holds eleven small programs to copy from. Each
+calls the test server, <code>tests/origin.mjs</code>, a Node program in this
+repository, so start it first, in a terminal of its own, and leave it
+running. It prints one line of addresses, a new port at each start: an
+example takes the one after <code>"http":</code>, not <code>raw</code>'s or <code>h2c</code>'s, which speak
+other protocols. Run an example from the repository's root, with its base URL:
+<code>http://</code>, that address, and no trailing <code>/</code>, since each example adds its
+own paths. <code>json-api.sps</code> alone
+needs jsonparse, a submodule (<a href="headers-and-json.md#a-json-api">Headers and JSON</a>),
+and runs as <code>scheme --libdirs src:build/scheme-libs --program examples/json-api.sps URL</code>.</p>
+<div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="node tests/origin.mjs        # first: prints {&quot;node&quot;:...,&quot;http&quot;:&quot;127.0.0.1:PORT&quot;,...}; Ctrl-D ends it
+scheme --libdirs src --program examples/quick-start.sps http://127.0.0.1:PORT"><pre>node tests/origin.mjs        <span class="pl-c"><span class="pl-c">#</span> first: prints {"node":...,"http":"127.0.0.1:PORT",...}; Ctrl-D ends it</span>
+scheme --libdirs src --program examples/quick-start.sps http://127.0.0.1:PORT</pre></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Example</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../examples/quick-start.sps"><code>quick-start.sps</code></a></td>
+<td>one <code>http-get</code></td>
+</tr>
+<tr>
+<td><a href="../examples/form-and-params.sps"><code>form-and-params.sps</code></a></td>
+<td>params on a query, and a form as a body</td>
+</tr>
+<tr>
+<td><a href="../examples/json-api.sps"><code>json-api.sps</code></a></td>
+<td>headers on a session and a call, and a JSON API, with jsonparse; it alone needs <code>make deps</code>, and <code>src:build/scheme-libs</code> as its library path</td>
+</tr>
+<tr>
+<td><a href="../examples/multipart.sps"><code>multipart.sps</code></a></td>
+<td>a multipart body of a string, bytes and a file</td>
+</tr>
+<tr>
+<td><a href="../examples/session-retries.sps"><code>session-retries.sps</code></a></td>
+<td>a session's defaults, a redirect, and a retry policy</td>
+</tr>
+<tr>
+<td><a href="../examples/stream-download.sps"><code>stream-download.sps</code></a></td>
+<td>a response read from a port as it arrives</td>
+</tr>
+<tr>
+<td><a href="../examples/stream-upload.sps"><code>stream-upload.sps</code></a></td>
+<td>at the low level, a body put a piece at a time</td>
+</tr>
+<tr>
+<td><a href="../examples/group.sps"><code>group.sps</code></a></td>
+<td><code>http-parallel</code>, and a request group</td>
+</tr>
+<tr>
+<td><a href="../examples/cookie-jar.sps"><code>cookie-jar.sps</code></a></td>
+<td>at the low level, a cookie jar: kept, sent, read out, loaded</td>
+</tr>
+<tr>
+<td><a href="../examples/errors.sps"><code>errors.sps</code></a></td>
+<td>a status as data; a timeout, a body too large and a refused request</td>
+</tr>
+<tr>
+<td><a href="../examples/engine-and-tokens.sps"><code>engine-and-tokens.sps</code></a></td>
+<td>at the low level, an engine, tokens and a mailbox</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><code>make test</code> runs every example twice against one test server, and holds
+each run's output to <a href="../examples/expected"><code>examples/expected/</code></a>.</p>
+</article></div>

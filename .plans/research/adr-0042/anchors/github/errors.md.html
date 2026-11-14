@@ -1,0 +1,335 @@
+<div id="file" class="md" data-path="docs/errors.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Errors</h1><a id="user-content-errors" class="anchor" aria-label="Permalink: Errors" href="#errors"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><strong>A status is data.</strong> A 404 or a 503 is an answer: the call returns it. A call
+raises when it was refused before it was sent; when its transfer failed; when
+an answer came past what you allowed, a body past <code>body-limit</code> or headers past
+the cap; and when it met a redirect it will not follow.</p>
+<p dir="auto">The examples on this page call the test server: start it first, with
+<code>node tests/origin.mjs</code>, and give an example the address after <code>"http":</code> in
+the line it prints, not <code>raw</code>'s or <code>h2c</code>'s (<a href="README.md#the-examples">The examples</a>).</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="    ;; A 404 is an answer, not an error.
+    (show (http-response-status (http-get session (url &quot;/status/404&quot;))))
+    ;; The call's timeout-ms passed: &amp;http-timeout, with (curl)'s &amp;curl-timeout.
+    (show (guard (e ((http-timeout? e)
+                     (list 'timeout (http-timeout-timeout-ms e) (curl-timeout? e))))
+            (http-get session (url &quot;/pattern/10?delay=2000&quot;) 'timeout-ms 200)))
+    ;; A body past body-limit: &amp;curl-too-large. This one's Content-Length
+    ;; says so before any byte comes, so libcurl refuses it, perform-failed.
+    (show (guard (e ((curl-too-large? e)
+                     (list 'too-large (curl-transfer-error-reason e))))
+            (http-get session (url &quot;/pattern/100000&quot;) 'body-limit 1000)))
+    ;; A request refused before anything is sent: &amp;curl-request-error,
+    ;; naming the field and the reason, never a secret.
+    (show (guard (e ((curl-request-error? e)
+                     (list (curl-request-error-field e) (curl-request-error-reason e))))
+            (curl-request-check
+             (make-curl-request &quot;https://example.invalid/&quot;
+                                'http-version 'http/2-prior-knowledge))))"><pre>    <span class="pl-c"><span class="pl-c">;</span>; A 404 is an answer, not an error.</span>
+    (show (http-response-status (http-get session (url <span class="pl-s"><span class="pl-pds">"</span>/status/404<span class="pl-pds">"</span></span>))))
+    <span class="pl-c"><span class="pl-c">;</span>; The call's timeout-ms passed: &amp;http-timeout, with (curl)'s &amp;curl-timeout.</span>
+    (show (guard (e ((http-timeout? e)
+                     (<span class="pl-c1">list</span> <span class="pl-c1">'timeout</span> (http-timeout-timeout-ms e) (curl-timeout? e))))
+            (http-get session (url <span class="pl-s"><span class="pl-pds">"</span>/pattern/10?delay=2000<span class="pl-pds">"</span></span>) <span class="pl-c1">'timeout-ms</span> <span class="pl-c1">200</span>)))
+    <span class="pl-c"><span class="pl-c">;</span>; A body past body-limit: &amp;curl-too-large. This one's Content-Length</span>
+    <span class="pl-c"><span class="pl-c">;</span>; says so before any byte comes, so libcurl refuses it, perform-failed.</span>
+    (show (guard (e ((curl-too-large? e)
+                     (<span class="pl-c1">list</span> <span class="pl-c1">'too-large</span> (curl-transfer-error-reason e))))
+            (http-get session (url <span class="pl-s"><span class="pl-pds">"</span>/pattern/100000<span class="pl-pds">"</span></span>) <span class="pl-c1">'body-limit</span> <span class="pl-c1">1000</span>)))
+    <span class="pl-c"><span class="pl-c">;</span>; A request refused before anything is sent: &amp;curl-request-error,</span>
+    <span class="pl-c"><span class="pl-c">;</span>; naming the field and the reason, never a secret.</span>
+    (show (guard (e ((curl-request-error? e)
+                     (<span class="pl-c1">list</span> (curl-request-error-field e) (curl-request-error-reason e))))
+            (curl-request-check
+             (make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.invalid/<span class="pl-pds">"</span></span>
+                                <span class="pl-c1">'http-version</span> <span class="pl-c1">'http/2-prior-knowledge</span>))))</pre></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="404
+(timeout 200 #t)
+(too-large perform-failed)
+(http-version prior-knowledge-over-https)"><pre lang="text" class="notranslate"><code>404
+(timeout 200 #t)
+(too-large perform-failed)
+(http-version prior-knowledge-over-https)
+</code></pre></div>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The types</h2><a id="user-content-the-types" class="anchor" aria-label="Permalink: The types" href="#the-types"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">Every chez-curl condition type but <code>&amp;http-exchange</code> is a <code>&amp;curl-error</code>, under
+R6RS's <code>&amp;error</code>:</p>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="&amp;curl-error
+  &amp;curl-library-unavailable   libcurl was refused at the load
+  &amp;curl-request-error         a request's key or value refused
+  &amp;curl-url-error             a URL refused
+  &amp;curl-transfer-error        a transfer that failed
+    &amp;curl-timeout  &amp;curl-connect-error  &amp;curl-send-receive-error
+    &amp;curl-tls-error  &amp;curl-protocol-error  &amp;curl-too-large
+  &amp;curl-engine-error          an engine stopped, or failed
+  &amp;curl-wrong-thread          a port or handle used from another thread
+  &amp;curl-embedded-nul          a string holding U+0000, which C would read short
+  &amp;http-error                 the high level's own
+    &amp;http-request-error  &amp;http-redirect-error  &amp;http-timeout  &amp;http-group-error"><pre lang="text" class="notranslate"><code>&amp;curl-error
+  &amp;curl-library-unavailable   libcurl was refused at the load
+  &amp;curl-request-error         a request's key or value refused
+  &amp;curl-url-error             a URL refused
+  &amp;curl-transfer-error        a transfer that failed
+    &amp;curl-timeout  &amp;curl-connect-error  &amp;curl-send-receive-error
+    &amp;curl-tls-error  &amp;curl-protocol-error  &amp;curl-too-large
+  &amp;curl-engine-error          an engine stopped, or failed
+  &amp;curl-wrong-thread          a port or handle used from another thread
+  &amp;curl-embedded-nul          a string holding U+0000, which C would read short
+  &amp;http-error                 the high level's own
+    &amp;http-request-error  &amp;http-redirect-error  &amp;http-timeout  &amp;http-group-error
+</code></pre></div>
+<p dir="auto">Each has a predicate, <code>curl-timeout?</code> and the like, and accessors for its
+fields. Each type with reasons exports their list: <code>curl-request-error-reasons</code>
+and the rest. A wrong argument is an assertion violation, as R6RS has it.</p>
+<p dir="auto"><strong>What a call raises carries <code>&amp;http-exchange</code>:</strong> the method and URL as you
+gave them, the history, and <code>http-exchange-transfers</code>, how many transfers it
+made. A low-level condition passes through a call so compounded, so catch
+<code>(curl)</code>'s types by importing <code>(curl)</code> too.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Handling one</h2><a id="user-content-handling-one" class="anchor" aria-label="Permalink: Handling one" href="#handling-one"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><strong>Read the reason, a symbol.</strong> It is chez-curl's, and alike on every
+libcurl, but for two: a refused URL's reason is libcurl's code's name, which
+moves with the version (<a href="libcurl-versions.md#urls">What varies</a>), and the
+hatch names an owned option this libcurl does not know <code>unknown-option</code> on
+7.85.0 (<a href="libcurl-versions.md#the-hatch">What varies</a>). A failed transfer's
+code is libcurl's, and moves with the version, and its class moves with the
+code: a refused <code>CONNECT</code> fails 56, <code>&amp;curl-send-receive-error</code>, on 7.85.0,
+8.5.0 and 8.7.1, and 7, <code>&amp;curl-connect-error</code>, on 8.20.0 and 8.23.0; prior
+knowledge to an HTTP/1.1 server is a send-receive or a protocol failure, by
+version and by race. So to catch a failed transfer, catch
+<code>&amp;curl-transfer-error</code>, then read its reason, and its connect code for a
+proxy. Never match a code, a class or a message alone.</li>
+<li><strong>Every refusal names a field, a kind or an index, never your secret.</strong> A
+string where a key, a request or a response belongs is named by its kind,
+<code>(kind string)</code>; a refused URL by its field, <code>url</code>; a header's value by its
+header's name; a credential by its scheme and part. <code>curl-url-error-input</code>
+still holds the URL.</li>
+<li><strong>A <code>guard</code> around <code>curl-token-await</code></strong> also catches what your own Ctrl-C
+handler raises while it waits. To tell the two apart, wait with
+<code>curl-token-wait</code>, outside any guard, then read <code>curl-token-outcome</code>.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">A failed transfer</h2><a id="user-content-a-failed-transfer" class="anchor" aria-label="Permalink: A failed transfer" href="#a-failed-transfer"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>&amp;curl-transfer-error</code> holds a reason, libcurl's code, <code>-strerror</code> and
+<code>-error-buffer</code>, libcurl's text, and two numbers:</p>
+<ul dir="auto">
+<li><strong><code>curl-transfer-error-request-size</code>:</strong> the bytes of request sent, 0 when
+none was, which is what a retry policy reads. <code>#f</code> when it is unknown: a
+transfer cancelled or stopped, and any transfer on libcurl 8.7.0 and 8.7.1,
+the Mac's, whose count is broken. For a multipart body it counts
+differently by version (<a href="libcurl-versions.md#multipart">What varies</a>).</li>
+<li><strong><code>curl-transfer-error-connect-code</code>:</strong> the status a proxy refused the
+transfer's <code>CONNECT</code> with, or <code>#f</code>.</li>
+</ul>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Reason</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>perform-failed</code></td>
+<td>libcurl ended the transfer with a code: its class, below, by the code</td>
+</tr>
+<tr>
+<td><code>body-limit</code></td>
+<td>the body passed <code>body-limit</code>, as it arrived</td>
+</tr>
+<tr>
+<td><code>header-limit</code></td>
+<td>the response headers passed the cap: 1,000 lines or 102,400 bytes over the whole transfer</td>
+</tr>
+<tr>
+<td><code>callback-raised</code></td>
+<td>something raised inside chez-curl's callback; <code>-recorded</code> holds it</td>
+</tr>
+<tr>
+<td><code>setopt-failed</code></td>
+<td>libcurl refused an option's value; <code>-option</code> names it</td>
+</tr>
+<tr>
+<td><code>unknown-option</code></td>
+<td>the loaded libcurl does not know an option</td>
+</tr>
+<tr>
+<td><code>no-handle</code></td>
+<td>libcurl made no handle</td>
+</tr>
+<tr>
+<td><code>cancelled</code></td>
+<td>you cancelled it</td>
+</tr>
+<tr>
+<td><code>stopped</code></td>
+<td>its engine stopped</td>
+</tr>
+<tr>
+<td><code>pause-failed</code></td>
+<td>libcurl failed to resume a paused stream</td>
+</tr>
+<tr>
+<td><code>body-length-mismatch</code></td>
+<td>a streamed body ended short of <code>body-length</code>, or a piece went past it</td>
+</tr>
+<tr>
+<td><code>body-not-replayable</code></td>
+<td>libcurl wanted to send a streamed body again</td>
+</tr>
+<tr>
+<td><code>part-file</code></td>
+<td>a file part was no regular file as the engine started the transfer, did not open, or libcurl refused it</td>
+</tr>
+<tr>
+<td><code>mime-failed</code></td>
+<td>libcurl failed to make the multipart body</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><strong>The classes,</strong> for <code>perform-failed</code>, by libcurl's code; a code none names
+raises the base type. A class is the kind of failure libcurl's code names, so
+it moves when the code does:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Codes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&amp;curl-timeout</code></td>
+<td>28</td>
+</tr>
+<tr>
+<td><code>&amp;curl-connect-error</code></td>
+<td>5, 6, 7, 45, 96, 97</td>
+</tr>
+<tr>
+<td><code>&amp;curl-send-receive-error</code></td>
+<td>18, 52, 55, 56</td>
+</tr>
+<tr>
+<td><code>&amp;curl-tls-error</code></td>
+<td>35, 53, 54, 58, 59, 60, 64, 66, 77, 80, 82, 83, 90, 91, 98, 101</td>
+</tr>
+<tr>
+<td><code>&amp;curl-protocol-error</code></td>
+<td>1, 8, 16, 61, 92, 95</td>
+</tr>
+<tr>
+<td><code>&amp;curl-too-large</code></td>
+<td>63, 100, and the reasons <code>body-limit</code> and <code>header-limit</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><strong>A body too large</strong> is <code>&amp;curl-too-large</code> either way. When the response's
+<code>Content-Length</code> already passes <code>body-limit</code>, libcurl refuses it before any
+byte arrives: code 63, reason <code>perform-failed</code>. When the length is not known,
+the body is refused as it arrives, reason <code>body-limit</code>.</p>
+<p dir="auto"><strong>The header cap</strong> is <code>&amp;curl-too-large</code>, reason <code>header-limit</code>, whatever
+libcurl's code beside it. A call raises it, <code>call-with-response-port</code> before
+your procedure is called; and a stream whose cap falls in the head never
+publishes the head, its port raising it instead. Some heads meet one of libcurl's own limits first,
+and fail with its code instead, by version
+(<a href="libcurl-versions.md#errors">What varies</a>).</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The other types</h2><a id="user-content-the-other-types" class="anchor" aria-label="Permalink: The other types" href="#the-other-types"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Reasons</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&amp;curl-library-unavailable</code></td>
+<td><code>invalid-override</code>, <code>not-found</code>, <code>load-failed</code>, <code>below-floor</code>, <code>no-ssl</code>, <code>missing-api</code> (<a href="tls-and-environment.md">TLS and the environment</a>)</td>
+</tr>
+<tr>
+<td><code>&amp;curl-url-error</code></td>
+<td>libcurl's own, by its code's name, <code>malformed-input</code>, <code>bad-port-number</code>, <code>unsupported-scheme</code>, <code>bad-hostname</code> and the rest, <code>#f</code> for a code newer than the floor's; and chez-curl's: <code>scheme-not-http</code>, <code>embedded-nul</code>, <code>not-utf-8</code>, <code>query-not-kept</code></td>
+</tr>
+<tr>
+<td><code>&amp;curl-engine-error</code></td>
+<td><code>stopped</code>; <code>failed</code>, with the condition that broke the engine in <code>curl-engine-error-condition</code></td>
+</tr>
+<tr>
+<td><code>&amp;curl-wrong-thread</code></td>
+<td>none: <code>-who</code> names the operation, <code>-expected</code> and <code>-actual</code> the threads</td>
+</tr>
+<tr>
+<td><code>&amp;http-redirect-error</code></td>
+<td><code>too-many-redirects</code>, <code>bad-location</code>, <code>insecure-redirect</code>, <code>body-not-replayable</code> (<a href="redirects-and-retries.md">Redirects</a>)</td>
+</tr>
+<tr>
+<td><code>&amp;http-timeout</code></td>
+<td>none: <code>http-timeout-timeout-ms</code> is the bound that passed</td>
+</tr>
+<tr>
+<td><code>&amp;http-group-error</code></td>
+<td><code>wrong-thread</code>, <code>closed</code>, <code>cancelled</code> (<a href="groups.md">Groups</a>)</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><strong><code>&amp;http-request-error</code>,</strong> a key or value the high level checks:
+<code>unknown-key</code>, <code>repeated-key</code>, <code>missing-value</code>, <code>body-and-form</code>,
+<code>multipart-beside-body</code>, <code>body-not-allowed</code>, <code>not-a-body</code>,
+<code>not-name-value-pairs</code>, <code>not-a-redirect-count</code>, <code>not-a-boolean</code>,
+<code>not-a-retry-policy</code>, <code>not-an-attempt-count</code>, <code>not-a-backoff</code>,
+<code>not-a-status-list</code>, <code>not-a-method-list</code>, <code>not-a-limit</code>, <code>stream-in-group</code>
+and <code>body-length-mismatch</code>. Each names the field and the value refused.</p>
+<p dir="auto"><strong><code>&amp;curl-request-error</code>,</strong> a request's field refused, as you make it, check
+it or submit it. Each topic's page says when:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Reasons</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unknown-key</code>, <code>repeated-key</code>, <code>missing-value</code>, <code>body-not-allowed</code></td>
+<td><a href="low-level.md">The low level</a></td>
+</tr>
+<tr>
+<td><code>embedded-nul</code>, <code>line-break</code>, <code>not-latin-1</code>, <code>not-a-token</code>, <code>surrounding-whitespace</code>, <code>duplicates-field</code>, <code>framing-header</code>: a header or a user agent</td>
+<td>below</td>
+</tr>
+<tr>
+<td><code>part-bytes</code>, <code>part-empty</code>, <code>multipart-empty</code>, <code>multipart-content-type</code>, <code>part-file</code>, <code>multipart-unsupported</code></td>
+<td><a href="high-level.md#multipart">The high level</a></td>
+</tr>
+<tr>
+<td><code>stream-with-rounds</code>, <code>body-length-without-stream</code>, <code>body-length-mismatch</code></td>
+<td><a href="streams.md">Streams</a></td>
+</tr>
+<tr>
+<td><code>prior-knowledge-over-https</code>, <code>prior-knowledge-through-proxy</code></td>
+<td><a href="http-version.md">The HTTP version</a></td>
+</tr>
+<tr>
+<td><code>credentials-bytes</code>, <code>credentials-empty</code>, <code>credentials-beside-userinfo</code>, <code>credentials-beside-authorization</code>, <code>digest-with-stream</code>, <code>proxy-url</code>, <code>proxy-scheme</code>, <code>proxy-url-parts</code>, <code>proxy-authorization-header</code>, <code>proxy-tls-without-https-proxy</code>, <code>proxy-tls-in-tls</code>, <code>https-proxy-unsupported</code></td>
+<td><a href="auth-and-proxies.md">Auth and proxies</a></td>
+</tr>
+<tr>
+<td><code>cookie-line</code>, <code>cookie-jar-engine</code>, <code>cookie-jar-closed</code>, <code>cookie-beside-jar</code></td>
+<td><a href="cookies.md">Cookies</a></td>
+</tr>
+<tr>
+<td><code>pkcs11-url</code>, <code>environment-override</code>, <code>keychain-fallback</code></td>
+<td><a href="tls-and-environment.md">TLS and the environment</a></td>
+</tr>
+<tr>
+<td><code>owned-option</code>, <code>unsupported-type</code>, <code>unknown-option</code>, <code>repeated-option</code></td>
+<td><a href="hatch.md">The hatch</a></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><strong>A header</strong> is a <code>(NAME . VALUE)</code> pair of Latin-1 strings. Refused: a NUL,
+<code>embedded-nul</code>; a CR or LF, <code>line-break</code>; a char above U+00FF, <code>not-latin-1</code>;
+a name that is empty or no HTTP token, <code>not-a-token</code>; a value that starts or
+ends with a space, a tab, VT or FF, <code>surrounding-whitespace</code>; a <code>User-Agent</code> header
+beside <code>user-agent</code>, or a second <code>Host</code>, <code>duplicates-field</code>; and a
+<code>Content-Length</code> or <code>Transfer-Encoding</code>, which libcurl writes,
+<code>framing-header</code>.</p>
+</article></div>

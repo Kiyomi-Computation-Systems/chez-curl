@@ -1,0 +1,160 @@
+<div id="file" class="md" data-path="docs/redirects-and-retries.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Redirects and retries</h1><a id="user-content-redirects-and-retries" class="anchor" aria-label="Permalink: Redirects and retries" href="#redirects-and-retries"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>(http-client)</code> follows redirects by its own rules, not libcurl's, and
+retries only by a policy you give. Each request a redirect or a retry makes
+is a transfer of its own.</p>
+<p dir="auto">The examples on this page call the test server: start it first, with
+<code>node tests/origin.mjs</code>, and give an example the address after <code>"http":</code> in
+the line it prints, not <code>raw</code>'s or <code>h2c</code>'s (<a href="README.md#the-examples">The examples</a>).</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(call-with-http-session 'timeout-ms 10000
+                        'retry (make-http-retry 'attempts 3 'backoff-ms 10 'statuses '(503))
+  (lambda (session)
+    ;; A redirect is followed; the 302 joins the response's history.
+    (let ((response (http-get session (string-append base &quot;/redirect/302?to=/status/200&quot;))))
+      (show (http-response-status response) &quot; &quot;
+            (map http-response-status (http-response-history response))))
+    ;; The server answers this URL 503 twice, then 200.
+    (let ((url (string-append base &quot;/parts?key=&quot; (unseen-key session &quot;example-retry-&quot;)
+                              &quot;&amp;fail=2&quot;)))
+      ;; A call's retry #f overrides the session's policy: the 503 is answered.
+      (show (http-response-status (http-get session url 'retry #f)))
+      ;; With the policy, the second 503 is retried, and the 200 after it is
+      ;; answered. A retried response joins no history.
+      (let ((response (http-get session url)))
+        (show (http-response-status response) &quot; &quot; (http-response-history response))))))"><pre>(call-with-http-session <span class="pl-c1">'timeout-ms</span> <span class="pl-c1">10000</span>
+                        <span class="pl-c1">'retry</span> (make-http-retry <span class="pl-c1">'attempts</span> <span class="pl-c1">3</span> <span class="pl-c1">'backoff-ms</span> <span class="pl-c1">10</span> <span class="pl-c1">'statuses</span> <span class="pl-s">'</span>(<span class="pl-c1">503</span>))
+  (<span class="pl-k">lambda</span> (<span class="pl-v">session</span>)
+    <span class="pl-c"><span class="pl-c">;</span>; A redirect is followed; the 302 joins the response's history.</span>
+    (<span class="pl-k">let</span> ((response (http-get session (string-append base <span class="pl-s"><span class="pl-pds">"</span>/redirect/302?to=/status/200<span class="pl-pds">"</span></span>))))
+      (show (http-response-status response) <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span>
+            (<span class="pl-c1">map</span> http-response-status (http-response-history response))))
+    <span class="pl-c"><span class="pl-c">;</span>; The server answers this URL 503 twice, then 200.</span>
+    (<span class="pl-k">let</span> ((url (string-append base <span class="pl-s"><span class="pl-pds">"</span>/parts?key=<span class="pl-pds">"</span></span> (unseen-key session <span class="pl-s"><span class="pl-pds">"</span>example-retry-<span class="pl-pds">"</span></span>)
+                              <span class="pl-s"><span class="pl-pds">"</span>&amp;fail=2<span class="pl-pds">"</span></span>)))
+      <span class="pl-c"><span class="pl-c">;</span>; A call's retry #f overrides the session's policy: the 503 is answered.</span>
+      (show (http-response-status (http-get session url <span class="pl-c1">'retry</span> <span class="pl-c1">#f</span>)))
+      <span class="pl-c"><span class="pl-c">;</span>; With the policy, the second 503 is retried, and the 200 after it is</span>
+      <span class="pl-c"><span class="pl-c">;</span>; answered. A retried response joins no history.</span>
+      (<span class="pl-k">let</span> ((response (http-get session url)))
+        (show (http-response-status response) <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span> (http-response-history response))))))</pre></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="200 (302)
+503
+200 ()"><pre lang="text" class="notranslate"><code>200 (302)
+503
+200 ()
+</code></pre></div>
+<p dir="auto">The test server's <code>/parts?key=K&amp;fail=2</code> answers 503 to K's first two
+requests, and counts each key for as long as it runs: <code>unseen-key</code> picks one
+it has never counted, so every run of the example prints the same.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Redirects</h2><a id="user-content-redirects" class="anchor" aria-label="Permalink: Redirects" href="#redirects"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A call follows a 301, 302, 303, 307 or 308 whose first <code>Location</code> is neither
+empty nor blank, up to <code>redirects</code> times: 20, unless the session or the call
+says otherwise. <code>#f</code> follows none, and answers the redirect. Each response it
+followed joins the history, oldest first.</p>
+<ul dir="auto">
+<li><strong>The <code>Location</code> is resolved</strong> against the URL the transfer asked for. One
+that is <code>#</code> and a fragment keeps that URL with the new fragment; one with no
+<code>#</code> keeps that URL's own fragment.</li>
+<li><strong>To another origin,</strong> another scheme, host or port, the call drops
+<code>Authorization</code>, <code>Cookie</code> and its <code>credentials</code>, and <code>Host</code> when the host
+changes. A header dropped stays dropped, even back on the first origin.
+<strong>Every other header follows,</strong> so an <code>X-Api-Key</code> reaches the new origin
+too. No request holds a <code>Proxy-Authorization</code> header: it is refused when
+you make one.</li>
+<li><strong>A <code>user:pass@</code> in the URL</strong> stays for a <code>Location</code> that is a path or a
+query. One that names a host, <code>//host/p</code> or a whole URL, carries its own, or
+none.</li>
+<li><strong>From <code>https</code> to <code>http</code> is refused,</strong> unless <code>allow-downgrade</code> is <code>#t</code>.</li>
+<li><strong>A 303 makes a <code>get</code> of anything but a <code>head</code>,</strong> and so do a 301 and a 302
+of a <code>post</code>. The body goes, and with it your <code>Content-</code> headers, <code>Digest</code>,
+<code>Last-Modified</code> and <code>Expect</code>.</li>
+<li><strong>Every other key follows:</strong> the HTTP version, the proxy and its
+credentials, and a session's cookie jar, to another origin too. So the
+next request can be refused as any request would be:
+<code>prior-knowledge-over-https</code> for an <code>https://</code> one by prior knowledge,
+<code>credentials-beside-userinfo</code> for one within the origin to a URL holding a
+user, <code>proxy-tls-in-tls</code>.</li>
+<li><strong>A producer's body is never sent twice.</strong> Once libcurl has asked for it, a
+307 or 308, or a 301 or 302 of anything but a <code>post</code>, raises
+<code>body-not-replayable</code> (<a href="streams.md">Streams</a>).</li>
+</ul>
+<p dir="auto">A redirect the rules do not follow raises <code>&amp;http-redirect-error</code>:
+<code>too-many-redirects</code>, <code>bad-location</code> (a <code>Location</code> that is no URL, or names
+a scheme but <code>http</code> or <code>https</code>), <code>insecure-redirect</code> or
+<code>body-not-replayable</code>. <code>http-redirect-error-response</code> holds the response,
+and <code>http-redirect-error-location</code> its <code>Location</code>. Which <code>Location</code> is no URL
+<a href="libcurl-versions.md#redirects-and-retries">varies by libcurl</a>: 7.85.0
+follows <code>javascript:alert(1)</code> as a relative path, where later ones refuse
+it, <code>bad-location</code>. Two <code>Location</code> headers vary too: 7.85.0, 8.5.0 and 8.7.1
+follow the first, and 8.20.0 and 8.23.0 fail the transfer, 8.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Retries</h2><a id="user-content-retries" class="anchor" aria-label="Permalink: Retries" href="#retries"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">Nothing is retried unless the session or the call names a policy, made by
+<code>make-http-retry</code>. A call's <code>retry #f</code> turns its session's off.</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>What</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attempts</code></td>
+<td>transfers per step, the first among them</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>backoff-ms</code></td>
+<td>the first retry's wait, doubling for each later one</td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>max-backoff-ms</code></td>
+<td>the longest wait, a <code>Retry-After</code>'s too</td>
+<td>10000</td>
+</tr>
+<tr>
+<td><code>jitter</code></td>
+<td><code>#t</code> waits a random share of the backoff; <code>#f</code> the backoff itself</td>
+<td><code>#t</code></td>
+</tr>
+<tr>
+<td><code>statuses</code></td>
+<td>the statuses retried, 400 to 599</td>
+<td><code>(429 503)</code></td>
+</tr>
+<tr>
+<td><code>methods</code></td>
+<td>the methods a status, or a failure after a request was sent, is retried for</td>
+<td><code>(get head put delete)</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<ul dir="auto">
+<li><strong>A step is one URL.</strong> It makes the policy's attempts at most, and a
+redirect starts the count again.</li>
+<li><strong>A status is retried</strong> when the policy's <code>statuses</code> hold it and its
+<code>methods</code> the call's. A proxy that refused a <code>CONNECT</code> with a status counts
+as a response with that status.</li>
+<li><strong>A failure is retried</strong> when it is a connect, send-receive or timeout
+failure, but the call's own bound: for any method when nothing was sent,
+and otherwise only for one of <code>methods</code>. On libcurl 8.7.0 and 8.7.1 a
+transfer's size is unknown, so one that ran counts as sent: a <code>post</code> there
+is not retried after a refused connect.</li>
+<li><strong>The wait</strong> is the backoff, capped, a random share with <code>jitter</code>; or a
+retried status's <code>Retry-After</code>, seconds or a date. A wait longer than
+<code>max-backoff-ms</code>, or than the time the call has left, makes no retry.</li>
+<li><strong>A retried response joins no history.</strong> <code>http-exchange-transfers</code>, on what
+a call raises, counts every transfer.</li>
+<li><strong>A retry that runs out of time</strong> having sent nothing answers the last
+response it retried, or raises the last failure; one whose request may have
+gone out raises <code>&amp;http-timeout</code>.</li>
+<li><strong>A producer's body</strong> is never retried once libcurl has asked for it. A
+refused connect, before any ask, is still retried.</li>
+</ul>
+<p dir="auto"><strong>libcurl resends on its own,</strong> with no policy: a request on a reused
+connection that died before any response byte, and an HTTP/2 stream the
+server refused with <code>REFUSED_STREAM</code>, up to five times more, a <code>post</code>'s
+among them. A policy's attempts multiply them: a <code>get</code> retried 3 times can
+reach such a server 18 times.</p>
+</article></div>

@@ -3,7 +3,9 @@
 ;;; with Chez's reader, and names each suite that breaks one of two rules
 ;;; (ADR-0015):
 ;;;
-;;;   - its last datum is exactly suite-exit-form, the shared exit form;
+;;;   - its last datum is exactly its exit form: a docs site suite's, one
+;;;     named tests/site-*.sps, is (site-testing)'s site-exit-form, and every
+;;;     other suite's is suite-exit-form, the shared exit form;
 ;;;   - no datum before the last holds an exit form but (exit 1), however
 ;;;     deeply nested: any other would end the suite before its verdict.
 ;;;
@@ -17,7 +19,21 @@
 ;;;
 ;;; With no suite named it passes: make test refuses that case itself.
 (import (rnrs)
-        (curl-testing))
+        (curl-testing)
+        (site-testing))
+
+;; exit-form : String -> Datum
+;; The form the suite at PATH must end with: site-exit-form when its file's
+;; name starts site-, the docs site's suites, which run on a Chez below
+;; chez-curl's floor; suite-exit-form for any other.
+(define (exit-form path)
+  (let* ((n (string-length path))
+         (slash (let loop ((i (- n 1)))
+                  (cond ((< i 0) -1) ((char=? (string-ref path i) #\/) i) (else (loop (- i 1))))))
+         (name (substring path (+ slash 1) n)))
+    (if (and (>= (string-length name) 5) (string=? (substring name 0 5) "site-"))
+        site-exit-form
+        suite-exit-form)))
 
 ;; read-data : String -> (U (List 'data (Listof Any)) (List 'unreadable String))
 (define (read-data path)
@@ -54,8 +70,9 @@
 ;; What is wrong with the suite at PATH, in the order found: its last datum
 ;; first, then each early exit. Empty when the suite is right.
 (define (complaints path)
-  (let ((found (read-data path))
-        (form (written suite-exit-form)))
+  (let* ((found (read-data path))
+         (want (exit-form path))
+         (form (written want)))
     (case (car found)
       ((data)
        (let ((data (cadr found)))
@@ -63,7 +80,7 @@
              (list (string-append path ": it holds no datum, so it cannot end with " form))
              (append
               (let ((last (car (reverse data))))
-                (if (equal? last suite-exit-form)
+                (if (equal? last want)
                     '()
                     (list (string-append path ": its last datum is " (written last)
                                          ", not " form))))
@@ -86,7 +103,8 @@
 (when (null? all-complaints)
   (put-string (current-output-port)
               (string-append "check-suites: every suite ends with "
-                             (written suite-exit-form) " ("
+                             (written suite-exit-form) ", and every site suite with "
+                             (written site-exit-form) " ("
                              (number->string (length suites)) " checked)\n")))
 
 (exit (if (null? all-complaints) 0 1))

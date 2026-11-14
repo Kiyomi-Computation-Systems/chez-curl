@@ -1,0 +1,15 @@
+https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.1/examples
+HTTP/2 301 
+location: https://github.com/Kiyomi-Computation-Systems/chez-curl/tree/v0.1.1/examples
+followed: 200 https://github.com/Kiyomi-Computation-Systems/chez-curl/tree/v0.1.1/examples
+
+https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.1/examples/expected
+HTTP/2 301 
+location: https://github.com/Kiyomi-Computation-Systems/chez-curl/tree/v0.1.1/examples/expected
+followed: 200 https://github.com/Kiyomi-Computation-Systems/chez-curl/tree/v0.1.1/examples/expected
+
+https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/main/examples
+HTTP/2 301 
+location: https://github.com/Kiyomi-Computation-Systems/chez-curl/tree/main/examples
+followed: 200 https://github.com/Kiyomi-Computation-Systems/chez-curl/tree/main/examples
+

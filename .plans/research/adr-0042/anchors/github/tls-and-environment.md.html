@@ -1,0 +1,187 @@
+<div id="file" class="md" data-path="docs/tls-and-environment.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">TLS and the environment</h1><a id="user-content-tls-and-the-environment" class="anchor" aria-label="Permalink: TLS and the environment" href="#tls-and-the-environment"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">What chez-curl and libcurl read from your process, which libcurl gets loaded,
+and how a server's certificate is checked.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Finding libcurl</h2><a id="user-content-finding-libcurl" class="anchor" aria-label="Permalink: Finding libcurl" href="#finding-libcurl"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">chez-curl loads libcurl itself, once per process, the first time your program
+reaches a name that needs it. A program that imports <code>(curl)</code> or
+<code>(http-client)</code> and uses one does this before its first line runs, so a
+<code>guard</code> in the program cannot catch a refusal. The condition types, their
+predicates and accessors, the reason lists and <code>libcurl-info</code>'s accessors load
+nothing.</p>
+<p dir="auto">It takes the first of these that exists:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Where</th>
+<th>Candidates, in order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CHEZ_CURL_LIBCURL</code> set</td>
+<td>that path alone, as given: it must be absolute</td>
+</tr>
+<tr>
+<td>Linux, under Guix</td>
+<td><code>$GUIX_ENVIRONMENT/lib/libcurl.so.4</code>, <code>$GUIX_PROFILE/lib/libcurl.so.4</code>, <code>$HOME/.guix-home/profile/lib/libcurl.so.4</code>, <code>$HOME/.guix-profile/lib/libcurl.so.4</code>, <code>/run/current-system/profile/lib/libcurl.so.4</code></td>
+</tr>
+<tr>
+<td>Linux, elsewhere</td>
+<td><code>/usr/local/lib/libcurl.so.4</code>, <code>/usr/lib/TRIPLE/libcurl.so.4</code>, <code>/usr/lib64/libcurl.so.4</code>, <code>/usr/lib/libcurl.so.4</code>, <code>/usr/lib/TRIPLE/libcurl-gnutls.so.4</code></td>
+</tr>
+<tr>
+<td>macOS</td>
+<td><code>/usr/lib/libcurl.4.dylib</code>, Apple's</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">TRIPLE is <code>x86_64-linux-gnu</code> on amd64 and <code>aarch64-linux-gnu</code> on arm64. A
+process is under Guix when its C library comes from <code>/gnu/store/</code>; then no
+system directory is tried, and elsewhere no Guix profile is. Homebrew's and
+MacPorts' libcurls are reached through <code>CHEZ_CURL_LIBCURL</code> alone:</p>
+<div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="CHEZ_CURL_LIBCURL=/opt/homebrew/opt/curl/lib/libcurl.4.dylib scheme --libdirs src --program app.sps"><pre>CHEZ_CURL_LIBCURL=/opt/homebrew/opt/curl/lib/libcurl.4.dylib scheme --libdirs src --program app.sps</pre></div>
+<p dir="auto">The variable is read once, at the load: a change after it does nothing.</p>
+<p dir="auto"><strong>A refusal</strong> raises <code>&amp;curl-library-unavailable</code>, at the load and again at
+every later reference. Its reason says why:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Reason</th>
+<th>What happened</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>invalid-override</code></td>
+<td><code>CHEZ_CURL_LIBCURL</code> is set, but not to an absolute path, the empty string among it</td>
+<td>give an absolute path, or unset it</td>
+</tr>
+<tr>
+<td><code>not-found</code></td>
+<td>no candidate exists; <code>curl-library-unavailable-candidates</code> lists every path tried</td>
+<td>install libcurl, or set <code>CHEZ_CURL_LIBCURL</code></td>
+</tr>
+<tr>
+<td><code>load-failed</code></td>
+<td>the loader refused the file; <code>-detail</code> holds its message</td>
+<td>check the path and the architecture</td>
+</tr>
+<tr>
+<td><code>below-floor</code></td>
+<td>the libcurl is older than <a href="../README.org">README.org's Requirements</a> say</td>
+<td>point <code>CHEZ_CURL_LIBCURL</code> at a newer one</td>
+</tr>
+<tr>
+<td><code>no-ssl</code></td>
+<td>the libcurl was built without TLS</td>
+<td>use one built with TLS</td>
+</tr>
+<tr>
+<td><code>missing-api</code></td>
+<td>the libcurl was built without an API chez-curl needs; <code>-detail</code> names it</td>
+<td>use a fuller build</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Ubuntu 22.04, Debian 11 and RHEL 9 ship a libcurl older than the floor: on
+them, build or install a newer one and set <code>CHEZ_CURL_LIBCURL</code> to it.</p>
+<p dir="auto">A libcurl built without its multipart support still loads: a request with a
+multipart body is refused when you submit it, <code>multipart-unsupported</code>, and
+every other request works.</p>
+<p dir="auto"><code>(loaded-libcurl)</code> tells what was loaded: its path, where the path came from,
+its version and its TLS library, as libcurl reports them before it starts.</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(libcurl-info-version (loaded-libcurl))      ; &quot;8.20.0&quot;, say
+(libcurl-info-source (loaded-libcurl))       ; override, guix-profile, system, ...
+(libcurl-info-ssl-version (loaded-libcurl))  ; &quot;GnuTLS/3.8.13&quot;, say"><pre>(libcurl-info-version (loaded-libcurl))      <span class="pl-c"><span class="pl-c">;</span> "8.20.0", say</span>
+(libcurl-info-source (loaded-libcurl))       <span class="pl-c"><span class="pl-c">;</span> override, guix-profile, system, ...</span>
+(libcurl-info-ssl-version (loaded-libcurl))  <span class="pl-c"><span class="pl-c">;</span> "GnuTLS/3.8.13", say</span></pre></div>
+<p dir="auto">On Apple's libcurl, which carries two TLS libraries, <code>libcurl-info-ssl-version</code>
+names the first of them, whatever is in use: LibreSSL is, unless
+<code>CURL_SSL_BACKEND</code> names the other (below).</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Checking a server's certificate</h2><a id="user-content-checking-a-servers-certificate" class="anchor" aria-label="Permalink: Checking a server's certificate" href="#checking-a-servers-certificate"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A request checks the server's certificate and name by default.</p>
+<ul dir="auto">
+<li><strong><code>ca-file</code></strong> names the only CA file to trust. With it <code>#f</code>, the default,
+libcurl's own store is used, as it was built. No CA directory is read beside
+a CA file.</li>
+<li><strong><code>verify #f</code></strong> turns the check off. Use it only to debug.</li>
+<li><strong>A <code>ca-file</code> that begins <code>pkcs11:</code></strong>, in any case, is refused,
+<code>pkcs11-url</code>: GnuTLS reads such a path as a PKCS#11 token, not a file. Name
+the file as <code>./pkcs11:...</code>.</li>
+<li><strong>An <code>https://</code> proxy's TLS is its own:</strong> <code>proxy-ca-file</code> and
+<code>proxy-verify</code>. See <a href="auth-and-proxies.md">Auth and proxies</a>.</li>
+</ul>
+<p dir="auto">Two platforms can put another anchor beside your CA file, so there chez-curl
+refuses a request with a <code>ca-file</code> and <code>verify</code> on when you submit it:</p>
+<ul dir="auto">
+<li><strong>Guix's libcurl, <code>SSL_CERT_FILE</code> and <code>SSL_CERT_DIR</code>.</strong> Guix's libcurl reads
+both as it loads, and its 8.20.0 puts <code>SSL_CERT_FILE</code> in place of your
+<code>ca-file</code>, and adds <code>SSL_CERT_DIR</code>'s certificates. So on any Guix libcurl,
+when either was set and not empty as the program started, such a request is
+refused, <code>environment-override</code>, naming each one set. Unset them before
+starting the program, or leave out <code>ca-file</code> to trust the store they name.
+Outside Guix, no libcurl measured let them touch a <code>ca-file</code>.</li>
+<li><strong>macOS, Apple's LibreSSL.</strong> Apple's libcurl has two TLS libraries and uses
+LibreSSL unless <code>CURL_SSL_BACKEND</code> names the other. LibreSSL checks the
+keychain when a CA file fails, so a server the keychain trusts passes
+whatever your file says. Such a request is refused there,
+<code>keychain-fallback</code>, naming the TLS library. Start the program with
+<code>CURL_SSL_BACKEND=secure-transport</code>, which keeps your <code>ca-file</code> the only
+anchor. chez-curl reads no other setting for it.</li>
+</ul>
+<div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="CURL_SSL_BACKEND=secure-transport scheme --libdirs src --program app.sps"><pre>CURL_SSL_BACKEND=secure-transport scheme --libdirs src --program app.sps</pre></div>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">What a transfer reads from the environment</h2><a id="user-content-what-a-transfer-reads-from-the-environment" class="anchor" aria-label="Permalink: What a transfer reads from the environment" href="#what-a-transfer-reads-from-the-environment"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">chez-curl never changes your environment. It reads <code>CHEZ_CURL_LIBCURL</code>,
+Guix's profile variables and <code>HOME</code> to find libcurl, and <code>SSL_CERT_FILE</code> and
+<code>SSL_CERT_DIR</code>, all at the load. libcurl and its TLS library read these:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Read by</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>http_proxy</code>, <code>https_proxy</code>, <code>HTTPS_PROXY</code>, <code>all_proxy</code>, <code>ALL_PROXY</code></td>
+<td>libcurl, each transfer with <code>proxy environment</code>, the default</td>
+<td>the transfer goes through the proxy named (<a href="auth-and-proxies.md">Auth and proxies</a>)</td>
+</tr>
+<tr>
+<td><code>no_proxy</code>, <code>NO_PROXY</code></td>
+<td>the same</td>
+<td>hosts that go direct</td>
+</tr>
+<tr>
+<td><code>HTTP_PROXY</code></td>
+<td>nobody</td>
+<td>ignored</td>
+</tr>
+<tr>
+<td><code>SSLKEYLOGFILE</code></td>
+<td>the TLS library</td>
+<td>writes every transfer's secrets to the file it names: anyone with the file can read the traffic. Use it only to debug</td>
+</tr>
+<tr>
+<td><code>OPENSSL_CONF</code></td>
+<td>OpenSSL</td>
+<td>a configuration file, which can weaken what OpenSSL checks</td>
+</tr>
+<tr>
+<td><code>CURL_SSL_BACKEND</code></td>
+<td>Apple's libcurl, at the load</td>
+<td>picks its TLS library (above)</td>
+</tr>
+<tr>
+<td><code>SSL_CERT_FILE</code>, <code>SSL_CERT_DIR</code></td>
+<td>Guix's libcurl, at the load</td>
+<td>replace or add to your <code>ca-file</code> (above)</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">A transfer reads no <code>.netrc</code> and no cookie file: those options are chez-curl's
+own, and never set. A request with <code>proxy #f</code> or a proxy URL reads none of the
+proxy variables.</p>
+</article></div>

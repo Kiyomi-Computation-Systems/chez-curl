@@ -45,6 +45,8 @@ name: CI
 #               2026-11-06): in each, the planted defects must fail it, then
 #               the shard's suites run under it. The Makefile lists each
 #               shard's; between them they run every suite once.
+#   site        the docs site (ADR-0042): make check-site, then make site, on
+#               apt's Chez and cmark-gfm, as pages.yml builds it to deploy.
 #
 # This workflow states no floor. The scripts that build Chez and libcurl at
 # their floors, scripts/ci/build-chez.sh and build-curl.sh, take no version and
@@ -716,3 +718,38 @@ jobs:
         env:
           CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
         run: make test-memory MEMORY_SHARD=2
+
+  # The docs site, built as pages.yml builds it to deploy on a v* tag: apt's
+  # Chez, below chez-curl's floor, which is fine here, since nothing the site
+  # runs imports a library under src/, where (curl private require-threaded)
+  # refuses such a Chez; and apt's cmark-gfm, which chez-cmark-gfm loads.
+  # chez-cmark-gfm comes from the archive Akku.lock pins (make site-deps),
+  # unpacked by tar with xz, and check-site-deps first holds the script that
+  # fetches it to its offline test. The submodules are check-site's: make deps
+  # links SRFI-64 for the generator's suites.
+  site:
+    name: site (the docs site, on apt's Chez)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Install Chez and cmark-gfm
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends chezscheme cmark-gfm xz-utils
+
+      - name: Test scripts/fetch-akku-lock offline
+        run: make check-site-deps
+
+      - name: Get chez-cmark-gfm as Akku.lock pins it
+        run: make site-deps
+
+      - name: Gate the site
+        run: make check-site CHEZ=chezscheme
+
+      - name: Build the site
+        run: make site CHEZ=chezscheme

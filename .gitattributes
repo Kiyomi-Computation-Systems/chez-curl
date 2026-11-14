@@ -1,0 +1,5 @@
+# Design records, the ledger and the coding agents' instructions stay in the
+# repository but out of release archives: git archive, and GitHub's source
+# tarballs (ADR-0042).
+/.plans     export-ignore
+/AGENTS.md  export-ignore

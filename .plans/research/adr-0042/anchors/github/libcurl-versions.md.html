@@ -1,0 +1,1127 @@
+<div id="file" class="md" data-path="docs/libcurl-versions.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">What varies by libcurl</h1><a id="user-content-what-varies-by-libcurl" class="anchor" aria-label="Permalink: What varies by libcurl" href="#what-varies-by-libcurl"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">chez-curl hands most of a transfer to libcurl, so some of what a caller meets
+depends on which libcurl is loaded. This page lists each such behaviour, by
+topic. Everything here was measured on these libcurls, the ones the suites
+run:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>The libcurl</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7.85.0</td>
+<td>curl 7.85.0 built from source with OpenSSL</td>
+</tr>
+<tr>
+<td>8.5.0</td>
+<td>Ubuntu 24.04's 8.5.0, with OpenSSL and with GnuTLS, alike unless a cell says</td>
+</tr>
+<tr>
+<td>8.7.1</td>
+<td>Apple's 8.7.1, on macOS, with <code>CURL_SSL_BACKEND=secure-transport</code>, which <code>make test</code> sets there</td>
+</tr>
+<tr>
+<td>8.20.0</td>
+<td>Guix's 8.20.0, with GnuTLS</td>
+</tr>
+<tr>
+<td>8.23.0</td>
+<td>curl 8.23.0 built from source with OpenSSL</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">A number in a cell is libcurl's code: the transfer fails with
+<code>&amp;curl-transfer-error</code>, reason <code>perform-failed</code>, of the class
+<a href="errors.md">Errors</a> gives that code. "Alike" means every libcurl answered the
+same. A cell with two answers raced: either can come.</p>
+<p dir="auto">The tables are held by the suites, by version. Each section then lists what
+was seen and no test holds by version, and where libcurls differ but
+chez-curl answers alike on every one, which no test holds by version either:
+the tests hold chez-curl's answer.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Multipart</h2><a id="user-content-multipart" class="anchor" aria-label="Permalink: Multipart" href="#multipart"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A file part is read as the body goes, after the engine's last check. A file
+changed after that check:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>grown, HTTP/1.1</td>
+<td>the extra bytes sent past <code>Content-Length</code>: the server's answer</td>
+<td>as 7.85.0</td>
+<td>200, the body never closed</td>
+<td>as 8.7.1</td>
+<td>as 8.7.1</td>
+</tr>
+<tr>
+<td>grown, HTTP/2</td>
+<td>92</td>
+<td>the server's answer: 92 or 56</td>
+<td>200, never closed</td>
+<td>as 8.7.1</td>
+<td>as 8.7.1</td>
+</tr>
+<tr>
+<td>shrunk, HTTP/1.1</td>
+<td>waits until <code>timeout-ms</code>, 28, or for ever with none</td>
+<td>as 7.85.0</td>
+<td>26, at once</td>
+<td>as 8.7.1</td>
+<td>as 8.7.1</td>
+</tr>
+<tr>
+<td>shrunk, HTTP/2</td>
+<td>92, at once</td>
+<td>as 7.85.0</td>
+<td>26</td>
+<td>26</td>
+<td>26</td>
+</tr>
+<tr>
+<td>removed</td>
+<td>26, alike</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>swapped for a FIFO</td>
+<td>held until a writer comes, then 200: alike</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<ul dir="auto">
+<li><strong>A resend,</strong> on a kept connection that died or an HTTP/2 stream refused at
+its head, sends the whole body again, alike.</li>
+<li><strong>A connection reset</strong> as a 4 MiB file part's request arrives is resent, or
+fails 55, by a race, alike.</li>
+<li><strong>The request size</strong> of a failed multipart transfer counts the head alone on
+7.85.0 and 8.5.0, the head and the body sent on 8.20.0 and 8.23.0, and is
+<code>#f</code> on 8.7.1.</li>
+<li><strong>The default part types</strong> are alike on every libcurl: see
+<a href="high-level.md#multipart">The high level</a>.</li>
+</ul>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>A file part's path libcurl refuses, 26, is still sent, as an empty field on
+8.20.0 and 8.23.0: chez-curl fails the transfer, <code>part-file</code>, on any answer
+but 0.</li>
+<li>libcurl's escaping option sends CR and LF raw in a part's name on 7.85.0,
+8.5.0, 8.7.1 and 8.20.0: chez-curl owns it, never sets it, and refuses those
+bytes.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Redirects and retries</h2><a id="user-content-redirects-and-retries" class="anchor" aria-label="Permalink: Redirects and retries" href="#redirects-and-retries"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a 302 to <code>javascript:alert(1)</code></td>
+<td>followed, as a relative path</td>
+<td><code>bad-location</code>, URL error 5</td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+</tr>
+<tr>
+<td>a 302 to <code>http://[::1/x</code></td>
+<td><code>bad-location</code>, URL error 4</td>
+<td><code>bad-location</code>, URL error 22</td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+</tr>
+<tr>
+<td>two <code>Location</code> headers</td>
+<td>the first followed</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>a <code>post</code> to a refused port, retried</td>
+<td>3 transfers</td>
+<td>3</td>
+<td>1: its size is unknown, so counted as sent</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>a retry that runs out of time having sent nothing</td>
+<td>the last failure, 28, no <code>&amp;http-timeout</code></td>
+<td>as 7.85.0</td>
+<td><code>&amp;http-timeout</code></td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+</tr>
+<tr>
+<td>a proxy that closes a <code>CONNECT</code>, a <code>post</code> outside the policy's methods</td>
+<td>tried once: the size counts the <code>CONNECT</code></td>
+<td>3 times</td>
+<td>once</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>the same, a <code>get</code> in the methods</td>
+<td>3 times, alike</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>A <code>Location</code> of <code>#</code> and a fragment drops the last segment and the query on
+7.85.0, 8.5.0 and 8.7.1: the high level sets the fragment itself.</li>
+<li>7.85.0 follows inside one transfer without bound, a 417 or a stale Digest
+challenge for ever: chez-curl pins the bound at 30 on every libcurl.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Auth</h2><a id="user-content-auth" class="anchor" aria-label="Permalink: Auth" href="#auth"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Digest MD5, MD5-sess, SHA-256, SHA-256-sess</td>
+<td>200, alike</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Digest SHA-512-256</td>
+<td>401: it sends SHA-256's answer</td>
+<td>401</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+</tr>
+<tr>
+<td>a Digest user <code>üser</code></td>
+<td>200, sent raw</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+<td>401: sent percent-encoded, the raw bytes hashed</td>
+</tr>
+<tr>
+<td>a URL <code>http://@h/</code> or <code>http://:@h/</code> beside credentials</td>
+<td>taken: your credentials sent</td>
+<td>refused, <code>credentials-beside-userinfo</code></td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+</tr>
+<tr>
+<td>a URL <code>:p@</code>, <code>u@</code> or <code>u:@</code> beside credentials</td>
+<td>refused, alike</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>a 1 MiB Basic password or Bearer token</td>
+<td>27, nothing sent</td>
+<td>27</td>
+<td>100</td>
+<td>100</td>
+<td>100</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>Credentials both <code>""</code>: 8.23.0 sends no header. chez-curl refuses them,
+<code>credentials-empty</code>.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Proxies</h2><a id="user-content-proxies" class="anchor" aria-label="Permalink: Proxies" href="#proxies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a proxy URL <code>http://@p</code> or <code>http://:@p</code></td>
+<td>taken: no <code>Proxy-Authorization</code></td>
+<td>refused, <code>credentials-empty</code></td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+</tr>
+<tr>
+<td><code>https://</code> through an <code>https://</code> proxy URL</td>
+<td>refused, <code>proxy-tls-in-tls</code>, unless <code>http/1.1</code></td>
+<td>OpenSSL: runs; GnuTLS: refused, always</td>
+<td>runs</td>
+<td>runs</td>
+<td>runs</td>
+</tr>
+<tr>
+<td>a <code>CONNECT</code> refused, 403, 407, 502 or 503</td>
+<td>56, the size the <code>CONNECT</code>'s bytes</td>
+<td>56, size 0</td>
+<td>56, size <code>#f</code></td>
+<td>7, size 0</td>
+<td>7, size 0</td>
+</tr>
+<tr>
+<td>a proxy that closes a <code>CONNECT</code></td>
+<td>56, no status, alike</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>two <code>https://</code> requests in turn through one proxy URL</td>
+<td>each its own <code>CONNECT</code>; with credentials the first closes as it ends</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>the second rides the first's tunnel</td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td>credentials in a proxy URL, two HTTP/2 streams live</td>
+<td>the engine stops multiplexing, for good</td>
+<td>as 7.85.0</td>
+<td>never multiplexes</td>
+<td>nothing changes</td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td><code>https_proxy</code> set, beside a live tunnel opened with credentials</td>
+<td>its own <code>CONNECT</code>, refused 407: 56</td>
+<td>as 7.85.0</td>
+<td>56</td>
+<td>its own <code>CONNECT</code>, refused 407: 7</td>
+<td>as 8.20.0</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><code>curl-transfer-error-connect-code</code> holds the proxy's status on every libcurl.</p>
+<p dir="auto">Seen, and no test holds it by version:</p>
+<ul dir="auto">
+<li>A proxy variable whose user or password decodes to a control byte sends
+the transfer around the proxy, direct, on 7.85.0 and 8.5.0; 8.20.0 and
+8.23.0 fail it, 3.</li>
+</ul>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>A proxy URL with no port: libcurl tries 1080, and 8.23.0 80. chez-curl
+gives it its scheme's.</li>
+<li><code>socks5://</code> parses on 8.23.0 alone: chez-curl refuses every scheme but
+<code>http</code> and <code>https</code>, <code>proxy-scheme</code>.</li>
+<li>An empty <code>@</code> sent <code>:</code> on 8.5.0 and 8.20.0, and nothing on 8.23.0: chez-curl
+refuses it there when you submit, <code>credentials-empty</code>. 7.85.0 reports no
+user for it, so it is taken there, as the table says.</li>
+<li>A user that decodes to a control byte went direct on 7.85.0 and 8.5.0:
+chez-curl refuses it on every libcurl when you submit, <code>credentials-bytes</code>.</li>
+<li>7.85.0 let a request ride a tunnel another user's credentials opened
+(CVE-2026-3784): before 8.19.0 chez-curl shares no tunnel.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Cookies</h2><a id="user-content-cookies" class="anchor" aria-label="Permalink: Cookies" href="#cookies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A read-out line marked "refused by a load" is one <code>curl-cookie-jar-load!</code>
+refuses, <code>cookie-line</code>.</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What a server sets</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Path=</code>, <code>Path=TRUE</code>, <code>Path=FALSE</code>, <code>Path=rel</code></td>
+<td>listed as given, refused by a load; sent</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>listed with <code>/</code>; sent</td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td>a tab in a name or a value</td>
+<td>listed as eight fields, refused by a load; sent</td>
+<td>dropped</td>
+<td>dropped</td>
+<td>dropped</td>
+<td>dropped</td>
+</tr>
+<tr>
+<td>a tab in <code>Path</code></td>
+<td>eight fields, refused by a load; not sent</td>
+<td>dropped</td>
+<td>dropped</td>
+<td>dropped</td>
+<td>dropped</td>
+</tr>
+<tr>
+<td><code>__secure-a</code>, <code>__SECURE-b</code>, <code>__host-c</code> with a path, <code>__HOST-d</code> with a domain, none <code>Secure</code></td>
+<td>listed, refused by a load; sent</td>
+<td>dropped</td>
+<td>dropped</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+</tr>
+<tr>
+<td>a loaded line already expired</td>
+<td>listed until a cookie is added</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>dropped at once</td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td>a 4,003-byte cookie, then a URL past 4,200 bytes or a 4,300-byte <code>User-Agent</code></td>
+<td>the head never ends: 28 at <code>timeout-ms</code></td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>Domain=localhost</code> set at <code>a.localhost</code></td>
+<td>kept, not sent there</td>
+<td>dropped</td>
+<td>as 7.85.0</td>
+<td>dropped</td>
+<td>as 7.85.0</td>
+</tr>
+<tr>
+<td><code>Domain=localhost</code> set at <code>localhost</code></td>
+<td><code>.localhost</code>; sent</td>
+<td>host-only; sent</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+</tr>
+<tr>
+<td><code>__Host-dom; Secure; Path=/; Domain=localhost</code> at <code>localhost</code></td>
+<td>dropped</td>
+<td>kept, host-only; sent</td>
+<td>dropped</td>
+<td>dropped</td>
+<td>dropped</td>
+</tr>
+<tr>
+<td>the default path, set at <code>/cookies/a/b/page</code></td>
+<td><code>/cookies/a/b/</code></td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td><code>/cookies/a/b</code></td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td><code>Max-Age</code> of 1,000 days</td>
+<td>kept past 400 days</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>capped at 400 days</td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td><code>Max-Age=-1</code></td>
+<td>kept, a session cookie, sent</td>
+<td>listed with expiry 1, not sent</td>
+<td>as 8.5.0</td>
+<td>dropped</td>
+<td>dropped</td>
+</tr>
+<tr>
+<td>deleted by <code>Max-Age=0</code></td>
+<td>listed, expiry 1, until the next request</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>gone at once</td>
+<td>as 8.20.0</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">What <code>Domain=localhost</code> does turns on the public suffix list a libcurl is
+built with: 8.5.0 and 8.20.0 have one, the others do not.</p>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>A loaded line with a control byte, empty fields, a relative path, or a
+prefix in another case is stored, merged, kept or dropped by version: the
+load refuses each.</li>
+<li>A loaded cookie past the <code>Cookie</code> line's 8,190 bytes left the head open on
+every libcurl: the load caps a name and value at 4,096 bytes.</li>
+<li>A share holding HSTS carried an entry to the next transfer on 8.5.0 and
+later: a jar shares cookies alone.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The HTTP version</h2><a id="user-content-the-http-version" class="anchor" aria-label="Permalink: The HTTP version" href="#the-http-version"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>http/2-prior-knowledge</code> to an HTTP/1.1 server</td>
+<td>52</td>
+<td>56</td>
+<td>16 or 56</td>
+<td>16</td>
+<td>16</td>
+</tr>
+<tr>
+<td>two prior-knowledge requests in one batch</td>
+<td>one connection</td>
+<td>two</td>
+<td>two</td>
+<td>two</td>
+<td>two</td>
+</tr>
+<tr>
+<td>a request started once a live one's head is in</td>
+<td>reuses its connection</td>
+<td>reuses</td>
+<td>opens its own</td>
+<td>reuses</td>
+<td>reuses</td>
+</tr>
+<tr>
+<td>two transfers at once to one HTTP/2 origin</td>
+<td>share a connection</td>
+<td>share</td>
+<td>each its own</td>
+<td>share</td>
+<td>share</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>Prior knowledge over <code>https://</code>: 8.20.0 and 8.23.0 offer HTTP/2 alone, and
+an HTTP/1.1 server fails it, 35. chez-curl refuses it everywhere,
+<code>prior-knowledge-over-https</code>.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Streams</h2><a id="user-content-streams" class="anchor" aria-label="Permalink: Streams" href="#streams"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">At the high level:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a final HTTP/2 303, unfollowed, once 64 KiB of a 4 MiB body went</td>
+<td>the 303 and its body</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>never ends: the call's bound, 28, <code>&amp;http-timeout</code></td>
+<td>as 8.20.0</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">At the low level, an answer that comes while a streamed body is still being
+put. "At once" ends the transfer as the answer comes; "at your put" ends it
+only at your next put or end:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>The answer</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP/1.1 413, closing</td>
+<td>at your put, 413</td>
+<td>at once, 413</td>
+<td>at once, 413</td>
+<td>at once, 413</td>
+<td>at once, 413</td>
+</tr>
+<tr>
+<td>HTTP/1.1 413, kept alive</td>
+<td>at your put, 413</td>
+<td>at your put, 413</td>
+<td>at your put, 413</td>
+<td>at once, 413</td>
+<td>at once, 413</td>
+</tr>
+<tr>
+<td>HTTP/1.1 200, closing</td>
+<td>at your put, 200</td>
+<td>at once, 200, the body cut</td>
+<td>at once, 200, cut</td>
+<td>at once, 200, cut</td>
+<td>at once, 200, cut</td>
+</tr>
+<tr>
+<td>HTTP/1.1 200, kept alive</td>
+<td>at your put, 200, alike</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>HTTP/2 413</td>
+<td>at your put, 413</td>
+<td>at your put, 413</td>
+<td>at your put, 413</td>
+<td>at once, 413</td>
+<td>at once, 413</td>
+</tr>
+<tr>
+<td>HTTP/2 200</td>
+<td>at your put, then the timeout, 28</td>
+<td>at once, 200, cut</td>
+<td>at your put, 200, or 55</td>
+<td>at your put, 200, or 55</td>
+<td>at your put, 200</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Where it ends at your put, libcurl still asks for the rest of the body: a
+producer is fed it.</p>
+<p dir="auto">Seen, and no test holds it by version:</p>
+<ul dir="auto">
+<li>8.5.0 over HTTP/2 can read nothing from a transfer paused for sending until
+the body resumes, rarely. A head wait then answers <code>#f</code> at its bound. Put or end the body first, or bound the wait and then put.</li>
+<li>7.85.0: an early HTTP/2 200 while a whole bytevector body is still owed
+never ends.</li>
+<li>At the low level, an HTTP/2 3xx that comes before a body is sent whole
+never ends on 8.20.0 and 8.23.0, as the high level's row above.</li>
+</ul>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>7.85.0 and 8.5.0 lose a refusal of a piece made while a paused transfer
+resumes, and 8.7.1 hands a refused piece again: the reason chez-curl
+recorded wins on every libcurl.</li>
+<li>Ubuntu's 8.5.0 spins the CPU while a transfer is paused, and 7.85.0 during a
+paused HTTP/2 upload: the engine paces its poll.</li>
+<li>On 8.7.1 one HTTP/2 stream's failure fails its neighbours, and a paused one
+fills libcurl's 64 MiB cap: on 8.7.0 and 8.7.1 the engine does not
+multiplex.</li>
+<li>An <code>Expect: 100-continue</code> anywhere in the value counts on 7.85.0 and 8.5.0,
+as a list element alone on 8.20.0 and 8.23.0: a stream refuses either.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Engines and groups</h2><a id="user-content-engines-and-groups" class="anchor" aria-label="Permalink: Engines and groups" href="#engines-and-groups"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a request right after 8 pooled connections the server closed unannounced</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+<td>55: "Connection died, tried 5 times before giving up"</td>
+</tr>
+<tr>
+<td>a name lookup that stalls: a cancel, a transfer beside it, a 500 ms timeout</td>
+<td>each waits for the lookup</td>
+<td>prompt</td>
+<td>not measured</td>
+<td>prompt</td>
+<td>prompt</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">libcurl before 7.87.0 cannot leave a stalled lookup's thread behind, so there
+a cancel, a timeout or a stop during one waits for it, up to the resolver's
+own timeout.</p>
+<p dir="auto">Seen, and no test holds it by version:</p>
+<ul dir="auto">
+<li>On 7.85.0 a stalled lookup holds a group's wait for its calls, as it holds
+the engine's cancel, up to glibc's resolver timeout.</li>
+<li>On 8.20.0 each stopped engine leaves two resolver threads running for about
+2 s.</li>
+</ul>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>Guix's 8.20.0 reads back a wake-up made before its perform, then waits up
+to 1 s: the engine looks at its queue first.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Errors</h2><a id="user-content-errors" class="anchor" aria-label="Permalink: Errors" href="#errors"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">The cap on response headers, and libcurl's own limits that can come first.
+"hl" is reason <code>header-limit</code>, class <code>&amp;curl-too-large</code>, with the code beside
+it:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>The response</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1,001 header lines, HTTP/1.1</td>
+<td>hl 23</td>
+<td>hl 23</td>
+<td>hl 23</td>
+<td>hl 23</td>
+<td>hl 23</td>
+</tr>
+<tr>
+<td>the cap passed in an HTTP/2 head</td>
+<td>hl 23</td>
+<td>hl 23</td>
+<td>hl 56</td>
+<td>hl 23</td>
+<td>hl 23</td>
+</tr>
+<tr>
+<td>the cap passed in HTTP/2 trailers</td>
+<td>hl 23</td>
+<td>hl 0</td>
+<td>hl 23</td>
+<td>hl 23</td>
+<td>hl 23</td>
+</tr>
+<tr>
+<td>one header line of 102,400 bytes, HTTP/1.1, or of 1 MiB</td>
+<td>27</td>
+<td>27</td>
+<td>100</td>
+<td>100</td>
+<td>100</td>
+</tr>
+<tr>
+<td>that line over HTTP/2</td>
+<td>27</td>
+<td>27</td>
+<td>56</td>
+<td>16</td>
+<td>56</td>
+</tr>
+<tr>
+<td>that line over HTTP/2, not Huffman-codable</td>
+<td>52</td>
+<td>56</td>
+<td>16</td>
+<td>16</td>
+<td>16</td>
+</tr>
+<tr>
+<td>an HTTP/2 head of 131,072 bytes</td>
+<td>56</td>
+<td>hl 23</td>
+<td>hl 56</td>
+<td>hl 23</td>
+<td>hl 23</td>
+</tr>
+<tr>
+<td>an HTTP/2 head of 307,199 bytes</td>
+<td>56</td>
+<td>56</td>
+<td>hl 56</td>
+<td>hl 23</td>
+<td>hl 23</td>
+</tr>
+<tr>
+<td>HTTP/2 trailers past nghttp2's limit</td>
+<td>56</td>
+<td>56</td>
+<td>56</td>
+<td>16</td>
+<td>56</td>
+</tr>
+<tr>
+<td>a trailer line of 5,000 bytes, HTTP/1.1</td>
+<td>56</td>
+<td>56</td>
+<td>100</td>
+<td>100</td>
+<td>100</td>
+</tr>
+<tr>
+<td>a trailer line of 5,000 bytes, HTTP/2</td>
+<td>200, the trailers among the headers</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+</tr>
+<tr>
+<td>6,000 HTTP/2 trailers</td>
+<td>hl 23</td>
+<td>hl 0</td>
+<td>hl 23</td>
+<td>hl 23</td>
+<td>56</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Other answers:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a status line <code>HTTP/1.1 2000 OK</code></td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>200, the body kept</td>
+<td>200</td>
+</tr>
+<tr>
+<td>two different <code>Content-Length</code>s</td>
+<td>200, both headers kept</td>
+<td>200</td>
+<td>200</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>a NUL in a header: the error buffer</td>
+<td><code>Nul byte in header</code></td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td><code>NUL byte in header</code></td>
+</tr>
+<tr>
+<td>the request size of a transfer that ran</td>
+<td>its bytes, 0 if none</td>
+<td>as 7.85.0</td>
+<td><code>#f</code>, unknown, 8.7.0 too</td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Responses and requests</h2><a id="user-content-responses-and-requests" class="anchor" aria-label="Permalink: Responses and requests" href="#responses-and-requests"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">Seen, and no test holds it by version:</p>
+<ul dir="auto">
+<li>On a reused connection 8.20.0 reported the name-lookup, connect and
+TLS-handshake timings as 0, and 7.85.0 a small connect time.</li>
+<li>8.5.0 hands a response header's empty value over as a lone CR, in
+<code>curl-response-headers</code> too.</li>
+<li>Reading many headers costs about n² before 8.23.0. The cap's 1,000 lines
+bounds it.</li>
+<li>A request URL past about 131,000 chars waited until its timeout on 8.5.0;
+7.85.0, 8.20.0 and 8.23.0 sent ones of about a million.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">URLs</h2><a id="user-content-urls" class="anchor" aria-label="Permalink: URLs" href="#urls"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A refusal is <code>&amp;curl-url-error</code>, its code and reason the URL API's: 3
+<code>malformed-input</code>, 4 <code>bad-port-number</code>, 5 <code>unsupported-scheme</code>, 20
+<code>bad-fragment</code>, 21 <code>bad-hostname</code>, 22 <code>bad-ipv6</code>, 25 <code>bad-path</code>, 26
+<code>bad-query</code>, 28 <code>bad-slashes</code>. These are a direct call's answers; the high
+level's redirects answer alike everywhere.</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>resolve <code>#frag</code> against <code>http://example.com/a/b/c?q=1</code>, and any <code>#</code> reference so</td>
+<td><code>http://example.com/a/b/#frag</code></td>
+<td>as 7.85.0</td>
+<td>as 7.85.0</td>
+<td><code>http://example.com/a/b/c?q=1#frag</code></td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td>resolve <code>""</code> against <code>http://a/b/c/d;p?q</code></td>
+<td><code>http://a/b/c/</code></td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>the base</td>
+<td>as 8.20.0</td>
+</tr>
+<tr>
+<td>resolve <code>g:h</code></td>
+<td><code>http://a/b/c/g:h</code></td>
+<td>refused, 5</td>
+<td>refused, 5</td>
+<td>refused, 5</td>
+<td>refused, 5</td>
+</tr>
+<tr>
+<td>resolve <code>http:g</code></td>
+<td><code>http://a/b/c/http:g</code></td>
+<td>refused, 28</td>
+<td>refused, 28</td>
+<td>refused, 28</td>
+<td>refused, 28</td>
+</tr>
+<tr>
+<td>resolve the bytes <code>javascript:alert(1)</code></td>
+<td><code>.../a/b/c/javascript:alert(1)</code></td>
+<td>refused, 5</td>
+<td>refused, 5</td>
+<td>refused, 5</td>
+<td>refused, 5</td>
+</tr>
+<tr>
+<td>resolve the bytes <code>http://[::1/x</code></td>
+<td>refused, 4</td>
+<td>refused, 22</td>
+<td>refused, 22</td>
+<td>refused, 22</td>
+<td>refused, 22</td>
+</tr>
+<tr>
+<td>resolve <code>é</code>, <code>?q=λ</code> or <code>?q=😀</code></td>
+<td>lower-case hex, <code>%c3%a9</code></td>
+<td>lower</td>
+<td>lower</td>
+<td>upper, <code>%C3%A9</code></td>
+<td>upper</td>
+</tr>
+<tr>
+<td>parse <code>http://example.com/a b</code></td>
+<td>refused, 25</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 25</td>
+</tr>
+<tr>
+<td>parse <code>http://exa mple.com/</code></td>
+<td>refused, 21</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 21</td>
+</tr>
+<tr>
+<td><code>curl-url-with-fragment</code> of a string holding a space, a tab, CR, 0x01 or 0x7F</td>
+<td>refused, 20</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 20</td>
+</tr>
+<tr>
+<td><code>curl-url-append-query</code> of <code>s=a b</code></td>
+<td>refused, 26</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 3</td>
+<td>refused, 26</td>
+</tr>
+<tr>
+<td><code>curl-url-part</code> <code>user</code> of <code>http://:pw@h.example/</code></td>
+<td><code>#f</code></td>
+<td><code>""</code></td>
+<td><code>""</code></td>
+<td><code>""</code></td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>curl-url-part</code> of <code>http://u:@h.example/</code>: <code>url</code>, <code>password</code></td>
+<td><code>http://u@h.example/</code>, <code>#f</code></td>
+<td><code>http://u:@h.example/</code>, <code>""</code></td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+<td>as 8.5.0</td>
+</tr>
+<tr>
+<td><code>curl-url-part</code> <code>query</code> of <code>http://h.example/p?</code></td>
+<td><code>""</code></td>
+<td><code>""</code></td>
+<td><code>""</code></td>
+<td><code>#f</code></td>
+<td><code>#f</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Seen, and no test holds it by version:</p>
+<ul dir="auto">
+<li><code>curl-url-part</code> <code>host</code> of <code>[FE80::1%25ETH0]</code> keeps its case on 7.85.0 and
+8.5.0 alone; an empty zone, or <code>%25</code> or <code>%30</code> inside one, vary on 8.23.0.</li>
+<li><code>curl-url-resolve</code> of a string holding 0x01 or 0x7F is refused on 7.85.0
+and 8.5.0. Bytes are encoded first, alike.</li>
+<li><code>curl-url-resolve</code> of <code>#</code> and a fragment holding <code>%XX</code>: 8.20.0 and 8.23.0
+give lower-case hex.</li>
+</ul>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>Setting one part moves its <code>%XX</code> case, to lower on 7.85.0, 8.5.0 and 8.20.0,
+and to upper on 8.23.0: <code>curl-url-append-query</code>'s part goes out as written.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">TLS and finding libcurl</h2><a id="user-content-tls-and-finding-libcurl" class="anchor" aria-label="Permalink: TLS and finding libcurl" href="#tls-and-finding-libcurl"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a <code>ca-file</code>, <code>verify</code> on, <code>SSL_CERT_FILE</code> or <code>SSL_CERT_DIR</code> set at the load</td>
+<td>refused on any Guix libcurl, <code>environment-override</code>; ignored elsewhere</td>
+</tr>
+<tr>
+<td>a <code>ca-file</code>, <code>verify</code> on, on macOS</td>
+<td>refused while LibreSSL is in use, <code>keychain-fallback</code>; runs with <code>CURL_SSL_BACKEND=secure-transport</code></td>
+</tr>
+<tr>
+<td>a libcurl older than the floor; one without TLS</td>
+<td>refused at the load, <code>below-floor</code>; <code>no-ssl</code></td>
+</tr>
+<tr>
+<td>a libcurl without multipart support</td>
+<td>a multipart body refused at submit, <code>multipart-unsupported</code>; every other request runs</td>
+</tr>
+<tr>
+<td>a libcurl without the header API</td>
+<td>refused at the load, <code>missing-api</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Seen, and no test holds it by version:</p>
+<ul dir="auto">
+<li>On a libcurl built without HTTPS-proxy support an <code>https://</code> proxy is
+refused, <code>https-proxy-unsupported</code>. Every libcurl measured has it; Apple's
+8.7.1 reports it only after its init, which is when chez-curl reads it.</li>
+</ul>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li>Ubuntu's libcurl trusts its own CA directory beside a CA file: the transfer
+clears it, so a <code>ca-file</code> is the only anchor.</li>
+<li>GnuTLS reads a <code>pkcs11:</code> path as a token: refused on every TLS library,
+<code>pkcs11-url</code>.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The hatch</h2><a id="user-content-the-hatch" class="anchor" aria-label="Permalink: The hatch" href="#the-hatch"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>What</th>
+<th>7.85.0</th>
+<th>8.5.0</th>
+<th>8.7.1</th>
+<th>8.20.0</th>
+<th>8.23.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ISSUERCERT_BLOB</code> at the right CA</td>
+<td>200</td>
+<td>200</td>
+<td>200</td>
+<td><code>setopt-failed</code>, 4</td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>ISSUERCERT_BLOB</code> at another CA</td>
+<td>83</td>
+<td>OpenSSL: 83; GnuTLS: 200, ignored</td>
+<td>200, ignored</td>
+<td><code>setopt-failed</code>, 4</td>
+<td>83</td>
+</tr>
+<tr>
+<td><code>SSLCERT_BLOB</code> at bytes that are no certificate</td>
+<td>58</td>
+<td>OpenSSL: 58; GnuTLS: 200, ignored</td>
+<td>58</td>
+<td>200, ignored</td>
+<td>58</td>
+</tr>
+<tr>
+<td>an owned option this libcurl does not know, <code>QUICK_EXIT</code> or <code>HAPROXY_CLIENT_IP</code></td>
+<td><code>unknown-option</code></td>
+<td><code>owned-option</code></td>
+<td><code>owned-option</code></td>
+<td><code>owned-option</code></td>
+<td><code>owned-option</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Where libcurls differ, and chez-curl answers alike; no test holds these by version:</p>
+<ul dir="auto">
+<li><code>RESUME_FROM</code> beside a body reads stdin on 7.85.0, and <code>UPLOAD</code> or <code>POST</code>
+after a multipart body reads stdin: chez-curl owns all three.</li>
+</ul>
+</article></div>
