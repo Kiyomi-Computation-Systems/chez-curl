@@ -1,0 +1,43 @@
+# 2026-11-14: both tags on origin, unmoved
+75d5aa05070f0a5f5473c0b4160e7657a4e4b2be	refs/tags/v0.1.0
+ecfdbf1532fc5e1abaeb6c000e5ffec0230bd4de	refs/tags/v0.1.0^{}
+b55243e88908a6bda894bd00b45a400950ba5071	refs/tags/v0.1.1
+79c6cedc6dff18d65c5df512b1ce23861a492a54	refs/tags/v0.1.1^{}
+
+# each Release's stored fields, against its notes and title
+tag v0.1.0 name ok draft False prerelease False
+body bytes 13447 notes bytes 13447
+ok: body is the notes, byte for byte
+tag v0.1.1 name ok draft False prerelease False
+body bytes 923 notes bytes 923
+ok: body is the notes, byte for byte
+
+releases/latest: v0.1.1
+
+# each rendered link's target, by count, then each fetched (status, URL)
+.plans/research/adr-0042/releases/release-445573495.body.html:
+     31 href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0
+.plans/research/adr-0042/releases/release-445573877.body.html:
+      1 href="https://curl.se/libcurl/"
+      2 href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.1
+200 https://curl.se/libcurl/
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/auth-and-proxies.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/cookies.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/errors.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/groups.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/hatch.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/headers-and-json.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/high-level.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/http-version.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/libcurl-versions.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/libcurl-versions.md#errors
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/low-level.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/quickstart.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/README.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/redirects-and-retries.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/reference.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/streams.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/tls-and-environment.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/README.org
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.1/docs/quickstart.md
+200 https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.1/docs/README.md#the-examples
