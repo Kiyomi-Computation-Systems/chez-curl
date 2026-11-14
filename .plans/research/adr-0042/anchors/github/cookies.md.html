@@ -1,0 +1,112 @@
+<div id="file" class="md" data-path="docs/cookies.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Cookies</h1><a id="user-content-cookies" class="anchor" aria-label="Permalink: Cookies" href="#cookies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A cookie jar keeps the cookies servers set, and sends them back where they
+belong. Nothing keeps cookies unless you ask: no request sends or stores one
+without a jar.</p>
+<p dir="auto">The examples on this page call the test server: start it first, with
+<code>node tests/origin.mjs</code>, and give an example the address after <code>"http":</code> in
+the line it prints, not <code>raw</code>'s or <code>h2c</code>'s (<a href="README.md#the-examples">The examples</a>).</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">At the high level</h2><a id="user-content-at-the-high-level" class="anchor" aria-label="Permalink: At the high level" href="#at-the-high-level"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A session made with <code>cookies #t</code> keeps a jar on its engine. Every call of the
+session carries it, and every request a redirect makes, to another origin
+too: libcurl matches cookies to hosts. The session's close frees it.</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(call-with-http-session 'cookies #t
+  (lambda (session)
+    (http-get session &quot;https://example.com/login&quot;)
+    (http-session-cookies session)))     ; its cookies, as lines"><pre>(call-with-http-session <span class="pl-c1">'cookies</span> <span class="pl-c1">#t</span>
+  (<span class="pl-k">lambda</span> (<span class="pl-v">session</span>)
+    (http-get session <span class="pl-s"><span class="pl-pds">"</span>https://example.com/login<span class="pl-pds">"</span></span>)
+    (http-session-cookies session)))     <span class="pl-c"><span class="pl-c">;</span> its cookies, as lines</span></pre></div>
+<ul dir="auto">
+<li><code>http-session-cookies</code> reads the jar out, and <code>http-session-load-cookies!</code>
+loads lines into it, as the low level's read-out and load do (below).</li>
+<li>A call takes no <code>cookies</code> key: the jar is the session's.</li>
+<li>A <code>Cookie</code> or <code>Host</code> header, the session's or a call's, is refused beside it,
+<code>cookie-beside-jar</code>.</li>
+<li>On a session made without cookies, both procedures are an assertion
+violation.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">At the low level</h2><a id="user-content-at-the-low-level" class="anchor" aria-label="Permalink: At the low level" href="#at-the-low-level"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A jar is an engine's. Give it to each request whose cookies it should keep:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(define engine (make-curl-engine))
+(define jar (make-curl-cookie-jar engine))
+
+;; fetch : String -&gt; Response
+(define (fetch path)
+  (curl-token-await
+   (curl-submit engine (make-curl-request (string-append base path)
+                                          'cookie-jar jar 'timeout-ms 10000))))"><pre>(<span class="pl-k">define</span> <span class="pl-smi">engine</span> (make-curl-engine))
+(<span class="pl-k">define</span> <span class="pl-smi">jar</span> (make-curl-cookie-jar engine))
+
+<span class="pl-c"><span class="pl-c">;</span>; fetch : String -&gt; Response</span>
+(<span class="pl-k">define</span> (<span class="pl-en">fetch</span><span class="pl-smi"> path</span>)
+  (curl-token-await
+   (curl-submit engine (make-curl-request (string-append base path)
+                                          <span class="pl-c1">'cookie-jar</span> jar <span class="pl-c1">'timeout-ms</span> <span class="pl-c1">10000</span>))))</pre></div>
+<p dir="auto">Read it out, load lines into it, and close it:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content=";; A load takes lines in the form a read-out gives them.
+(curl-cookie-jar-load! jar '(&quot;127.0.0.1\tFALSE\t/\tFALSE\t0\tsize\tlarge&quot;))
+(for-each (lambda (line) (write line) (newline))
+          (list-sort string&lt;? (curl-cookie-jar-cookies jar)))
+
+(curl-cookie-jar-close! jar)
+(curl-engine-stop engine)"><pre><span class="pl-c"><span class="pl-c">;</span>; A load takes lines in the form a read-out gives them.</span>
+(curl-cookie-jar-load! jar <span class="pl-s">'</span>(<span class="pl-s"><span class="pl-pds">"</span>127.0.0.1<span class="pl-cce">\t</span>FALSE<span class="pl-cce">\t</span>/<span class="pl-cce">\t</span>FALSE<span class="pl-cce">\t</span>0<span class="pl-cce">\t</span>size<span class="pl-cce">\t</span>large<span class="pl-pds">"</span></span>))
+(<span class="pl-c1">for-each</span> (<span class="pl-k">lambda</span> (<span class="pl-v">line</span>) (<span class="pl-c1">write</span> line) (newline))
+          (list-sort <span class="pl-c1">string&lt;?</span> (curl-cookie-jar-cookies jar)))
+
+(curl-cookie-jar-close! jar)
+(curl-engine-stop engine)</pre></div>
+<ul dir="auto">
+<li><strong>The rules are libcurl's:</strong> which cookies are kept, and which go to which
+host and path. They <a href="libcurl-versions.md#cookies">vary by version</a>.</li>
+<li><strong>A jar holds cookies alone,</strong> in memory: no file, and no HSTS entry.</li>
+<li><strong>A line is a Netscape line,</strong> <code>DOMAIN TAILMATCH PATH SECURE EXPIRY NAME VALUE</code>, tab-separated, <code>#HttpOnly_</code> before an HttpOnly cookie's domain. It
+is a Latin-1 string both ways: each byte one char. Their order moves:
+compare them sorted.</li>
+<li><strong>A close frees the jar</strong> once no transfer holds it, and an engine's stop
+frees every jar. A second close does nothing.</li>
+<li><strong>Each jar procedure waits for the engine,</strong> with no bound, as a stop does,
+and none may run inside a critical section. A stopped or failed engine's
+jar raises as a submit to it would.</li>
+<li><strong>A load is slow for many lines,</strong> about n², and runs on the engine's
+thread, so its other transfers wait for it.</li>
+<li><strong>A libcurl that refuses</strong> a jar's make, read-out or load raises Chez's
+<code>&amp;error</code>, no chez-curl condition.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">What a load takes</h2><a id="user-content-what-a-load-takes" class="anchor" aria-label="Permalink: What a load takes" href="#what-a-load-takes"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A load takes a line in the form a read-out writes it, and checks every line
+before it loads any. A line needs:</p>
+<ul dir="auto">
+<li>seven fields, none holding a control char, U+0000 to U+001F or U+007F;</li>
+<li><code>TRUE</code> or <code>FALSE</code> in the second and the fourth, the domain starting with a
+dot exactly beside <code>TRUE</code> in the second;</li>
+<li>a domain, after any <code>#HttpOnly_</code>, neither empty nor starting with <code>#</code>, and
+no <code>Set-Cookie:</code> line;</li>
+<li>a path starting with <code>/</code>;</li>
+<li>an expiry of decimal digits, at most 9223372036854775807;</li>
+<li>a name; no <code>;</code> in the name or the value, and no <code>=</code> in the name;</li>
+<li>a name and value of 4,096 bytes at most together;</li>
+<li>a name starting <code>__Secure-</code> or <code>__Host-</code>, in any case, only beside <code>TRUE</code> in
+the fourth, and for <code>__Host-</code> the path <code>/</code> and <code>FALSE</code> in the second;</li>
+<li>no char above U+00FF.</li>
+</ul>
+<p dir="auto">Any other is refused, <code>cookie-line</code>, naming the line's index, from 0, never
+its text: a cookie's value is a secret. Nothing is loaded then.</p>
+<p dir="auto">A read-out can give lines a load refuses, by version: see
+<a href="libcurl-versions.md#cookies">What varies by libcurl</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Refusals</h2><a id="user-content-refusals" class="anchor" aria-label="Permalink: Refusals" href="#refusals"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><strong>When you make the request:</strong> a <code>Cookie</code> or <code>Host</code> header beside a jar, in
+any case, any value, <code>cookie-beside-jar</code>: libcurl would send a second
+<code>Cookie</code>, or match the jar against your <code>Host</code>.</li>
+<li><strong>When you submit:</strong> another engine's jar, <code>cookie-jar-engine</code>, and a closed
+one, <code>cookie-jar-closed</code>. A close that crosses a submit fails its token so.</li>
+<li><strong>A long head on 7.85.0</strong> can leave a request unended until its timeout:
+its cap on the <code>Cookie</code> line counts all the head written before it, the
+request line, <code>Host</code>, <code>Authorization</code> and <code>User-Agent</code> among it. Pass a
+<code>timeout-ms</code> (<a href="libcurl-versions.md#cookies">What varies</a>).</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The hatch</h2><a id="user-content-the-hatch" class="anchor" aria-label="Permalink: The hatch" href="#the-hatch"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>(curl unsupported)</code> refuses the options a jar sets, and those that would
+reach into it: <a href="hatch.md">The hatch</a> lists them, and the few it leaves.</p>
+</article></div>

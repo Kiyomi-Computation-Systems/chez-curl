@@ -1,0 +1,18 @@
+control passes (exit 0, all green)
+watched-fail p1 (exit 1): missing-from-site/pages.sls=(new.md)
+watched-fail p2 (exit 1): missing-from-site/pages.sls=(streams.md)
+watched-fail p3 (exit 1): the nav is not docs/README.md's The pages list
+watched-fail p4 (exit 1): the nav is not docs/README.md's The pages list
+watched-fail p5 (exit 1): anchor resolution FAILED. danglers=((groups.md . streams.md#nonesuch))
+watched-fail p6 (exit 1): names no file in it, in groups.md
+watched-fail p7 (exit 1): holds an item with no link
+watched-fail p8 (exit 255): (cmark gfm)
+watched-fail p9 (exit 1): FAIL
+watched-fail p10 (exit 1): tests/site-unit.sps: its last datum is (exit 0), not (exit (site-exit-status runner))
+watched-fail p11 (exit 1): tests/site-render-unit.sps: its last datum is (exit (suite-exit-status runner)), not (exit (site-exit-status runner))
+watched-fail p12 (exit 1): tests/test-manifest.sps: its last datum is (exit (site-exit-status runner)), not (exit (suite-exit-status runner))
+watched-fail p13 (exit 255): (curl private counters)
+watched-fail p14 (exit 1): FAIL an unexpected pass beside a pass: exit 1
+watched-fail p15 (exit 2): site-exit-status: exit 1 (pass 0, fail 1, xpass 0)
+watched-fail p16 (exit 2): tests/site-extra.sps: its last datum is (exit 0), not (exit (site-exit-status runner))
+plants: 16 watched failing, 0 not

@@ -1,0 +1,1278 @@
+<div id="file" class="md" data-path="docs/reference.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">API reference</h1><a id="user-content-api-reference" class="anchor" aria-label="Permalink: API reference" href="#api-reference"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">Every name <code>(curl)</code>, <code>(curl unsupported)</code> and <code>(http-client)</code> export, one
+entry each. <code>(http-client)</code> is the high level, for most programs. <code>(curl)</code> is
+the low level beneath it. <code>(curl unsupported)</code> is the escape hatch. The
+<a href="README.md">index</a> lists the guide pages that explain each part.</p>
+<p dir="auto">Types are written as Typed Racket writes them: <code>[x]</code> is an optional
+argument, <code>(U a b)</code> is either one, <code>a -&gt; b</code> is a procedure, <code>Any ...</code> is any
+number more, and <code>'name</code> is that symbol. These names stand for:</p>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="Natural           an exact integer, 0 or more
+Positive-Integer  an exact integer, 1 or more
+Headers           (Listof (Pairof String String)), each name and value Latin-1
+Libcurl-Info      what loaded-libcurl reports
+Request           a low-level request, made by make-curl-request
+Engine            a thread that runs transfers, made by make-curl-engine
+Token             one transfer, curl-submit's answer
+Mailbox           a box of finished tokens, made by make-curl-mailbox
+Head              a streamed response's final head, curl-token-head's answer
+Jar               a cookie jar, made by make-curl-cookie-jar
+Multipart         (multipart PART ...), a multipart/form-data body
+Part              (NAME SOURCE OPTION ...), one part of a multipart body
+Session           a high-level session, made by make-http-session
+Retry             a retry policy, made by make-http-retry
+Go                the procedure call-with-request-group hands its PROC
+Pending           a call a group started, go's answer
+Producer          (-&gt; (U Bytevector Eof)), a body made as it is sent
+Response          (curl)'s response in (curl)'s entries, (http-client)'s in its own
+Condition         a condition, as raise raises it
+Void              no useful value"><pre lang="text" class="notranslate"><code>Natural           an exact integer, 0 or more
+Positive-Integer  an exact integer, 1 or more
+Headers           (Listof (Pairof String String)), each name and value Latin-1
+Libcurl-Info      what loaded-libcurl reports
+Request           a low-level request, made by make-curl-request
+Engine            a thread that runs transfers, made by make-curl-engine
+Token             one transfer, curl-submit's answer
+Mailbox           a box of finished tokens, made by make-curl-mailbox
+Head              a streamed response's final head, curl-token-head's answer
+Jar               a cookie jar, made by make-curl-cookie-jar
+Multipart         (multipart PART ...), a multipart/form-data body
+Part              (NAME SOURCE OPTION ...), one part of a multipart body
+Session           a high-level session, made by make-http-session
+Retry             a retry policy, made by make-http-retry
+Go                the procedure call-with-request-group hands its PROC
+Pending           a call a group started, go's answer
+Producer          (-&gt; (U Bytevector Eof)), a body made as it is sent
+Response          (curl)'s response in (curl)'s entries, (http-client)'s in its own
+Condition         a condition, as raise raises it
+Void              no useful value
+</code></pre></div>
+<p dir="auto">Two things hold for every entry, and no entry says them again:</p>
+<ul dir="auto">
+<li><strong>Loading.</strong> Every name but the condition types, their predicates and
+accessors, the reason lists and the <code>libcurl-info</code> accessors loads libcurl
+the first time a program refers to it, before the program's first line
+runs. A libcurl that is refused raises <code>&amp;curl-library-unavailable</code> there,
+and again at every later reference, so a <code>guard</code> in the program cannot
+catch it. See <a href="tls-and-environment.md">TLS and the environment</a>.</li>
+<li><strong>Importing.</strong> Each library refuses, as a syntax violation, a Chez that is
+not threaded or is older than the floor in
+<a href="../README.org">Requirements</a>.</li>
+</ul>
+<p dir="auto">And a procedure that waits, for a transfer, a token, a mailbox or the
+engine, refuses to run inside a critical section, as an assertion
+violation: there its wait would hold up every thread's collections.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: the libcurl loaded</h2><a id="user-content-curl-the-libcurl-loaded" class="anchor" aria-label="Permalink: (curl): the libcurl loaded" href="#curl-the-libcurl-loaded"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>loaded-libcurl</code></h3><a id="user-content-loaded-libcurl" class="anchor" aria-label="Permalink: loaded-libcurl" href="#loaded-libcurl"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="loaded-libcurl : -&gt; Libcurl-Info"><pre lang="text" class="notranslate"><code>loaded-libcurl : -&gt; Libcurl-Info
+</code></pre></div>
+<p dir="auto">The libcurl this process loaded and accepted, as a report the
+<code>libcurl-info</code> accessors read. Raises nothing once the program runs: a
+refused libcurl raises before it, as above. See
+<a href="tls-and-environment.md">TLS and the environment</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>libcurl-info?</code>, <code>libcurl-info-path</code>, <code>libcurl-info-source</code>, <code>libcurl-info-version</code>, <code>libcurl-info-version-number</code>, <code>libcurl-info-features</code>, <code>libcurl-info-feature-names</code>, <code>libcurl-info-ssl-version</code>, <code>libcurl-info-host</code></h3><a id="user-content-libcurl-info-libcurl-info-path-libcurl-info-source-libcurl-info-version-libcurl-info-version-number-libcurl-info-features-libcurl-info-feature-names-libcurl-info-ssl-version-libcurl-info-host" class="anchor" aria-label="Permalink: libcurl-info?, libcurl-info-path, libcurl-info-source, libcurl-info-version, libcurl-info-version-number, libcurl-info-features, libcurl-info-feature-names, libcurl-info-ssl-version, libcurl-info-host" href="#libcurl-info-libcurl-info-path-libcurl-info-source-libcurl-info-version-libcurl-info-version-number-libcurl-info-features-libcurl-info-feature-names-libcurl-info-ssl-version-libcurl-info-host"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="libcurl-info? : Any -&gt; Boolean
+libcurl-info-path : Libcurl-Info -&gt; String
+libcurl-info-source : Libcurl-Info -&gt; Symbol
+libcurl-info-version : Libcurl-Info -&gt; String
+libcurl-info-version-number : Libcurl-Info -&gt; Natural
+libcurl-info-features : Libcurl-Info -&gt; Natural
+libcurl-info-feature-names : Libcurl-Info -&gt; (Listof (U Symbol Positive-Integer))
+libcurl-info-ssl-version : Libcurl-Info -&gt; (U String #f)
+libcurl-info-host : Libcurl-Info -&gt; (U String #f)"><pre lang="text" class="notranslate"><code>libcurl-info? : Any -&gt; Boolean
+libcurl-info-path : Libcurl-Info -&gt; String
+libcurl-info-source : Libcurl-Info -&gt; Symbol
+libcurl-info-version : Libcurl-Info -&gt; String
+libcurl-info-version-number : Libcurl-Info -&gt; Natural
+libcurl-info-features : Libcurl-Info -&gt; Natural
+libcurl-info-feature-names : Libcurl-Info -&gt; (Listof (U Symbol Positive-Integer))
+libcurl-info-ssl-version : Libcurl-Info -&gt; (U String #f)
+libcurl-info-host : Libcurl-Info -&gt; (U String #f)
+</code></pre></div>
+<p dir="auto">What the report says: the file loaded, and where it was found (<code>override</code>,
+<code>guix-environment</code>, <code>guix-profile</code>, <code>guix-home</code>, <code>guix-user-profile</code>,
+<code>guix-system</code>, <code>system</code> or <code>macos-system</code>); then libcurl's version, its
+version number, its feature bits as a number and as names, a bit with no
+name as its number, its TLS library and its host. libcurl answers these
+before it starts, so on Apple's libcurl, which has two TLS backends, the TLS
+library named is its first, and the features show none of a backend's bits.
+They load nothing, so a refusal's report can be read. Raises an assertion
+violation for anything but a report; <code>libcurl-info?</code> raises nothing. See
+<a href="tls-and-environment.md">TLS and the environment</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: requests</h2><a id="user-content-curl-requests" class="anchor" aria-label="Permalink: (curl): requests" href="#curl-requests"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>make-curl-request</code></h3><a id="user-content-make-curl-request" class="anchor" aria-label="Permalink: make-curl-request" href="#make-curl-request"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="make-curl-request : String Any ... -&gt; Request"><pre lang="text" class="notranslate"><code>make-curl-request : String Any ... -&gt; Request
+</code></pre></div>
+<p dir="auto"><code>(make-curl-request URL KEY VALUE ...)</code> makes a request for an <code>http://</code> or
+<code>https://</code> URL, and sends nothing: <code>curl-submit</code> runs it. Each key may be
+given once, and one left out takes its default, libcurl's own:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>method</code></td>
+<td align="left"><code>(U 'get 'head 'post 'put 'patch 'delete)</code></td>
+<td align="left"><code>get</code></td>
+</tr>
+<tr>
+<td align="left"><code>headers</code></td>
+<td align="left"><code>Headers</code></td>
+<td align="left"><code>()</code></td>
+</tr>
+<tr>
+<td align="left"><code>body</code></td>
+<td align="left"><code>(U Bytevector 'stream Multipart #f)</code></td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>user-agent</code></td>
+<td align="left"><code>(U String #f)</code>, a non-empty Latin-1 string</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>timeout-ms</code></td>
+<td align="left"><code>(U Positive-Integer #f)</code>, the whole transfer's bound</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>connect-timeout-ms</code></td>
+<td align="left"><code>(U Positive-Integer #f)</code>, the connection's bound, its TLS handshake among it</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>body-limit</code></td>
+<td align="left"><code>(U Natural #f)</code>, the most bytes of response body</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>ca-file</code></td>
+<td align="left"><code>(U String #f)</code>, the only CA file to trust; <code>#f</code> is the system's store</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>verify</code></td>
+<td align="left"><code>Boolean</code>, whether to check the server's certificate</td>
+<td align="left"><code>#t</code></td>
+</tr>
+<tr>
+<td align="left"><code>proxy</code></td>
+<td align="left"><code>(U 'environment #f String)</code>: the proxy the variables name, none, or this proxy URL</td>
+<td align="left"><code>environment</code></td>
+</tr>
+<tr>
+<td align="left"><code>stream-buffer</code></td>
+<td align="left"><code>(U Positive-Integer #f)</code>: stream the response's body through the token, buffering this many bytes</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>body-length</code></td>
+<td align="left"><code>(U Natural #f)</code>, a streamed body's <code>Content-Length</code></td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>http-version</code></td>
+<td align="left"><code>(U 'http/1.1 'http/2 'http/2-prior-knowledge #f)</code></td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>credentials</code></td>
+<td align="left"><code>(U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)</code></td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>proxy-ca-file</code></td>
+<td align="left"><code>(U String #f)</code>, an <code>https://</code> proxy's only CA file</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>proxy-verify</code></td>
+<td align="left"><code>Boolean</code>, whether to check an <code>https://</code> proxy's certificate</td>
+<td align="left"><code>#t</code></td>
+</tr>
+<tr>
+<td align="left"><code>cookie-jar</code></td>
+<td align="left"><code>(U Jar #f)</code>, the jar whose cookies it sends and keeps</td>
+<td align="left"><code>#f</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">A body of <code>stream</code> is given by the token's puts. A multipart body is
+<code>(multipart PART ...)</code>, each <code>PART</code> <code>(NAME SOURCE OPTION ...)</code>: <code>SOURCE</code> a
+string, sent as UTF-8, a bytevector, or <code>(file PATH)</code>, and each <code>OPTION</code>
+<code>filename STRING</code> or <code>type STRING</code>. A <code>post</code>, <code>put</code> or <code>patch</code> with no body
+sends an empty one. The URL is checked to be a string here, and parsed at
+submit.</p>
+<p dir="auto">Raises an assertion violation for a value of the wrong type or shape, and
+<code>&amp;curl-request-error</code> for these reasons, the keys' first:</p>
+<ul dir="auto">
+<li><code>unknown-key</code>, <code>repeated-key</code>, <code>missing-value</code>: a key it does not take, one
+given twice, or one given last with no value;</li>
+<li><code>body-not-allowed</code>: a body with <code>get</code> or <code>head</code>;</li>
+<li><code>body-length-without-stream</code>: a <code>body-length</code> beside a body that does not
+stream;</li>
+<li><code>stream-with-rounds</code>: a <code>stream-buffer</code> beside an <code>Expect</code> header that
+holds <code>100-continue</code>;</li>
+<li><code>not-a-token</code>, <code>embedded-nul</code>, <code>line-break</code>, <code>not-latin-1</code>,
+<code>surrounding-whitespace</code>, <code>duplicates-field</code>, <code>framing-header</code>,
+<code>proxy-authorization-header</code>: a header, or the user agent, it refuses;</li>
+<li><code>credentials-bytes</code>, <code>credentials-empty</code>,
+<code>credentials-beside-authorization</code>, <code>digest-with-stream</code>: credentials it
+refuses;</li>
+<li><code>cookie-beside-jar</code>: a <code>Cookie</code> or <code>Host</code> header beside a jar;</li>
+<li><code>multipart-content-type</code>, <code>multipart-empty</code>, <code>part-bytes</code>, <code>part-empty</code>,
+<code>part-file</code>: a multipart body it refuses, a file part's path that names no
+regular file among them;</li>
+<li><code>embedded-nul</code>, <code>pkcs11-url</code>: a CA file, or a proxy CA file, it refuses.</li>
+</ul>
+<p dir="auto">See <a href="low-level.md">The low level</a>, and <a href="errors.md">Errors</a> for
+each reason.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-request-with</code></h3><a id="user-content-curl-request-with" class="anchor" aria-label="Permalink: curl-request-with" href="#curl-request-with"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-request-with : Request Any ... -&gt; Request"><pre lang="text" class="notranslate"><code>curl-request-with : Request Any ... -&gt; Request
+</code></pre></div>
+<p dir="auto">A new request: this one, with the keys given replaced and the rest kept. A
+multipart body it is not given is kept as it is, its files not looked at
+again until submit. Its keys:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>url</code></td>
+<td align="left"><code>String</code>, the new URL</td>
+<td align="left">this request's</td>
+</tr>
+<tr>
+<td align="left"><code>method</code>, <code>headers</code>, <code>body</code>, <code>user-agent</code>, <code>timeout-ms</code>, <code>connect-timeout-ms</code>, <code>body-limit</code>, <code>ca-file</code>, <code>verify</code>, <code>proxy</code>, <code>stream-buffer</code>, <code>body-length</code>, <code>http-version</code>, <code>credentials</code>, <code>proxy-ca-file</code>, <code>proxy-verify</code>, <code>cookie-jar</code></td>
+<td align="left">as <code>make-curl-request</code>'s</td>
+<td align="left">this request's</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Raises an assertion violation for anything but a request, and what
+<code>make-curl-request</code> raises, naming <code>curl-request-with</code>. See
+<a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-request?</code>, <code>curl-request-url</code>, <code>curl-request-method</code>, <code>curl-request-headers</code>, <code>curl-request-body</code>, <code>curl-request-user-agent</code></h3><a id="user-content-curl-request-curl-request-url-curl-request-method-curl-request-headers-curl-request-body-curl-request-user-agent" class="anchor" aria-label="Permalink: curl-request?, curl-request-url, curl-request-method, curl-request-headers, curl-request-body, curl-request-user-agent" href="#curl-request-curl-request-url-curl-request-method-curl-request-headers-curl-request-body-curl-request-user-agent"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-request? : Any -&gt; Boolean
+curl-request-url : Request -&gt; String
+curl-request-method : Request -&gt; (U 'get 'head 'post 'put 'patch 'delete)
+curl-request-headers : Request -&gt; Headers
+curl-request-body : Request -&gt; (U Bytevector 'stream Multipart #f)
+curl-request-user-agent : Request -&gt; (U String #f)"><pre lang="text" class="notranslate"><code>curl-request? : Any -&gt; Boolean
+curl-request-url : Request -&gt; String
+curl-request-method : Request -&gt; (U 'get 'head 'post 'put 'patch 'delete)
+curl-request-headers : Request -&gt; Headers
+curl-request-body : Request -&gt; (U Bytevector 'stream Multipart #f)
+curl-request-user-agent : Request -&gt; (U String #f)
+</code></pre></div>
+<p dir="auto">What the request holds for each key. A multipart body comes back as a copy,
+its paths resolved. Raises an assertion violation for anything but a
+request; <code>curl-request?</code> raises nothing. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-request-timeout-ms</code>, <code>curl-request-connect-timeout-ms</code>, <code>curl-request-body-limit</code>, <code>curl-request-stream-buffer</code>, <code>curl-request-body-length</code>, <code>curl-request-http-version</code></h3><a id="user-content-curl-request-timeout-ms-curl-request-connect-timeout-ms-curl-request-body-limit-curl-request-stream-buffer-curl-request-body-length-curl-request-http-version" class="anchor" aria-label="Permalink: curl-request-timeout-ms, curl-request-connect-timeout-ms, curl-request-body-limit, curl-request-stream-buffer, curl-request-body-length, curl-request-http-version" href="#curl-request-timeout-ms-curl-request-connect-timeout-ms-curl-request-body-limit-curl-request-stream-buffer-curl-request-body-length-curl-request-http-version"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-request-timeout-ms : Request -&gt; (U Positive-Integer #f)
+curl-request-connect-timeout-ms : Request -&gt; (U Positive-Integer #f)
+curl-request-body-limit : Request -&gt; (U Natural #f)
+curl-request-stream-buffer : Request -&gt; (U Positive-Integer #f)
+curl-request-body-length : Request -&gt; (U Natural #f)
+curl-request-http-version : Request -&gt; (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)"><pre lang="text" class="notranslate"><code>curl-request-timeout-ms : Request -&gt; (U Positive-Integer #f)
+curl-request-connect-timeout-ms : Request -&gt; (U Positive-Integer #f)
+curl-request-body-limit : Request -&gt; (U Natural #f)
+curl-request-stream-buffer : Request -&gt; (U Positive-Integer #f)
+curl-request-body-length : Request -&gt; (U Natural #f)
+curl-request-http-version : Request -&gt; (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)
+</code></pre></div>
+<p dir="auto">What the request holds for each key. Raises an assertion violation for
+anything but a request. See <a href="low-level.md">The low level</a> and
+<a href="http-version.md">Choosing the HTTP version</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-request-ca-file</code>, <code>curl-request-verify</code>, <code>curl-request-proxy</code>, <code>curl-request-proxy-ca-file</code>, <code>curl-request-proxy-verify</code>, <code>curl-request-credentials</code>, <code>curl-request-cookie-jar</code></h3><a id="user-content-curl-request-ca-file-curl-request-verify-curl-request-proxy-curl-request-proxy-ca-file-curl-request-proxy-verify-curl-request-credentials-curl-request-cookie-jar" class="anchor" aria-label="Permalink: curl-request-ca-file, curl-request-verify, curl-request-proxy, curl-request-proxy-ca-file, curl-request-proxy-verify, curl-request-credentials, curl-request-cookie-jar" href="#curl-request-ca-file-curl-request-verify-curl-request-proxy-curl-request-proxy-ca-file-curl-request-proxy-verify-curl-request-credentials-curl-request-cookie-jar"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-request-ca-file : Request -&gt; (U String #f)
+curl-request-verify : Request -&gt; Boolean
+curl-request-proxy : Request -&gt; (U 'environment #f String)
+curl-request-proxy-ca-file : Request -&gt; (U String #f)
+curl-request-proxy-verify : Request -&gt; Boolean
+curl-request-credentials : Request -&gt; (U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)
+curl-request-cookie-jar : Request -&gt; (U Jar #f)"><pre lang="text" class="notranslate"><code>curl-request-ca-file : Request -&gt; (U String #f)
+curl-request-verify : Request -&gt; Boolean
+curl-request-proxy : Request -&gt; (U 'environment #f String)
+curl-request-proxy-ca-file : Request -&gt; (U String #f)
+curl-request-proxy-verify : Request -&gt; Boolean
+curl-request-credentials : Request -&gt; (U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)
+curl-request-cookie-jar : Request -&gt; (U Jar #f)
+</code></pre></div>
+<p dir="auto">What the request holds for each key. A proxy URL, the proxy CA file and the
+credentials come back as fresh copies, so changing one changes no request.
+Raises an assertion violation for anything but a request. See
+<a href="auth-and-proxies.md">Auth and proxies</a> and
+<a href="tls-and-environment.md">TLS and the environment</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: URLs</h2><a id="user-content-curl-urls" class="anchor" aria-label="Permalink: (curl): URLs" href="#curl-urls"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-url-part</code></h3><a id="user-content-curl-url-part" class="anchor" aria-label="Permalink: curl-url-part" href="#curl-url-part"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-url-part : String Symbol -&gt; (U String Natural #f)"><pre lang="text" class="notranslate"><code>curl-url-part : String Symbol -&gt; (U String Natural #f)
+</code></pre></div>
+<p dir="auto"><code>(curl-url-part URL PART)</code> is one part of the URL, as libcurl parses it:
+<code>url</code>, the whole URL; <code>scheme</code>, <code>user</code>, <code>password</code>, <code>host</code>, <code>path</code>, <code>query</code>,
+<code>fragment</code> or <code>zoneid</code>, a string, or <code>#f</code> when the URL has none; or <code>port</code>,
+a number, the scheme's own when the URL names none. Raises an assertion
+violation for a URL that is no string, or a part it does not know; and
+<code>&amp;curl-url-error</code> for a URL libcurl refuses, its reason libcurl's code's
+name, for one holding U+0000, <code>embedded-nul</code>, for one of more than
+8,000,000 characters, <code>malformed-input</code>, and for an answer whose bytes are
+not UTF-8, <code>not-utf-8</code>. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-url-append-query</code></h3><a id="user-content-curl-url-append-query" class="anchor" aria-label="Permalink: curl-url-append-query" href="#curl-url-append-query"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-url-append-query : String String -&gt; String"><pre lang="text" class="notranslate"><code>curl-url-append-query : String String -&gt; String
+</code></pre></div>
+<p dir="auto"><code>(curl-url-append-query URL PART)</code> is the URL with <code>PART</code>, already encoded,
+added to its query, after a <code>&amp;</code> unless the query is empty or ends in one.
+The fragment is kept. Raises an assertion violation for a URL or a part
+that is no string; and <code>&amp;curl-url-error</code> as <code>curl-url-part</code> raises it, and
+for a part that would not come back as written, one holding <code>#</code>,
+<code>query-not-kept</code>. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-url-resolve</code></h3><a id="user-content-curl-url-resolve" class="anchor" aria-label="Permalink: curl-url-resolve" href="#curl-url-resolve"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-url-resolve : String (U String Bytevector) -&gt; String"><pre lang="text" class="notranslate"><code>curl-url-resolve : String (U String Bytevector) -&gt; String
+</code></pre></div>
+<p dir="auto"><code>(curl-url-resolve BASE REFERENCE)</code> is the reference resolved against the
+base URL, as a browser follows a link. A string is sent as UTF-8. A
+bytevector, such as a <code>Location</code> header's bytes, has each byte at or below
+0x20, 0x7F, and each above encoded as <code>%XX</code> first. Raises an assertion
+violation for a base that is no string, or a reference of another kind; and
+<code>&amp;curl-url-error</code> as <code>curl-url-part</code> raises it, a bytevector holding 0x00
+among it, <code>embedded-nul</code>. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-url-with-fragment</code></h3><a id="user-content-curl-url-with-fragment" class="anchor" aria-label="Permalink: curl-url-with-fragment" href="#curl-url-with-fragment"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-url-with-fragment : String (U String Bytevector #f) -&gt; String"><pre lang="text" class="notranslate"><code>curl-url-with-fragment : String (U String Bytevector #f) -&gt; String
+</code></pre></div>
+<p dir="auto"><code>(curl-url-with-fragment URL FRAGMENT)</code> is the URL with its fragment
+replaced, or cleared by <code>#f</code> or <code>""</code>. A bytevector is encoded as
+<code>curl-url-resolve</code> encodes one; a string goes in as written. Raises an
+assertion violation for a URL that is no string, or a fragment that is no
+string, bytevector or <code>#f</code>; and <code>&amp;curl-url-error</code> as <code>curl-url-part</code> raises
+it, a bytevector holding 0x00 among it, <code>embedded-nul</code>. See
+<a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: engines</h2><a id="user-content-curl-engines" class="anchor" aria-label="Permalink: (curl): engines" href="#curl-engines"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>make-curl-engine</code>, <code>curl-engine?</code></h3><a id="user-content-make-curl-engine-curl-engine" class="anchor" aria-label="Permalink: make-curl-engine, curl-engine?" href="#make-curl-engine-curl-engine"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="make-curl-engine : -&gt; Engine
+curl-engine? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>make-curl-engine : -&gt; Engine
+curl-engine? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A fresh engine: a thread of its own that runs every transfer submitted to
+it, many at once. Stop it with <code>curl-engine-stop</code>. Raises an assertion
+violation inside a critical section, and <code>&amp;curl-engine-error</code>, <code>failed</code>,
+when its thread can make no libcurl multi handle; <code>curl-engine?</code> raises
+nothing.
+See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-engine-stop</code></h3><a id="user-content-curl-engine-stop" class="anchor" aria-label="Permalink: curl-engine-stop" href="#curl-engine-stop"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-engine-stop : Engine -&gt; Void"><pre lang="text" class="notranslate"><code>curl-engine-stop : Engine -&gt; Void
+</code></pre></div>
+<p dir="auto">Ends every transfer the engine holds as stopped, frees all it holds, and
+returns once its thread has ended. A second stop returns at once. Raises an
+assertion violation for anything but an engine, or inside a critical
+section. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-submit</code></h3><a id="user-content-curl-submit" class="anchor" aria-label="Permalink: curl-submit" href="#curl-submit"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-submit : Engine Request [(U Mailbox #f) [(U (Token -&gt; Any) #f)]] -&gt; Token"><pre lang="text" class="notranslate"><code>curl-submit : Engine Request [(U Mailbox #f) [(U (Token -&gt; Any) #f)]] -&gt; Token
+</code></pre></div>
+<p dir="auto">Queues the request on the engine, and answers its token at once. With a
+mailbox, the token goes there when it is done; with a callback too, a
+delivery from the mailbox calls it with the token. The request is copied,
+and the copy checked on this thread. Raises an assertion violation for
+anything but an engine, a request, a mailbox or a procedure where each
+goes, and for a callback without a mailbox; what <code>make-curl-request</code> raises,
+its checks run again on the copy; <code>&amp;curl-url-error</code> for the URL, as
+<code>curl-url-part</code> raises it, and for a scheme but <code>http</code> or <code>https</code>,
+<code>scheme-not-http</code>; <code>&amp;curl-engine-error</code>, <code>stopped</code>, for a stopped engine,
+and a failed engine's own failure; and <code>&amp;curl-request-error</code> for these
+reasons:</p>
+<ul dir="auto">
+<li><code>environment-override</code>, <code>keychain-fallback</code>: a CA file the environment, or
+Apple's TLS library, would replace or add to;</li>
+<li><code>proxy-url</code>, <code>proxy-scheme</code>, <code>proxy-url-parts</code>, <code>credentials-bytes</code>,
+<code>credentials-empty</code>: a proxy URL it refuses, naming the field, never the
+URL;</li>
+<li><code>https-proxy-unsupported</code>, <code>proxy-tls-without-https-proxy</code>,
+<code>proxy-tls-in-tls</code>, <code>prior-knowledge-through-proxy</code>: a proxy setting this
+libcurl, or this proxy, cannot carry;</li>
+<li><code>prior-knowledge-over-https</code>: <code>http/2-prior-knowledge</code> with an <code>https://</code>
+URL;</li>
+<li><code>credentials-beside-userinfo</code>: credentials beside a URL that holds a user
+or a password;</li>
+<li><code>multipart-unsupported</code>, <code>part-file</code>: a multipart body this libcurl cannot
+send, or a file part that is no regular file now;</li>
+<li><code>cookie-jar-engine</code>, <code>cookie-jar-closed</code>: another engine's jar, or a
+closed one.</li>
+</ul>
+<p dir="auto">See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-request-check</code></h3><a id="user-content-curl-request-check" class="anchor" aria-label="Permalink: curl-request-check" href="#curl-request-check"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-request-check : Request -&gt; Void"><pre lang="text" class="notranslate"><code>curl-request-check : Request -&gt; Void
+</code></pre></div>
+<p dir="auto">Runs the checks <code>curl-submit</code> makes of a request, on this thread, and queues
+nothing, so a batch can be checked before any of it is sent. A submit still
+checks its own copy, and an engine's state can still refuse it. Raises an
+assertion violation for anything but a request, and what <code>curl-submit</code>
+raises for the request and its URL, naming <code>curl-request-check</code>, never an
+engine's or a jar's refusal. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: tokens and responses</h2><a id="user-content-curl-tokens-and-responses" class="anchor" aria-label="Permalink: (curl): tokens and responses" href="#curl-tokens-and-responses"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token?</code>, <code>curl-token-await</code></h3><a id="user-content-curl-token-curl-token-await" class="anchor" aria-label="Permalink: curl-token?, curl-token-await" href="#curl-token-curl-token-await"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token? : Any -&gt; Boolean
+curl-token-await : Token -&gt; Response"><pre lang="text" class="notranslate"><code>curl-token? : Any -&gt; Boolean
+curl-token-await : Token -&gt; Response
+</code></pre></div>
+<p dir="auto">Waits for the transfer to end, and answers its response, whatever the
+status: a 404 is a response too. Any thread may await a token, any number
+of times. Raises an assertion violation for anything but a token; and what
+the transfer ended with: <code>&amp;curl-transfer-error</code>, or one of its classes, for
+a transfer that failed, was cancelled or was stopped; <code>&amp;curl-engine-error</code>,
+<code>failed</code>, when its engine failed; and <code>&amp;curl-request-error</code>,
+<code>cookie-jar-closed</code> or <code>cookie-jar-engine</code>, for a jar closed after the
+submit. <code>curl-token?</code> raises nothing. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-wait</code></h3><a id="user-content-curl-token-wait" class="anchor" aria-label="Permalink: curl-token-wait" href="#curl-token-wait"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-wait : Token Natural -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-token-wait : Token Natural -&gt; Boolean
+</code></pre></div>
+<p dir="auto">Whether the transfer ends within that many milliseconds. It runs on either
+way. Raises an assertion violation for anything but a token, or a wait that
+is no natural number. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-cancel</code></h3><a id="user-content-curl-token-cancel" class="anchor" aria-label="Permalink: curl-token-cancel" href="#curl-token-cancel"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-cancel : Token -&gt; Void"><pre lang="text" class="notranslate"><code>curl-token-cancel : Token -&gt; Void
+</code></pre></div>
+<p dir="auto">Ends the transfer as cancelled, and returns at once. One that has already
+ended keeps what it ended with. Raises an assertion violation for anything
+but a token. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-done?</code>, <code>curl-token-outcome</code></h3><a id="user-content-curl-token-done-curl-token-outcome" class="anchor" aria-label="Permalink: curl-token-done?, curl-token-outcome" href="#curl-token-done-curl-token-outcome"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-done? : Token -&gt; Boolean
+curl-token-outcome : Token -&gt; (U Response Condition #f)"><pre lang="text" class="notranslate"><code>curl-token-done? : Token -&gt; Boolean
+curl-token-outcome : Token -&gt; (U Response Condition #f)
+</code></pre></div>
+<p dir="auto">Whether the transfer has ended; and once it has, the response, or the
+condition <code>curl-token-await</code> would raise, as a value, <code>#f</code> before. Neither
+waits. Raises an assertion violation for anything but a token. See
+<a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-response?</code>, <code>curl-response-status</code>, <code>curl-response-http-version</code>, <code>curl-response-effective-url</code>, <code>curl-response-headers</code>, <code>curl-response-body</code>, <code>curl-response-timings</code></h3><a id="user-content-curl-response-curl-response-status-curl-response-http-version-curl-response-effective-url-curl-response-headers-curl-response-body-curl-response-timings" class="anchor" aria-label="Permalink: curl-response?, curl-response-status, curl-response-http-version, curl-response-effective-url, curl-response-headers, curl-response-body, curl-response-timings" href="#curl-response-curl-response-status-curl-response-http-version-curl-response-effective-url-curl-response-headers-curl-response-body-curl-response-timings"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-response? : Any -&gt; Boolean
+curl-response-status : Response -&gt; Integer
+curl-response-http-version : Response -&gt; (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+curl-response-effective-url : Response -&gt; (U String #f)
+curl-response-headers : Response -&gt; Headers
+curl-response-body : Response -&gt; (U Bytevector #f)
+curl-response-timings : Response -&gt; (Listof (Pairof Symbol Natural))"><pre lang="text" class="notranslate"><code>curl-response? : Any -&gt; Boolean
+curl-response-status : Response -&gt; Integer
+curl-response-http-version : Response -&gt; (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+curl-response-effective-url : Response -&gt; (U String #f)
+curl-response-headers : Response -&gt; Headers
+curl-response-body : Response -&gt; (U Bytevector #f)
+curl-response-timings : Response -&gt; (Listof (Pairof Symbol Natural))
+</code></pre></div>
+<p dir="auto">What a transfer answered: its status, its HTTP version, its URL, its
+headers in libcurl's order, and its body, <code>#f</code> for one that streamed. The
+timings are <code>name-lookup</code>, <code>connect</code>, <code>tls-handshake</code>, <code>first-byte</code> and
+<code>total</code>, each in microseconds from the start, 0 for a phase it skipped.
+Raises an assertion violation for anything but a response;
+<code>curl-response?</code> raises nothing. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: mailboxes</h2><a id="user-content-curl-mailboxes" class="anchor" aria-label="Permalink: (curl): mailboxes" href="#curl-mailboxes"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>make-curl-mailbox</code>, <code>curl-mailbox?</code></h3><a id="user-content-make-curl-mailbox-curl-mailbox" class="anchor" aria-label="Permalink: make-curl-mailbox, curl-mailbox?" href="#make-curl-mailbox-curl-mailbox"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="make-curl-mailbox : -&gt; Mailbox
+curl-mailbox? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>make-curl-mailbox : -&gt; Mailbox
+curl-mailbox? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">An empty mailbox, which collects finished tokens from any number of
+engines, oldest first. Raises nothing. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-mailbox-take</code></h3><a id="user-content-curl-mailbox-take" class="anchor" aria-label="Permalink: curl-mailbox-take" href="#curl-mailbox-take"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-mailbox-take : Mailbox Natural -&gt; (U Token #f)"><pre lang="text" class="notranslate"><code>curl-mailbox-take : Mailbox Natural -&gt; (U Token #f)
+</code></pre></div>
+<p dir="auto">The next finished token, taken out, waiting up to that many milliseconds;
+or <code>#f</code>. It calls no callback. Raises an assertion violation for anything
+but a mailbox, or a wait that is no natural number. See
+<a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-mailbox-deliver</code></h3><a id="user-content-curl-mailbox-deliver" class="anchor" aria-label="Permalink: curl-mailbox-deliver" href="#curl-mailbox-deliver"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-mailbox-deliver : Mailbox Natural -&gt; (U Token #f)"><pre lang="text" class="notranslate"><code>curl-mailbox-deliver : Mailbox Natural -&gt; (U Token #f)
+</code></pre></div>
+<p dir="auto">Takes a token as <code>curl-mailbox-take</code> does, then calls its callback, if it
+has one, with the token, on this thread. Raises what <code>curl-mailbox-take</code>
+raises, and whatever the callback raises. See <a href="low-level.md">The low level</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: streamed responses</h2><a id="user-content-curl-streamed-responses" class="anchor" aria-label="Permalink: (curl): streamed responses" href="#curl-streamed-responses"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-head-wait</code></h3><a id="user-content-curl-token-head-wait" class="anchor" aria-label="Permalink: curl-token-head-wait" href="#curl-token-head-wait"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-head-wait : Token Natural -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-token-head-wait : Token Natural -&gt; Boolean
+</code></pre></div>
+<p dir="auto">Whether the final head has arrived, or the transfer has ended, within that
+many milliseconds. Raises an assertion violation for anything but a token
+whose request streams its response, or a wait that is no natural number.
+See <a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-head</code>, <code>curl-head?</code>, <code>curl-head-status</code>, <code>curl-head-http-version</code>, <code>curl-head-headers</code>, <code>curl-head-body-asked?</code></h3><a id="user-content-curl-token-head-curl-head-curl-head-status-curl-head-http-version-curl-head-headers-curl-head-body-asked" class="anchor" aria-label="Permalink: curl-token-head, curl-head?, curl-head-status, curl-head-http-version, curl-head-headers, curl-head-body-asked?" href="#curl-token-head-curl-head-curl-head-status-curl-head-http-version-curl-head-headers-curl-head-body-asked"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-head : Token -&gt; (U Head #f)
+curl-head? : Any -&gt; Boolean
+curl-head-status : Head -&gt; Integer
+curl-head-http-version : Head -&gt; (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+curl-head-headers : Head -&gt; Headers
+curl-head-body-asked? : Head -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-token-head : Token -&gt; (U Head #f)
+curl-head? : Any -&gt; Boolean
+curl-head-status : Head -&gt; Integer
+curl-head-http-version : Head -&gt; (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+curl-head-headers : Head -&gt; Headers
+curl-head-body-asked? : Head -&gt; Boolean
+</code></pre></div>
+<p dir="auto">The final head, once it has arrived, without waiting; a 1xx head and a
+proxy's are passed over. Its status, version and headers read as a
+response's do. <code>curl-head-body-asked?</code> says whether libcurl had asked for a
+streamed request body by then. Raises an assertion violation for anything
+but a token whose request streams its response, or a head;
+<code>curl-head?</code> raises nothing. See <a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-next-piece</code></h3><a id="user-content-curl-token-next-piece" class="anchor" aria-label="Permalink: curl-token-next-piece" href="#curl-token-next-piece"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-next-piece : Token Natural -&gt; (U Bytevector Eof #f)"><pre lang="text" class="notranslate"><code>curl-token-next-piece : Token Natural -&gt; (U Bytevector Eof #f)
+</code></pre></div>
+<p dir="auto">The next piece of the body, the caller's to keep; the end of file once
+every piece is taken and the transfer has ended, however it ended; or <code>#f</code>
+once that many milliseconds pass. Raises an assertion violation for
+anything but a token whose request streams its response, or a wait that is
+no natural number. See <a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-body-port</code></h3><a id="user-content-curl-token-body-port" class="anchor" aria-label="Permalink: curl-token-body-port" href="#curl-token-body-port"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-body-port : Token -&gt; Binary-Input-Port"><pre lang="text" class="notranslate"><code>curl-token-body-port : Token -&gt; Binary-Input-Port
+</code></pre></div>
+<p dir="auto">A binary input port over the body as it arrives, made once per token. Read
+it and close it on the thread that made it; its close cancels the
+transfer. At the end it answers the end of file for a response, and raises
+the failure for one that failed, every time. Raises an assertion violation
+for anything but a token whose request streams its response, or a second
+port; its reads raise the transfer's failure, and <code>&amp;curl-wrong-thread</code> for
+a read that needs more, or a close, from another thread. See
+<a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: streamed request bodies</h2><a id="user-content-curl-streamed-request-bodies" class="anchor" aria-label="Permalink: (curl): streamed request bodies" href="#curl-streamed-request-bodies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-room-wait</code></h3><a id="user-content-curl-token-room-wait" class="anchor" aria-label="Permalink: curl-token-room-wait" href="#curl-token-room-wait"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-room-wait : Token Natural -&gt; (U #t #f 'done)"><pre lang="text" class="notranslate"><code>curl-token-room-wait : Token Natural -&gt; (U #t #f 'done)
+</code></pre></div>
+<p dir="auto"><code>#t</code> once libcurl has asked for the body and the buffer has room; <code>done</code>
+once the transfer has ended; <code>#f</code> once that many milliseconds pass. Raises
+an assertion violation for anything but a token whose request streams its
+body, or a wait that is no natural number. See <a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-put-piece!</code></h3><a id="user-content-curl-token-put-piece" class="anchor" aria-label="Permalink: curl-token-put-piece!" href="#curl-token-put-piece"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-put-piece! : Token Bytevector [Natural] -&gt; (U #t #f 'done)"><pre lang="text" class="notranslate"><code>curl-token-put-piece! : Token Bytevector [Natural] -&gt; (U #t #f 'done)
+</code></pre></div>
+<p dir="auto">Copies the piece, a byte or more, into the body's buffer, waiting while it
+is full, at most that many milliseconds when given: <code>#t</code> once taken, <code>#f</code>
+once they pass, <code>done</code> once the transfer has ended. Raises an assertion
+violation for anything but a token whose request streams its body, a piece
+that is no bytevector of a byte or more, a wait that is no natural number,
+or a put after the body's end; and <code>&amp;curl-request-error</code>,
+<code>body-length-mismatch</code>, for a piece past the <code>body-length</code>, which fails the
+transfer too. See <a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-end-body!</code></h3><a id="user-content-curl-token-end-body" class="anchor" aria-label="Permalink: curl-token-end-body!" href="#curl-token-end-body"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-end-body! : Token -&gt; Void"><pre lang="text" class="notranslate"><code>curl-token-end-body! : Token -&gt; Void
+</code></pre></div>
+<p dir="auto">Ends the body; a second end, or one after the transfer has ended, does
+nothing. An end short of the <code>body-length</code> fails the transfer,
+<code>body-length-mismatch</code>. Raises an assertion violation for anything but a
+token whose request streams its body. See <a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-token-body-count</code></h3><a id="user-content-curl-token-body-count" class="anchor" aria-label="Permalink: curl-token-body-count" href="#curl-token-body-count"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-token-body-count : Token -&gt; Natural"><pre lang="text" class="notranslate"><code>curl-token-body-count : Token -&gt; Natural
+</code></pre></div>
+<p dir="auto">The bytes the puts have handed over so far. Raises an assertion violation
+for anything but a token whose request streams its body. See
+<a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: cookie jars</h2><a id="user-content-curl-cookie-jars" class="anchor" aria-label="Permalink: (curl): cookie jars" href="#curl-cookie-jars"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>make-curl-cookie-jar</code>, <code>curl-cookie-jar?</code></h3><a id="user-content-make-curl-cookie-jar-curl-cookie-jar" class="anchor" aria-label="Permalink: make-curl-cookie-jar, curl-cookie-jar?" href="#make-curl-cookie-jar-curl-cookie-jar"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="make-curl-cookie-jar : Engine -&gt; Jar
+curl-cookie-jar? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>make-curl-cookie-jar : Engine -&gt; Jar
+curl-cookie-jar? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A fresh, empty jar on the engine, for a request's <code>cookie-jar</code> key. Each
+jar procedure waits for the engine to do its work, with no bound. Raises an
+assertion violation for anything but an engine; <code>&amp;curl-engine-error</code>,
+<code>stopped</code>, or the engine's own failure, for an engine stopping, stopped or
+failed; and Chez's <code>&amp;error</code>, no chez-curl condition, when libcurl refuses to
+make the jar. <code>curl-cookie-jar?</code> raises nothing. See <a href="cookies.md">Cookies</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-cookie-jar-cookies</code></h3><a id="user-content-curl-cookie-jar-cookies" class="anchor" aria-label="Permalink: curl-cookie-jar-cookies" href="#curl-cookie-jar-cookies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-cookie-jar-cookies : Jar -&gt; (Listof String)"><pre lang="text" class="notranslate"><code>curl-cookie-jar-cookies : Jar -&gt; (Listof String)
+</code></pre></div>
+<p dir="auto">The jar's cookies, as Netscape lines: <code>DOMAIN TAILMATCH PATH SECURE EXPIRY NAME VALUE</code>, tab-separated, one char per byte, in libcurl's order, which
+moves, so compare them sorted. What some libcurls list varies by version.
+Raises an assertion violation for anything but a jar;
+<code>&amp;curl-engine-error</code> as <code>make-curl-cookie-jar</code> raises it;
+<code>&amp;curl-request-error</code>, <code>cookie-jar-closed</code>, for a closed jar; and Chez's
+<code>&amp;error</code> when libcurl refuses the read. See <a href="cookies.md">Cookies</a> and
+<a href="libcurl-versions.md">What varies by libcurl</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-cookie-jar-load!</code></h3><a id="user-content-curl-cookie-jar-load" class="anchor" aria-label="Permalink: curl-cookie-jar-load!" href="#curl-cookie-jar-load"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-cookie-jar-load! : Jar (Listof String) -&gt; Void"><pre lang="text" class="notranslate"><code>curl-cookie-jar-load! : Jar (Listof String) -&gt; Void
+</code></pre></div>
+<p dir="auto">Loads the lines, in order, once every one is checked: each must be in the
+form a read-out writes. Raises an assertion violation for anything but a
+jar, or lines that are no list of strings; <code>&amp;curl-request-error</code>,
+<code>cookie-line</code>, for a line not in that form, naming its index from 0, never
+its text, with nothing loaded; <code>&amp;curl-engine-error</code> as
+<code>make-curl-cookie-jar</code> raises it; <code>&amp;curl-request-error</code>,
+<code>cookie-jar-closed</code>, for a closed jar; and Chez's <code>&amp;error</code> when libcurl
+refuses a line, the lines before it loaded. See <a href="cookies.md">Cookies</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-cookie-jar-close!</code></h3><a id="user-content-curl-cookie-jar-close" class="anchor" aria-label="Permalink: curl-cookie-jar-close!" href="#curl-cookie-jar-close"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-cookie-jar-close! : Jar -&gt; Void"><pre lang="text" class="notranslate"><code>curl-cookie-jar-close! : Jar -&gt; Void
+</code></pre></div>
+<p dir="auto">Closes the jar: freed at once, or once the last transfer that holds it
+ends. A later submit with it, or a read or a load, is refused; a second
+close does nothing. Raises an assertion violation for anything but a jar,
+and <code>&amp;curl-engine-error</code> as <code>make-curl-cookie-jar</code> raises it. See
+<a href="cookies.md">Cookies</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl)</code>: conditions</h2><a id="user-content-curl-conditions" class="anchor" aria-label="Permalink: (curl): conditions" href="#curl-conditions"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">Each condition type below is a <code>&amp;curl-error</code>, which is an <code>&amp;error</code>. Its
+accessors raise an assertion violation for anything of another kind,
+naming it by its kind, never its value.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-error</code>, <code>curl-error?</code></h3><a id="user-content-curl-error-curl-error" class="anchor" aria-label="Permalink: &amp;curl-error, curl-error?" href="#curl-error-curl-error"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-error? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-error? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">The base of every chez-curl condition type but <code>&amp;http-exchange</code>, the high
+level's among them. Raises nothing. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-library-unavailable</code>, <code>curl-library-unavailable?</code>, <code>curl-library-unavailable-reason</code>, <code>curl-library-unavailable-path</code>, <code>curl-library-unavailable-source</code>, <code>curl-library-unavailable-detail</code>, <code>curl-library-unavailable-candidates</code>, <code>curl-library-unavailable-library</code>, <code>curl-library-unavailable-reasons</code></h3><a id="user-content-curl-library-unavailable-curl-library-unavailable-curl-library-unavailable-reason-curl-library-unavailable-path-curl-library-unavailable-source-curl-library-unavailable-detail-curl-library-unavailable-candidates-curl-library-unavailable-library-curl-library-unavailable-reasons" class="anchor" aria-label="Permalink: &amp;curl-library-unavailable, curl-library-unavailable?, curl-library-unavailable-reason, curl-library-unavailable-path, curl-library-unavailable-source, curl-library-unavailable-detail, curl-library-unavailable-candidates, curl-library-unavailable-library, curl-library-unavailable-reasons" href="#curl-library-unavailable-curl-library-unavailable-curl-library-unavailable-reason-curl-library-unavailable-path-curl-library-unavailable-source-curl-library-unavailable-detail-curl-library-unavailable-candidates-curl-library-unavailable-library-curl-library-unavailable-reasons"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-library-unavailable? : Any -&gt; Boolean
+curl-library-unavailable-reason : &amp;curl-library-unavailable -&gt; Symbol
+curl-library-unavailable-path : &amp;curl-library-unavailable -&gt; (U String #f)
+curl-library-unavailable-source : &amp;curl-library-unavailable -&gt; (U Symbol #f)
+curl-library-unavailable-detail : &amp;curl-library-unavailable -&gt; Any
+curl-library-unavailable-candidates : &amp;curl-library-unavailable -&gt; (Listof String)
+curl-library-unavailable-library : &amp;curl-library-unavailable -&gt; (U Libcurl-Info #f)
+curl-library-unavailable-reasons : (Listof Symbol)"><pre lang="text" class="notranslate"><code>curl-library-unavailable? : Any -&gt; Boolean
+curl-library-unavailable-reason : &amp;curl-library-unavailable -&gt; Symbol
+curl-library-unavailable-path : &amp;curl-library-unavailable -&gt; (U String #f)
+curl-library-unavailable-source : &amp;curl-library-unavailable -&gt; (U Symbol #f)
+curl-library-unavailable-detail : &amp;curl-library-unavailable -&gt; Any
+curl-library-unavailable-candidates : &amp;curl-library-unavailable -&gt; (Listof String)
+curl-library-unavailable-library : &amp;curl-library-unavailable -&gt; (U Libcurl-Info #f)
+curl-library-unavailable-reasons : (Listof Symbol)
+</code></pre></div>
+<p dir="auto">libcurl was refused: why, the file, where it was found, a detail by reason,
+every path tried, and the library's report when it was read. The reasons:
+<code>invalid-override</code>, <code>not-found</code>, <code>load-failed</code>, <code>below-floor</code>, <code>no-ssl</code>,
+<code>missing-api</code>. Raises an assertion violation, from an accessor, for
+anything of another kind. See <a href="errors.md">Errors</a> and
+<a href="tls-and-environment.md">TLS and the environment</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-wrong-thread</code>, <code>curl-wrong-thread?</code>, <code>curl-wrong-thread-who</code>, <code>curl-wrong-thread-expected</code>, <code>curl-wrong-thread-actual</code></h3><a id="user-content-curl-wrong-thread-curl-wrong-thread-curl-wrong-thread-who-curl-wrong-thread-expected-curl-wrong-thread-actual" class="anchor" aria-label="Permalink: &amp;curl-wrong-thread, curl-wrong-thread?, curl-wrong-thread-who, curl-wrong-thread-expected, curl-wrong-thread-actual" href="#curl-wrong-thread-curl-wrong-thread-curl-wrong-thread-who-curl-wrong-thread-expected-curl-wrong-thread-actual"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-wrong-thread? : Any -&gt; Boolean
+curl-wrong-thread-who : &amp;curl-wrong-thread -&gt; Symbol
+curl-wrong-thread-expected : &amp;curl-wrong-thread -&gt; Integer
+curl-wrong-thread-actual : &amp;curl-wrong-thread -&gt; Integer"><pre lang="text" class="notranslate"><code>curl-wrong-thread? : Any -&gt; Boolean
+curl-wrong-thread-who : &amp;curl-wrong-thread -&gt; Symbol
+curl-wrong-thread-expected : &amp;curl-wrong-thread -&gt; Integer
+curl-wrong-thread-actual : &amp;curl-wrong-thread -&gt; Integer
+</code></pre></div>
+<p dir="auto">Something used on another thread than its own; a caller meets it from a
+token's body port, read or closed on another thread than the one that made
+it. It carries what refused, and the two threads' ids. Raises an
+assertion violation,
+from an accessor, for anything of another kind. See
+<a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-embedded-nul</code>, <code>curl-embedded-nul?</code>, <code>curl-embedded-nul-string</code></h3><a id="user-content-curl-embedded-nul-curl-embedded-nul-curl-embedded-nul-string" class="anchor" aria-label="Permalink: &amp;curl-embedded-nul, curl-embedded-nul?, curl-embedded-nul-string" href="#curl-embedded-nul-curl-embedded-nul-curl-embedded-nul-string"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-embedded-nul? : Any -&gt; Boolean
+curl-embedded-nul-string : &amp;curl-embedded-nul -&gt; String"><pre lang="text" class="notranslate"><code>curl-embedded-nul? : Any -&gt; Boolean
+curl-embedded-nul-string : &amp;curl-embedded-nul -&gt; String
+</code></pre></div>
+<p dir="auto">A string C would read short, since it holds U+0000. The request's and the
+URL's own checks refuse such a string first, as <code>&amp;curl-request-error</code> or
+<code>&amp;curl-url-error</code>, <code>embedded-nul</code>. Raises an assertion violation, from an
+accessor, for anything of another kind. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-url-error</code>, <code>curl-url-error?</code>, <code>curl-url-error-input</code>, <code>curl-url-error-reason</code>, <code>curl-url-error-code</code>, <code>curl-url-error-message</code></h3><a id="user-content-curl-url-error-curl-url-error-curl-url-error-input-curl-url-error-reason-curl-url-error-code-curl-url-error-message" class="anchor" aria-label="Permalink: &amp;curl-url-error, curl-url-error?, curl-url-error-input, curl-url-error-reason, curl-url-error-code, curl-url-error-message" href="#curl-url-error-curl-url-error-curl-url-error-input-curl-url-error-reason-curl-url-error-code-curl-url-error-message"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-url-error? : Any -&gt; Boolean
+curl-url-error-input : &amp;curl-url-error -&gt; String
+curl-url-error-reason : &amp;curl-url-error -&gt; (U Symbol #f)
+curl-url-error-code : &amp;curl-url-error -&gt; (U Integer #f)
+curl-url-error-message : &amp;curl-url-error -&gt; (U String #f)"><pre lang="text" class="notranslate"><code>curl-url-error? : Any -&gt; Boolean
+curl-url-error-input : &amp;curl-url-error -&gt; String
+curl-url-error-reason : &amp;curl-url-error -&gt; (U Symbol #f)
+curl-url-error-code : &amp;curl-url-error -&gt; (U Integer #f)
+curl-url-error-message : &amp;curl-url-error -&gt; (U String #f)
+</code></pre></div>
+<p dir="auto">A URL refused: the text refused, why, and libcurl's code and message when
+the refusal was libcurl's. The reason is libcurl's code's name, <code>#f</code> for a
+code newer than the floor's, or chez-curl's own: <code>scheme-not-http</code>,
+<code>embedded-nul</code>, <code>not-utf-8</code> or <code>query-not-kept</code>. Raises an assertion
+violation, from an accessor, for anything of another kind. See
+<a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-request-error</code>, <code>curl-request-error?</code>, <code>curl-request-error-field</code>, <code>curl-request-error-value</code>, <code>curl-request-error-reason</code>, <code>curl-request-error-reasons</code></h3><a id="user-content-curl-request-error-curl-request-error-curl-request-error-field-curl-request-error-value-curl-request-error-reason-curl-request-error-reasons" class="anchor" aria-label="Permalink: &amp;curl-request-error, curl-request-error?, curl-request-error-field, curl-request-error-value, curl-request-error-reason, curl-request-error-reasons" href="#curl-request-error-curl-request-error-curl-request-error-field-curl-request-error-value-curl-request-error-reason-curl-request-error-reasons"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-request-error? : Any -&gt; Boolean
+curl-request-error-field : &amp;curl-request-error -&gt; Symbol
+curl-request-error-value : &amp;curl-request-error -&gt; Any
+curl-request-error-reason : &amp;curl-request-error -&gt; Symbol
+curl-request-error-reasons : (Listof Symbol)"><pre lang="text" class="notranslate"><code>curl-request-error? : Any -&gt; Boolean
+curl-request-error-field : &amp;curl-request-error -&gt; Symbol
+curl-request-error-value : &amp;curl-request-error -&gt; Any
+curl-request-error-reason : &amp;curl-request-error -&gt; Symbol
+curl-request-error-reasons : (Listof Symbol)
+</code></pre></div>
+<p dir="auto">A request's key or field refused: which one, its value, and why. A value
+that could hold a secret is named by its field alone. The reasons:
+<code>embedded-nul</code>, <code>line-break</code>, <code>not-latin-1</code>, <code>not-a-token</code>,
+<code>surrounding-whitespace</code>, <code>duplicates-field</code>, <code>framing-header</code>,
+<code>owned-option</code>, <code>unsupported-type</code>, <code>unknown-option</code>, <code>repeated-option</code>,
+<code>unknown-key</code>, <code>repeated-key</code>, <code>missing-value</code>, <code>body-not-allowed</code>,
+<code>pkcs11-url</code>, <code>environment-override</code>, <code>keychain-fallback</code>,
+<code>stream-with-rounds</code>, <code>body-length-without-stream</code>, <code>body-length-mismatch</code>,
+<code>prior-knowledge-over-https</code>, <code>credentials-bytes</code>, <code>credentials-empty</code>,
+<code>credentials-beside-userinfo</code>, <code>credentials-beside-authorization</code>,
+<code>digest-with-stream</code>, <code>prior-knowledge-through-proxy</code>, <code>proxy-url</code>,
+<code>proxy-scheme</code>, <code>proxy-url-parts</code>, <code>proxy-authorization-header</code>,
+<code>proxy-tls-without-https-proxy</code>, <code>proxy-tls-in-tls</code>,
+<code>https-proxy-unsupported</code>, <code>cookie-line</code>, <code>cookie-jar-engine</code>,
+<code>cookie-jar-closed</code>, <code>cookie-beside-jar</code>, <code>part-bytes</code>, <code>part-empty</code>,
+<code>multipart-empty</code>, <code>multipart-content-type</code>, <code>part-file</code>,
+<code>multipart-unsupported</code>. Raises an assertion violation, from an accessor,
+for anything of another kind. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-transfer-error</code>, <code>curl-transfer-error?</code>, <code>curl-transfer-error-reason</code>, <code>curl-transfer-error-code</code>, <code>curl-transfer-error-option</code>, <code>curl-transfer-error-strerror</code>, <code>curl-transfer-error-error-buffer</code>, <code>curl-transfer-error-recorded</code>, <code>curl-transfer-error-request-size</code>, <code>curl-transfer-error-connect-code</code>, <code>curl-transfer-error-reasons</code></h3><a id="user-content-curl-transfer-error-curl-transfer-error-curl-transfer-error-reason-curl-transfer-error-code-curl-transfer-error-option-curl-transfer-error-strerror-curl-transfer-error-error-buffer-curl-transfer-error-recorded-curl-transfer-error-request-size-curl-transfer-error-connect-code-curl-transfer-error-reasons" class="anchor" aria-label="Permalink: &amp;curl-transfer-error, curl-transfer-error?, curl-transfer-error-reason, curl-transfer-error-code, curl-transfer-error-option, curl-transfer-error-strerror, curl-transfer-error-error-buffer, curl-transfer-error-recorded, curl-transfer-error-request-size, curl-transfer-error-connect-code, curl-transfer-error-reasons" href="#curl-transfer-error-curl-transfer-error-curl-transfer-error-reason-curl-transfer-error-code-curl-transfer-error-option-curl-transfer-error-strerror-curl-transfer-error-error-buffer-curl-transfer-error-recorded-curl-transfer-error-request-size-curl-transfer-error-connect-code-curl-transfer-error-reasons"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-transfer-error? : Any -&gt; Boolean
+curl-transfer-error-reason : &amp;curl-transfer-error -&gt; Symbol
+curl-transfer-error-code : &amp;curl-transfer-error -&gt; (U Integer #f)
+curl-transfer-error-option : &amp;curl-transfer-error -&gt; (U String #f)
+curl-transfer-error-strerror : &amp;curl-transfer-error -&gt; (U String #f)
+curl-transfer-error-error-buffer : &amp;curl-transfer-error -&gt; (U String #f)
+curl-transfer-error-recorded : &amp;curl-transfer-error -&gt; Any
+curl-transfer-error-request-size : &amp;curl-transfer-error -&gt; (U Natural #f)
+curl-transfer-error-connect-code : &amp;curl-transfer-error -&gt; (U Positive-Integer #f)
+curl-transfer-error-reasons : (Listof Symbol)"><pre lang="text" class="notranslate"><code>curl-transfer-error? : Any -&gt; Boolean
+curl-transfer-error-reason : &amp;curl-transfer-error -&gt; Symbol
+curl-transfer-error-code : &amp;curl-transfer-error -&gt; (U Integer #f)
+curl-transfer-error-option : &amp;curl-transfer-error -&gt; (U String #f)
+curl-transfer-error-strerror : &amp;curl-transfer-error -&gt; (U String #f)
+curl-transfer-error-error-buffer : &amp;curl-transfer-error -&gt; (U String #f)
+curl-transfer-error-recorded : &amp;curl-transfer-error -&gt; Any
+curl-transfer-error-request-size : &amp;curl-transfer-error -&gt; (U Natural #f)
+curl-transfer-error-connect-code : &amp;curl-transfer-error -&gt; (U Positive-Integer #f)
+curl-transfer-error-reasons : (Listof Symbol)
+</code></pre></div>
+<p dir="auto">A transfer that failed: why; libcurl's code, the option it refused, and
+its two texts about it; what a callback raised; the bytes of request sent,
+0 when none was, <code>#f</code> when that is unknown, as for a transfer cancelled or
+stopped, and on libcurl 8.7.0 and 8.7.1; and the status a proxy refused a
+tunnel with. The reasons: <code>perform-failed</code>, <code>body-limit</code>,
+<code>callback-raised</code>, <code>setopt-failed</code>, <code>unknown-option</code>, <code>no-handle</code>,
+<code>cancelled</code>, <code>stopped</code>, <code>pause-failed</code>, <code>body-length-mismatch</code>,
+<code>body-not-replayable</code>, <code>header-limit</code>, <code>part-file</code>, <code>mime-failed</code>. Raises
+an assertion violation, from an accessor, for anything of another kind.
+See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-timeout</code>, <code>curl-timeout?</code></h3><a id="user-content-curl-timeout-curl-timeout" class="anchor" aria-label="Permalink: &amp;curl-timeout, curl-timeout?" href="#curl-timeout-curl-timeout"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-timeout? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-timeout? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A <code>&amp;curl-transfer-error</code>, <code>perform-failed</code>, for libcurl's code 28: a bound
+passed. Raises nothing. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-connect-error</code>, <code>curl-connect-error?</code></h3><a id="user-content-curl-connect-error-curl-connect-error" class="anchor" aria-label="Permalink: &amp;curl-connect-error, curl-connect-error?" href="#curl-connect-error-curl-connect-error"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-connect-error? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-connect-error? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A <code>&amp;curl-transfer-error</code>, <code>perform-failed</code>, for libcurl's codes 5, 6, 7,
+45, 96 and 97: no connection was made. Raises nothing. See
+<a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-send-receive-error</code>, <code>curl-send-receive-error?</code></h3><a id="user-content-curl-send-receive-error-curl-send-receive-error" class="anchor" aria-label="Permalink: &amp;curl-send-receive-error, curl-send-receive-error?" href="#curl-send-receive-error-curl-send-receive-error"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-send-receive-error? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-send-receive-error? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A <code>&amp;curl-transfer-error</code>, <code>perform-failed</code>, for libcurl's codes 18, 52, 55
+and 56: the connection failed while sending or receiving. Raises nothing.
+See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-tls-error</code>, <code>curl-tls-error?</code></h3><a id="user-content-curl-tls-error-curl-tls-error" class="anchor" aria-label="Permalink: &amp;curl-tls-error, curl-tls-error?" href="#curl-tls-error-curl-tls-error"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-tls-error? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-tls-error? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A <code>&amp;curl-transfer-error</code>, <code>perform-failed</code>, for libcurl's codes 35, 53,
+54, 58, 59, 60, 64, 66, 77, 80, 82, 83, 90, 91, 98 and 101: TLS failed.
+Raises nothing. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-protocol-error</code>, <code>curl-protocol-error?</code></h3><a id="user-content-curl-protocol-error-curl-protocol-error" class="anchor" aria-label="Permalink: &amp;curl-protocol-error, curl-protocol-error?" href="#curl-protocol-error-curl-protocol-error"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-protocol-error? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-protocol-error? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A <code>&amp;curl-transfer-error</code>, <code>perform-failed</code>, for libcurl's codes 1, 8, 16,
+61, 92 and 95: the server's answer broke HTTP's rules. Raises nothing. See
+<a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-too-large</code>, <code>curl-too-large?</code></h3><a id="user-content-curl-too-large-curl-too-large" class="anchor" aria-label="Permalink: &amp;curl-too-large, curl-too-large?" href="#curl-too-large-curl-too-large"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-too-large? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>curl-too-large? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">A <code>&amp;curl-transfer-error</code> for too much: libcurl's codes 63 and 100,
+<code>perform-failed</code>; a body past the <code>body-limit</code>, <code>body-limit</code>; and response
+headers past the cap, <code>header-limit</code>. A <code>body-limit</code> below a declared
+<code>Content-Length</code> is libcurl's 63, before any of the body arrives. Raises
+nothing. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;curl-engine-error</code>, <code>curl-engine-error?</code>, <code>curl-engine-error-reason</code>, <code>curl-engine-error-condition</code>, <code>curl-engine-error-reasons</code></h3><a id="user-content-curl-engine-error-curl-engine-error-curl-engine-error-reason-curl-engine-error-condition-curl-engine-error-reasons" class="anchor" aria-label="Permalink: &amp;curl-engine-error, curl-engine-error?, curl-engine-error-reason, curl-engine-error-condition, curl-engine-error-reasons" href="#curl-engine-error-curl-engine-error-curl-engine-error-reason-curl-engine-error-condition-curl-engine-error-reasons"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-engine-error? : Any -&gt; Boolean
+curl-engine-error-reason : &amp;curl-engine-error -&gt; Symbol
+curl-engine-error-condition : &amp;curl-engine-error -&gt; Any
+curl-engine-error-reasons : (Listof Symbol)"><pre lang="text" class="notranslate"><code>curl-engine-error? : Any -&gt; Boolean
+curl-engine-error-reason : &amp;curl-engine-error -&gt; Symbol
+curl-engine-error-condition : &amp;curl-engine-error -&gt; Any
+curl-engine-error-reasons : (Listof Symbol)
+</code></pre></div>
+<p dir="auto">An engine that stopped, or failed, and for <code>failed</code> what raised inside it.
+The reasons: <code>stopped</code>, <code>failed</code>. Raises an assertion violation, from an
+accessor, for anything of another kind. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(curl unsupported)</code>: the hatch</h2><a id="user-content-curl-unsupported-the-hatch" class="anchor" aria-label="Permalink: (curl unsupported): the hatch" href="#curl-unsupported-the-hatch"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>curl-request-with-options</code></h3><a id="user-content-curl-request-with-options" class="anchor" aria-label="Permalink: curl-request-with-options" href="#curl-request-with-options"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="curl-request-with-options : Request (Listof (Pairof String Any)) -&gt; Request"><pre lang="text" class="notranslate"><code>curl-request-with-options : Request (Listof (Pairof String Any)) -&gt; Request
+</code></pre></div>
+<p dir="auto"><code>(curl-request-with-options REQUEST ((NAME . VALUE) ...))</code> is a new request
+that also sets libcurl options chez-curl does not wrap, by name, without
+<code>CURLOPT_</code>, in any case. The engine sets them last. A value is an exact
+integer, a string, a list of strings, or a bytevector, by the option's
+type. Nothing here is promised to stay. Raises an assertion violation for
+anything but a request, options that are no list of pairs, or a value of
+the wrong shape or range; and <code>&amp;curl-request-error</code>, field <code>options</code>, for a
+name or a string it refuses: <code>unknown-option</code>, <code>owned-option</code>,
+<code>unsupported-type</code>, <code>repeated-option</code>, <code>embedded-nul</code> or <code>line-break</code>. A
+value libcurl refuses fails the transfer, <code>setopt-failed</code>. See
+<a href="hatch.md">The hatch</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: sessions</h2><a id="user-content-http-client-sessions" class="anchor" aria-label="Permalink: (http-client): sessions" href="#http-client-sessions"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>make-http-session</code></h3><a id="user-content-make-http-session" class="anchor" aria-label="Permalink: make-http-session" href="#make-http-session"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="make-http-session : Any ... -&gt; Session"><pre lang="text" class="notranslate"><code>make-http-session : Any ... -&gt; Session
+</code></pre></div>
+<p dir="auto"><code>(make-http-session KEY VALUE ...)</code> is a session: one engine, and the
+defaults its calls share. Each key may be given once:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>headers</code>, <code>user-agent</code>, <code>timeout-ms</code>, <code>connect-timeout-ms</code>, <code>body-limit</code>, <code>ca-file</code>, <code>verify</code>, <code>proxy</code>, <code>http-version</code>, <code>credentials</code>, <code>proxy-ca-file</code>, <code>proxy-verify</code></td>
+<td align="left">as <code>make-curl-request</code>'s</td>
+<td align="left"><code>make-curl-request</code>'s</td>
+</tr>
+<tr>
+<td align="left"><code>redirects</code></td>
+<td align="left"><code>(U Natural #f)</code>, the most redirects a call follows; <code>#f</code> follows none</td>
+<td align="left"><code>20</code></td>
+</tr>
+<tr>
+<td align="left"><code>allow-downgrade</code></td>
+<td align="left"><code>Boolean</code>, whether a redirect from <code>https</code> to <code>http</code> is followed</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>retry</code></td>
+<td align="left"><code>(U Retry #f)</code>, the policy a call retries by</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>cookies</code></td>
+<td align="left"><code>Boolean</code>, whether the session keeps cookies, in a jar of its own</td>
+<td align="left"><code>#f</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Close it with <code>http-session-close</code>, or use <code>call-with-http-session</code>. Raises
+<code>&amp;http-request-error</code> for <code>unknown-key</code>, <code>repeated-key</code> and
+<code>missing-value</code>, then <code>not-a-redirect-count</code>, <code>not-a-boolean</code> and
+<code>not-a-retry-policy</code>; then what <code>make-curl-request</code> raises for its keys;
+then what <code>make-curl-engine</code> raises; and with <code>cookies</code>, what
+<code>make-curl-cookie-jar</code> raises, and <code>&amp;curl-request-error</code>,
+<code>cookie-beside-jar</code>, for a <code>Cookie</code> or <code>Host</code> header. A refusal leaves no
+engine running. See <a href="high-level.md">The high level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-session?</code></h3><a id="user-content-http-session" class="anchor" aria-label="Permalink: http-session?" href="#http-session"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-session? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>http-session? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">Whether it is a session. Raises nothing. See <a href="high-level.md">The high level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-session-close</code></h3><a id="user-content-http-session-close" class="anchor" aria-label="Permalink: http-session-close" href="#http-session-close"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-session-close : Session -&gt; Void"><pre lang="text" class="notranslate"><code>http-session-close : Session -&gt; Void
+</code></pre></div>
+<p dir="auto">Stops the session's engine: each call in flight ends as stopped, and a
+later call raises <code>&amp;curl-engine-error</code>, <code>stopped</code>. A second close returns.
+Raises an assertion violation for anything but a session. See
+<a href="high-level.md">The high level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>call-with-http-session</code></h3><a id="user-content-call-with-http-session" class="anchor" aria-label="Permalink: call-with-http-session" href="#call-with-http-session"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="call-with-http-session : Any ... (Session -&gt; Any) -&gt; Any"><pre lang="text" class="notranslate"><code>call-with-http-session : Any ... (Session -&gt; Any) -&gt; Any
+</code></pre></div>
+<p dir="auto"><code>(call-with-http-session KEY VALUE ... PROC)</code> makes a session from the
+keys, calls <code>PROC</code> with it, and closes it when <code>PROC</code> returns or escapes.
+Raises an assertion violation for a last argument that is no procedure;
+what <code>make-http-session</code> raises; and whatever <code>PROC</code> raises, once the
+session is closed. See <a href="high-level.md">The high level</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: cookies</h2><a id="user-content-http-client-cookies" class="anchor" aria-label="Permalink: (http-client): cookies" href="#http-client-cookies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-session-cookies</code></h3><a id="user-content-http-session-cookies" class="anchor" aria-label="Permalink: http-session-cookies" href="#http-session-cookies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-session-cookies : Session -&gt; (Listof String)"><pre lang="text" class="notranslate"><code>http-session-cookies : Session -&gt; (Listof String)
+</code></pre></div>
+<p dir="auto">The session's cookies, as <code>curl-cookie-jar-cookies</code> reads them. Raises an
+assertion violation for anything but a session, or a session made without
+<code>cookies</code>; and what <code>curl-cookie-jar-cookies</code> raises, <code>&amp;curl-engine-error</code>,
+<code>stopped</code>, for a closed session among it. See <a href="cookies.md">Cookies</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-session-load-cookies!</code></h3><a id="user-content-http-session-load-cookies" class="anchor" aria-label="Permalink: http-session-load-cookies!" href="#http-session-load-cookies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-session-load-cookies! : Session (Listof String) -&gt; Void"><pre lang="text" class="notranslate"><code>http-session-load-cookies! : Session (Listof String) -&gt; Void
+</code></pre></div>
+<p dir="auto">Loads the lines into the session's jar, as <code>curl-cookie-jar-load!</code> does.
+Raises an assertion violation for anything but a session, or a session
+made without <code>cookies</code>; and what <code>curl-cookie-jar-load!</code> raises,
+<code>cookie-line</code> and, for a closed session, <code>&amp;curl-engine-error</code>, <code>stopped</code>,
+among it. See <a href="cookies.md">Cookies</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: requests</h2><a id="user-content-http-client-requests" class="anchor" aria-label="Permalink: (http-client): requests" href="#http-client-requests"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-request</code></h3><a id="user-content-http-request" class="anchor" aria-label="Permalink: http-request" href="#http-request"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-request : Session Symbol String Any ... -&gt; Response"><pre lang="text" class="notranslate"><code>http-request : Session Symbol String Any ... -&gt; Response
+</code></pre></div>
+<p dir="auto"><code>(http-request SESSION METHOD URL KEY VALUE ...)</code> makes one call: <code>METHOD</code>,
+one of <code>get</code>, <code>head</code>, <code>post</code>, <code>put</code>, <code>patch</code> and <code>delete</code>, on an <code>http</code> or
+<code>https</code> URL. It blocks until the response, which it answers whatever the
+status, following redirects and retrying as the session says. Its keys:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>headers</code>, <code>user-agent</code>, <code>timeout-ms</code>, <code>connect-timeout-ms</code>, <code>body-limit</code>, <code>ca-file</code>, <code>verify</code>, <code>proxy</code>, <code>http-version</code>, <code>credentials</code>, <code>proxy-ca-file</code>, <code>proxy-verify</code>, <code>redirects</code>, <code>allow-downgrade</code>, <code>retry</code></td>
+<td align="left">as <code>make-http-session</code>'s</td>
+<td align="left">the session's</td>
+</tr>
+<tr>
+<td align="left"><code>body</code></td>
+<td align="left"><code>(U Bytevector String Producer)</code>: bytes, a string sent as UTF-8, or a producer</td>
+<td align="left">none</td>
+</tr>
+<tr>
+<td align="left"><code>form</code></td>
+<td align="left"><code>(Listof (Pairof String String))</code>, sent as <code>application/x-www-form-urlencoded</code></td>
+<td align="left">none</td>
+</tr>
+<tr>
+<td align="left"><code>params</code></td>
+<td align="left"><code>(Listof (Pairof String String))</code>, encoded and added to the URL's query</td>
+<td align="left">none</td>
+</tr>
+<tr>
+<td align="left"><code>body-length</code></td>
+<td align="left"><code>(U Natural #f)</code>, a producer's <code>Content-Length</code>; <code>#f</code> sends it chunked</td>
+<td align="left"><code>#f</code></td>
+</tr>
+<tr>
+<td align="left"><code>multipart</code></td>
+<td align="left"><code>(Listof Part)</code>, the parts of a <code>multipart/form-data</code> body</td>
+<td align="left">none</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">A producer is called as libcurl asks, and its body is sent at most once.
+Its <code>timeout-ms</code> bounds the whole call, every redirect and retry among it.
+Every condition it raises carries <code>&amp;http-exchange</code>, the call's context.
+Raises an assertion violation for anything but a session, a call inside a
+critical section, or a producer's answer that is no bytevector of a byte
+or more nor the end of file; <code>&amp;http-request-error</code> for <code>unknown-key</code>,
+<code>repeated-key</code>, <code>missing-value</code>, <code>not-a-body</code>, <code>not-name-value-pairs</code>,
+<code>not-a-redirect-count</code>, <code>not-a-boolean</code>, <code>not-a-retry-policy</code>,
+<code>body-and-form</code>, <code>multipart-beside-body</code> and <code>body-not-allowed</code>, and
+<code>body-length-mismatch</code> for a producer's piece past its <code>body-length</code>; what
+<code>make-curl-request</code> and <code>curl-submit</code> raise, for the call and each hop;
+<code>&amp;curl-url-error</code> for the URL, the params added; what each transfer ended
+with, as <code>curl-token-await</code> raises it; <code>&amp;http-timeout</code> when the
+<code>timeout-ms</code> passes, with <code>&amp;curl-timeout</code> when libcurl's 28 was the bound;
+and <code>&amp;http-redirect-error</code> for a redirect it does not follow. See
+<a href="high-level.md">The high level</a> and
+<a href="redirects-and-retries.md">Redirects and retries</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-get</code>, <code>http-head</code>, <code>http-post</code>, <code>http-put</code>, <code>http-patch</code>, <code>http-delete</code></h3><a id="user-content-http-get-http-head-http-post-http-put-http-patch-http-delete" class="anchor" aria-label="Permalink: http-get, http-head, http-post, http-put, http-patch, http-delete" href="#http-get-http-head-http-post-http-put-http-patch-http-delete"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-get : Session String Any ... -&gt; Response
+http-head : Session String Any ... -&gt; Response
+http-post : Session String Any ... -&gt; Response
+http-put : Session String Any ... -&gt; Response
+http-patch : Session String Any ... -&gt; Response
+http-delete : Session String Any ... -&gt; Response"><pre lang="text" class="notranslate"><code>http-get : Session String Any ... -&gt; Response
+http-head : Session String Any ... -&gt; Response
+http-post : Session String Any ... -&gt; Response
+http-put : Session String Any ... -&gt; Response
+http-patch : Session String Any ... -&gt; Response
+http-delete : Session String Any ... -&gt; Response
+</code></pre></div>
+<p dir="auto"><code>http-request</code> with the method each name says:
+<code>(http-get SESSION URL KEY VALUE ...)</code>. Raises what <code>http-request</code> raises.
+See <a href="high-level.md">The high level</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: responses</h2><a id="user-content-http-client-responses" class="anchor" aria-label="Permalink: (http-client): responses" href="#http-client-responses"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-response?</code>, <code>http-response-status</code>, <code>http-response-http-version</code>, <code>http-response-url</code>, <code>http-response-headers</code>, <code>http-response-body</code>, <code>http-response-timings</code>, <code>http-response-history</code></h3><a id="user-content-http-response-http-response-status-http-response-http-version-http-response-url-http-response-headers-http-response-body-http-response-timings-http-response-history" class="anchor" aria-label="Permalink: http-response?, http-response-status, http-response-http-version, http-response-url, http-response-headers, http-response-body, http-response-timings, http-response-history" href="#http-response-http-response-status-http-response-http-version-http-response-url-http-response-headers-http-response-body-http-response-timings-http-response-history"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-response? : Any -&gt; Boolean
+http-response-status : Response -&gt; Integer
+http-response-http-version : Response -&gt; (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+http-response-url : Response -&gt; String
+http-response-headers : Response -&gt; Headers
+http-response-body : Response -&gt; (U Bytevector #f)
+http-response-timings : Response -&gt; (U (Listof (Pairof Symbol Natural)) #f)
+http-response-history : Response -&gt; (Listof Response)"><pre lang="text" class="notranslate"><code>http-response? : Any -&gt; Boolean
+http-response-status : Response -&gt; Integer
+http-response-http-version : Response -&gt; (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+http-response-url : Response -&gt; String
+http-response-headers : Response -&gt; Headers
+http-response-body : Response -&gt; (U Bytevector #f)
+http-response-timings : Response -&gt; (U (Listof (Pairof Symbol Natural)) #f)
+http-response-history : Response -&gt; (Listof Response)
+</code></pre></div>
+<p dir="auto">What a call answered: its status, version, the URL its last request asked
+for, its headers and its body; its timings, as <code>curl-response-timings</code>;
+and the redirects it followed, oldest first. The body and timings are
+<code>#f</code> for a streamed response, and for a hop cancelled at its head. Raises
+an assertion violation for anything but a response; <code>http-response?</code>
+raises nothing. See <a href="high-level.md">The high level</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-response-header</code></h3><a id="user-content-http-response-header" class="anchor" aria-label="Permalink: http-response-header" href="#http-response-header"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-response-header : Response String -&gt; (U String #f)"><pre lang="text" class="notranslate"><code>http-response-header : Response String -&gt; (U String #f)
+</code></pre></div>
+<p dir="auto">The first header of that name, in any A to Z case, or <code>#f</code>. Raises an
+assertion violation for anything but a response, or a name that is no
+string. See <a href="high-level.md">The high level</a> and
+<a href="headers-and-json.md">Headers and JSON</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-response-text</code></h3><a id="user-content-http-response-text" class="anchor" aria-label="Permalink: http-response-text" href="#http-response-text"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-response-text : Response -&gt; String"><pre lang="text" class="notranslate"><code>http-response-text : Response -&gt; String
+</code></pre></div>
+<p dir="auto">The body as UTF-8 text: U+FFFD for a bad sequence, a leading byte-order
+mark dropped, no charset read. Raises an assertion violation for anything
+but a response, or one whose body is <code>#f</code>. See
+<a href="high-level.md">The high level</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: streams</h2><a id="user-content-http-client-streams" class="anchor" aria-label="Permalink: (http-client): streams" href="#http-client-streams"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>call-with-response-port</code></h3><a id="user-content-call-with-response-port" class="anchor" aria-label="Permalink: call-with-response-port" href="#call-with-response-port"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="call-with-response-port : Session Symbol String Any ... (Response Binary-Input-Port -&gt; Any ...) -&gt; Any ..."><pre lang="text" class="notranslate"><code>call-with-response-port : Session Symbol String Any ... (Response Binary-Input-Port -&gt; Any ...) -&gt; Any ...
+</code></pre></div>
+<p dir="auto"><code>(call-with-response-port SESSION METHOD URL KEY VALUE ... PROC)</code> makes the
+call as <code>http-request</code> does, then calls <code>PROC</code> with the final response and
+a port over its body as it arrives, and answers <code>PROC</code>'s values. When
+<code>PROC</code> returns or escapes, the port is closed and the transfer cancelled.
+Its keys:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>headers</code>, <code>user-agent</code>, <code>timeout-ms</code>, <code>connect-timeout-ms</code>, <code>body-limit</code>, <code>ca-file</code>, <code>verify</code>, <code>proxy</code>, <code>http-version</code>, <code>credentials</code>, <code>proxy-ca-file</code>, <code>proxy-verify</code>, <code>redirects</code>, <code>allow-downgrade</code>, <code>retry</code>, <code>body</code>, <code>form</code>, <code>params</code>, <code>body-length</code>, <code>multipart</code></td>
+<td align="left">as <code>http-request</code>'s</td>
+<td align="left">as <code>http-request</code>'s</td>
+</tr>
+<tr>
+<td align="left"><code>stream-buffer</code></td>
+<td align="left"><code>Positive-Integer</code>, the bytes of the body it buffers</td>
+<td align="left"><code>65536</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Raises an assertion violation for
+a last argument that is no procedure, before anything else, and for a
+<code>stream-buffer</code> of <code>#f</code>; what <code>http-request</code> raises; and, from the port's
+reads, the transfer's failure, with <code>&amp;http-exchange</code>, and <code>&amp;http-timeout</code>
+when the bound passed, and an assertion violation for a read from another
+thread or from the producer. See <a href="streams.md">Streams</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: retries</h2><a id="user-content-http-client-retries" class="anchor" aria-label="Permalink: (http-client): retries" href="#http-client-retries"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>make-http-retry</code></h3><a id="user-content-make-http-retry" class="anchor" aria-label="Permalink: make-http-retry" href="#make-http-retry"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="make-http-retry : Any ... -&gt; Retry"><pre lang="text" class="notranslate"><code>make-http-retry : Any ... -&gt; Retry
+</code></pre></div>
+<p dir="auto"><code>(make-http-retry KEY VALUE ...)</code> is a retry policy, data alone, for a
+session's or a call's <code>retry</code> key. Each key may be given once:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>attempts</code></td>
+<td align="left"><code>Positive-Integer</code>, the transfers per step, the first among them</td>
+<td align="left"><code>3</code></td>
+</tr>
+<tr>
+<td align="left"><code>backoff-ms</code></td>
+<td align="left"><code>Natural</code>, the first retry's wait, doubling after</td>
+<td align="left"><code>200</code></td>
+</tr>
+<tr>
+<td align="left"><code>max-backoff-ms</code></td>
+<td align="left"><code>Natural</code>, the most a wait, or a <code>Retry-After</code>, may be</td>
+<td align="left"><code>10000</code></td>
+</tr>
+<tr>
+<td align="left"><code>jitter</code></td>
+<td align="left"><code>Boolean</code>: <code>#t</code> waits a random share of the backoff</td>
+<td align="left"><code>#t</code></td>
+</tr>
+<tr>
+<td align="left"><code>statuses</code></td>
+<td align="left"><code>(Listof Integer)</code>, from 400 to 599, the statuses retried</td>
+<td align="left"><code>(429 503)</code></td>
+</tr>
+<tr>
+<td align="left"><code>methods</code></td>
+<td align="left"><code>(Listof Symbol)</code>, the methods a status or a sent request is retried for</td>
+<td align="left"><code>(get head put delete)</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Raises <code>&amp;http-request-error</code> for <code>unknown-key</code>, <code>repeated-key</code> and
+<code>missing-value</code>, then <code>not-an-attempt-count</code>, <code>not-a-backoff</code>,
+<code>not-a-boolean</code>, <code>not-a-status-list</code> and <code>not-a-method-list</code>. See
+<a href="redirects-and-retries.md">Redirects and retries</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-retry?</code></h3><a id="user-content-http-retry" class="anchor" aria-label="Permalink: http-retry?" href="#http-retry"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-retry? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>http-retry? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">Whether it is a retry policy. Raises nothing. See
+<a href="redirects-and-retries.md">Redirects and retries</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: groups</h2><a id="user-content-http-client-groups" class="anchor" aria-label="Permalink: (http-client): groups" href="#http-client-groups"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>call-with-request-group</code></h3><a id="user-content-call-with-request-group" class="anchor" aria-label="Permalink: call-with-request-group" href="#call-with-request-group"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="call-with-request-group : Session Any ... (Go -&gt; Any) -&gt; Any
+go : Symbol String Any ... -&gt; Pending"><pre lang="text" class="notranslate"><code>call-with-request-group : Session Any ... (Go -&gt; Any) -&gt; Any
+go : Symbol String Any ... -&gt; Pending
+</code></pre></div>
+<p dir="auto"><code>(call-with-request-group SESSION KEY VALUE ... PROC)</code> calls <code>PROC</code> with
+<code>go</code>, which starts a call, as <code>http-request</code> takes one, and answers its
+pending at once. Every call runs on this one thread. It returns once every
+call it started has ended. Its one key:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>limit</code></td>
+<td align="left"><code>(U Positive-Integer #f)</code>, the most calls in flight</td>
+<td align="left"><code>#f</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Raises an assertion violation
+inside a critical section, before anything else, and for no session or a
+last argument that is no procedure; <code>&amp;http-request-error</code> for
+<code>unknown-key</code>, <code>repeated-key</code>, <code>missing-value</code> and <code>not-a-limit</code>; from
+<code>go</code>, what <code>http-request</code>'s checks raise, and <code>stream-in-group</code> for a
+producer; <code>&amp;http-group-error</code>, <code>wrong-thread</code>, for <code>go</code> from another
+thread, and <code>closed</code> for <code>go</code> once <code>PROC</code> has returned; and, once <code>PROC</code>
+returns, the first failure no await answered. See <a href="groups.md">Groups</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-pending?</code>, <code>http-await</code></h3><a id="user-content-http-pending-http-await" class="anchor" aria-label="Permalink: http-pending?, http-await" href="#http-pending-http-await"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-pending? : Any -&gt; Boolean
+http-await : Pending -&gt; Response"><pre lang="text" class="notranslate"><code>http-pending? : Any -&gt; Boolean
+http-await : Pending -&gt; Response
+</code></pre></div>
+<p dir="auto">Waits for the call, driving the whole group meanwhile, and answers its
+response, any number of times. Raises an assertion violation for anything
+but a pending, or inside a critical section; <code>&amp;http-group-error</code>,
+<code>wrong-thread</code>, from another thread; the call's failure, as <code>http-request</code>
+raises it; and <code>&amp;http-group-error</code>, <code>cancelled</code>, for a cancelled call.
+<code>http-pending?</code> raises nothing. See <a href="groups.md">Groups</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-pending-done?</code></h3><a id="user-content-http-pending-done" class="anchor" aria-label="Permalink: http-pending-done?" href="#http-pending-done"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-pending-done? : Pending -&gt; Boolean"><pre lang="text" class="notranslate"><code>http-pending-done? : Pending -&gt; Boolean
+</code></pre></div>
+<p dir="auto">Moves the group on one turn, without waiting, then says whether the call
+has ended. Raises an assertion violation for anything but a pending, or
+inside a critical section; and <code>&amp;http-group-error</code>, <code>wrong-thread</code>, from
+another thread. See <a href="groups.md">Groups</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-pending-cancel</code></h3><a id="user-content-http-pending-cancel" class="anchor" aria-label="Permalink: http-pending-cancel" href="#http-pending-cancel"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-pending-cancel : Pending -&gt; Void"><pre lang="text" class="notranslate"><code>http-pending-cancel : Pending -&gt; Void
+</code></pre></div>
+<p dir="auto">Ends the call as cancelled, without waiting. A call that has ended keeps
+its answer. Raises an assertion violation for anything but a pending, and
+<code>&amp;http-group-error</code>, <code>wrong-thread</code>, from another thread. See
+<a href="groups.md">Groups</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>http-parallel</code></h3><a id="user-content-http-parallel" class="anchor" aria-label="Permalink: http-parallel" href="#http-parallel"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-parallel : Session (Listof (Pairof Symbol (Pairof String (Listof Any)))) Any ... -&gt; (Listof Response)"><pre lang="text" class="notranslate"><code>http-parallel : Session (Listof (Pairof Symbol (Pairof String (Listof Any)))) Any ... -&gt; (Listof Response)
+</code></pre></div>
+<p dir="auto"><code>(http-parallel SESSION SPECS KEY VALUE ...)</code> runs each spec,
+<code>(METHOD URL KEY VALUE ...)</code>, in one group, and answers the responses in
+the specs' order. Every spec is checked before any is sent. Its one key:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th align="left">Key</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>limit</code></td>
+<td align="left">as <code>call-with-request-group</code>'s</td>
+<td align="left"><code>#f</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">Raises an assertion violation
+inside a critical section, before anything else, for no session, and for
+specs that are not a list of lists, each of a method, a URL, then keys;
+<code>&amp;http-request-error</code> for <code>unknown-key</code>,
+<code>repeated-key</code>, <code>missing-value</code> and <code>not-a-limit</code>; each spec's refusal, as
+<code>http-request</code> and <code>curl-request-check</code> make it, and <code>stream-in-group</code> for
+a producer; and the first call to fail, once the rest have ended. See
+<a href="groups.md">Groups</a>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto"><code>(http-client)</code>: conditions</h2><a id="user-content-http-client-conditions" class="anchor" aria-label="Permalink: (http-client): conditions" href="#http-client-conditions"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">Each condition type below but <code>&amp;http-exchange</code> is an <code>&amp;http-error</code>, under
+<code>&amp;curl-error</code>. Its accessors raise an assertion violation for anything of
+another kind, naming it by its kind, never its value.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;http-error</code>, <code>http-error?</code></h3><a id="user-content-http-error-http-error" class="anchor" aria-label="Permalink: &amp;http-error, http-error?" href="#http-error-http-error"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-error? : Any -&gt; Boolean"><pre lang="text" class="notranslate"><code>http-error? : Any -&gt; Boolean
+</code></pre></div>
+<p dir="auto">The base of the high level's own conditions. Raises nothing. See
+<a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;http-request-error</code>, <code>http-request-error?</code>, <code>http-request-error-field</code>, <code>http-request-error-value</code>, <code>http-request-error-reason</code>, <code>http-request-error-reasons</code></h3><a id="user-content-http-request-error-http-request-error-http-request-error-field-http-request-error-value-http-request-error-reason-http-request-error-reasons" class="anchor" aria-label="Permalink: &amp;http-request-error, http-request-error?, http-request-error-field, http-request-error-value, http-request-error-reason, http-request-error-reasons" href="#http-request-error-http-request-error-http-request-error-field-http-request-error-value-http-request-error-reason-http-request-error-reasons"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-request-error? : Any -&gt; Boolean
+http-request-error-field : &amp;http-request-error -&gt; Symbol
+http-request-error-value : &amp;http-request-error -&gt; Any
+http-request-error-reason : &amp;http-request-error -&gt; Symbol
+http-request-error-reasons : (Listof Symbol)"><pre lang="text" class="notranslate"><code>http-request-error? : Any -&gt; Boolean
+http-request-error-field : &amp;http-request-error -&gt; Symbol
+http-request-error-value : &amp;http-request-error -&gt; Any
+http-request-error-reason : &amp;http-request-error -&gt; Symbol
+http-request-error-reasons : (Listof Symbol)
+</code></pre></div>
+<p dir="auto">A key or a value the high level checks, refused: which one, its value, and
+why. The reasons: <code>unknown-key</code>, <code>repeated-key</code>, <code>missing-value</code>,
+<code>body-and-form</code>, <code>multipart-beside-body</code>, <code>body-not-allowed</code>, <code>not-a-body</code>,
+<code>not-name-value-pairs</code>, <code>not-a-redirect-count</code>, <code>not-a-boolean</code>,
+<code>not-a-retry-policy</code>, <code>not-an-attempt-count</code>, <code>not-a-backoff</code>,
+<code>not-a-status-list</code>, <code>not-a-method-list</code>, <code>not-a-limit</code>, <code>stream-in-group</code>,
+<code>body-length-mismatch</code>. Raises an assertion violation, from an accessor,
+for anything of another kind. See <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;http-redirect-error</code>, <code>http-redirect-error?</code>, <code>http-redirect-error-reason</code>, <code>http-redirect-error-response</code>, <code>http-redirect-error-location</code>, <code>http-redirect-error-reasons</code></h3><a id="user-content-http-redirect-error-http-redirect-error-http-redirect-error-reason-http-redirect-error-response-http-redirect-error-location-http-redirect-error-reasons" class="anchor" aria-label="Permalink: &amp;http-redirect-error, http-redirect-error?, http-redirect-error-reason, http-redirect-error-response, http-redirect-error-location, http-redirect-error-reasons" href="#http-redirect-error-http-redirect-error-http-redirect-error-reason-http-redirect-error-response-http-redirect-error-location-http-redirect-error-reasons"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-redirect-error? : Any -&gt; Boolean
+http-redirect-error-reason : &amp;http-redirect-error -&gt; Symbol
+http-redirect-error-response : &amp;http-redirect-error -&gt; Response
+http-redirect-error-location : &amp;http-redirect-error -&gt; (U String #f)
+http-redirect-error-reasons : (Listof Symbol)"><pre lang="text" class="notranslate"><code>http-redirect-error? : Any -&gt; Boolean
+http-redirect-error-reason : &amp;http-redirect-error -&gt; Symbol
+http-redirect-error-response : &amp;http-redirect-error -&gt; Response
+http-redirect-error-location : &amp;http-redirect-error -&gt; (U String #f)
+http-redirect-error-reasons : (Listof Symbol)
+</code></pre></div>
+<p dir="auto">A redirect the rules do not follow: why, the response that asked for it,
+and its <code>Location</code>. The reasons: <code>too-many-redirects</code>, <code>bad-location</code>,
+<code>insecure-redirect</code>, <code>body-not-replayable</code>. Raises an assertion violation,
+from an accessor, for anything of another kind. See
+<a href="redirects-and-retries.md">Redirects and retries</a> and
+<a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;http-timeout</code>, <code>http-timeout?</code>, <code>http-timeout-timeout-ms</code></h3><a id="user-content-http-timeout-http-timeout-http-timeout-timeout-ms" class="anchor" aria-label="Permalink: &amp;http-timeout, http-timeout?, http-timeout-timeout-ms" href="#http-timeout-http-timeout-http-timeout-timeout-ms"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-timeout? : Any -&gt; Boolean
+http-timeout-timeout-ms : &amp;http-timeout -&gt; Positive-Integer"><pre lang="text" class="notranslate"><code>http-timeout? : Any -&gt; Boolean
+http-timeout-timeout-ms : &amp;http-timeout -&gt; Positive-Integer
+</code></pre></div>
+<p dir="auto">A call's <code>timeout-ms</code> passed, and which it was. Raises an assertion
+violation, from an accessor, for anything of another kind. See
+<a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;http-group-error</code>, <code>http-group-error?</code>, <code>http-group-error-reason</code>, <code>http-group-error-reasons</code></h3><a id="user-content-http-group-error-http-group-error-http-group-error-reason-http-group-error-reasons" class="anchor" aria-label="Permalink: &amp;http-group-error, http-group-error?, http-group-error-reason, http-group-error-reasons" href="#http-group-error-http-group-error-http-group-error-reason-http-group-error-reasons"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-group-error? : Any -&gt; Boolean
+http-group-error-reason : &amp;http-group-error -&gt; Symbol
+http-group-error-reasons : (Listof Symbol)"><pre lang="text" class="notranslate"><code>http-group-error? : Any -&gt; Boolean
+http-group-error-reason : &amp;http-group-error -&gt; Symbol
+http-group-error-reasons : (Listof Symbol)
+</code></pre></div>
+<p dir="auto">A request group's refusal, or the await of a call it cancelled. The
+reasons: <code>wrong-thread</code>, <code>closed</code>, <code>cancelled</code>. Raises an assertion
+violation, from an accessor, for anything of another kind. See
+<a href="groups.md">Groups</a> and <a href="errors.md">Errors</a>.</p>
+<div class="markdown-heading" dir="auto"><h3 class="heading-element" dir="auto"><code>&amp;http-exchange</code>, <code>http-exchange?</code>, <code>http-exchange-method</code>, <code>http-exchange-url</code>, <code>http-exchange-history</code>, <code>http-exchange-transfers</code></h3><a id="user-content-http-exchange-http-exchange-http-exchange-method-http-exchange-url-http-exchange-history-http-exchange-transfers" class="anchor" aria-label="Permalink: &amp;http-exchange, http-exchange?, http-exchange-method, http-exchange-url, http-exchange-history, http-exchange-transfers" href="#http-exchange-http-exchange-http-exchange-method-http-exchange-url-http-exchange-history-http-exchange-transfers"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="http-exchange? : Any -&gt; Boolean
+http-exchange-method : &amp;http-exchange -&gt; Any
+http-exchange-url : &amp;http-exchange -&gt; Any
+http-exchange-history : &amp;http-exchange -&gt; (Listof Response)
+http-exchange-transfers : &amp;http-exchange -&gt; Natural"><pre lang="text" class="notranslate"><code>http-exchange? : Any -&gt; Boolean
+http-exchange-method : &amp;http-exchange -&gt; Any
+http-exchange-url : &amp;http-exchange -&gt; Any
+http-exchange-history : &amp;http-exchange -&gt; (Listof Response)
+http-exchange-transfers : &amp;http-exchange -&gt; Natural
+</code></pre></div>
+<p dir="auto">The context every condition a call raises carries, under <code>&amp;condition</code>: the
+method and URL as the caller gave them, the responses that redirected,
+oldest first, and how many transfers the engine took for the call. Raises
+an assertion violation, from an accessor, for anything of another kind. See
+<a href="errors.md">Errors</a>.</p>
+</article></div>

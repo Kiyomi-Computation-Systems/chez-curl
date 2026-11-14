@@ -1,0 +1,32 @@
+# 2026-11-14, docs/site, uncommitted tree: the gate in the Guix container, then check-guix from the host
+## make test
+check-suites: every suite ends with (exit (suite-exit-status runner)), and every site suite with (exit (site-exit-status runner)) (49 checked)
+check-floors: README.org and .github/workflows (ci.yml, pages.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+test: ran 47, passed 47, failed 0, hung 0
+## make check-help
+## make check-test-fails
+check-test-fails: make test failed, as it must, in all 11 cases
+## make check-floors
+check-floors: README.org and .github/workflows (ci.yml, pages.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+## make check-guix
+ok   T7a CHEZ_CMARK_GFM_LIBS is the profile's two cmark-gfm libraries
+ok   T7f no cmark-gfm: exit 2
+ok   T7f no cmark-gfm: names /tmp/tmp.ESdSPGUfis/fake-profile/lib/libcmark-gfm.so
+ok   T7f no cmark-gfm: runs nothing
+ok   T7g no cmark-gfm extensions: exit 2
+ok   T7g no cmark-gfm extensions: names /tmp/tmp.ESdSPGUfis/fake-profile/lib/libcmark-gfm-extensions.so
+ok   T7g no cmark-gfm extensions: runs nothing
+74 passed, 0 failed
+check-guix: ok tool-path[-lc] (tar: /gnu/store/yrihc5d0x0pr4pvzznxn1xf195a95kpy-profile/bin/tar)
+check-guix: ok tool-path[-lc] (xz: /gnu/store/yrihc5d0x0pr4pvzznxn1xf195a95kpy-profile/bin/xz)
+check-guix: ok cmark-gfm-variable (/gnu/store/yrihc5d0x0pr4pvzznxn1xf195a95kpy-profile/lib/libcmark-gfm.so:/gnu/store/yrihc5d0x0pr4pvzznxn1xf195a95kpy-profile/lib/libcmark-gfm-extensions.so)
+check-guix: ok cmark-gfm-loads
+test: ran 47, passed 47, failed 0, hung 0
+check-guix: ALL CHECKS PASSED
+## the self-test with CHEZ_CMARK_GFM_LIBS naming no file (exit 1)
+check-guix: FAILED cmark-gfm-variable: CHEZ_CMARK_GFM_LIBS is '/nonesuch/libcmark-gfm.so:/nonesuch/libcmark-gfm-extensions.so', expected /gnu/store/yrihc5d0x0pr4pvzznxn1xf195a95kpy-profile/lib/libcmark-gfm.so:/gnu/store/yrihc5d0x0pr4pvzznxn1xf195a95kpy-profile/lib/libcmark-gfm-extensions.so
+check-guix: FAILED cmark-gfm-loads: Chez could not load '/nonesuch/libcmark-gfm.so' then '/nonesuch/libcmark-gfm-extensions.so'
+## earlier the same day, from build/gate-*.log
+check-clean: ok: make clean removes build/, follows no link out of it, changes nothing else, passes again, and make deps works after it
+fetch-akku-lock: all checks passed
+check-memory-gate: the memory gate failed, as it must, its suppression held, and its two shards run every suite once, in all 45 cases

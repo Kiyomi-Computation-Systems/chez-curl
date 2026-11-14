@@ -128,6 +128,7 @@ MEMORY_SUITES_2 := \
   tests/test-proxy.sps \
   tests/test-reference.sps \
   tests/test-require-threaded.sps \
+  tests/test-site-testing.sps \
   tests/test-stream-call.sps \
   tests/test-stream.sps \
   tests/test-transfer-tls.sps \
@@ -164,7 +165,7 @@ override MEMORY_SUPPRESSION_FILE := tests/guix-glibc-locpath.supp
 
 # One physical line: check-help reads it with awk, and fails if it ends in
 # a backslash.
-.PHONY: help check-help check-guix check-guix-inside deps check-pins build dev check-dev test check-suites check-seam check-floors check-nothreads check-test-fails check-variadic test-memory check-memory-gate clean check-clean
+.PHONY: help check-help check-guix check-guix-inside deps check-pins build dev check-dev test check-suites check-seam check-floors check-nothreads check-test-fails check-variadic test-memory check-memory-gate site-deps site check-site check-site-deps clean check-clean
 
 .DEFAULT_GOAL := help
 
@@ -400,14 +401,16 @@ test: deps check-help check-suites check-seam check-floors ## Run every tests/te
 	echo "test: ran $$((passed + failed + hung)), passed $$passed, failed $$failed, hung $$hung"; \
 	[ $$failed -eq 0 ] && [ $$hung -eq 0 ]
 
-# Reads every suite as data and fails unless each one's last datum is the
-# shared exit form, (curl-testing)'s suite-exit-form, and no datum before it
-# holds an exit form but (exit 1), naming each suite that breaks either rule
-# (tests/check-suites.sps). With no suite it passes: make test fails that case
-# itself.
-check-suites: deps ## Fail unless every tests/test-*.sps ends with the shared exit form
+# Reads every suite as data, the docs site's among them, and fails unless
+# each one's last datum is its exit form, and no datum before it holds an
+# exit form but (exit 1), naming each suite that breaks either rule
+# (tests/check-suites.sps). A tests/test-*.sps ends with the shared exit
+# form, (curl-testing)'s suite-exit-form, and a tests/site-*.sps with
+# (site-testing)'s site-exit-form. With no suite it passes: make test fails
+# that case itself.
+check-suites: deps ## Fail unless every tests/test-*.sps ends with the shared exit form, and every tests/site-*.sps with the site's
 	@scripts/require-tools "$(GOAL)" $(CHEZ)
-	@$(CHEZ) --libdirs $(LIBDIRS) --program tests/check-suites.sps $(SUITES)
+	@$(CHEZ) --libdirs $(LIBDIRS) --program tests/check-suites.sps $(SUITES) $(SITE_SUITES)
 
 # Reads every src/**/*.sls as data, evaluating nothing, and fails, naming the
 # file and the import, when a (curl ...) library imports an (http-client ...)
@@ -750,6 +753,71 @@ test-memory: deps ## Run every MEMORY_SUITES suite, or MEMORY_SHARD=1's or 2's, 
 check-memory-gate: ## Plant a heap overrun and a leak; make test-memory must fail on each, by name, and its one suppression must hold
 	@scripts/require-tools "$(GOAL)" $(firstword $(VALGRIND)) $(TIMEOUT) $(CHEZ)
 	@MAKE='$(MAKE)' TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' VALGRIND='$(VALGRIND)' LIBDIRS='$(LIBDIRS)' sh tests/check-memory-gate.sh
+
+# --- the docs site ------------------------------------------------------------
+# docs/*.md rendered to build/site/ through chez-cmark-gfm, as circuit and
+# chez-http-server render theirs (ADR-0042). Akku.lock pins chez-cmark-gfm for
+# the site alone: nothing under src/, examples/ or tests/test-*.sps imports
+# it, so make test needs none of this. The site needs the system cmark-gfm
+# library (`cmark-gfm` from Homebrew or apt). In the container,
+# scripts/guix-env-enter hands chez-cmark-gfm the profile's by absolute path
+# (CHEZ_CMARK_GFM_LIBS).
+#
+# chez-cmark-gfm comes from an `akku install` tree when there is one, and
+# otherwise from the archive Akku.lock pins, downloaded and checked against
+# the lock's sha256 by scripts/fetch-akku-lock. Run make site-deps once on
+# the host, where the network is. After that it needs none, and the container
+# finds the tree under build/, held to the archive it keeps there.
+SITE_CMARK   := $(if $(wildcard .akku/lib/cmark/gfm.sls),.akku/lib,build/akku/chez-cmark-gfm/src)
+SITE_LIBDIRS := .:$(SITE_CMARK)
+SITE_REF     ?= main
+
+# The generator's suites, every tests/site-*.sps: SRFI-64 under
+# (site-testing), each ending with its site-exit-form (check-suites), and each
+# run by check-site. They run on apt's Chez in CI, below chez-curl's floor,
+# so src/ is on no site suite's path, and one that imports a library of
+# chez-curl's fails at import, here too. site-unit's path has no
+# chez-cmark-gfm either, so a pure library of the site's that starts
+# importing (cmark gfm) fails there, at import.
+SITE_SUITES := $(sort $(wildcard tests/site-*.sps))
+
+site-deps: ## (host, once) Get chez-cmark-gfm as Akku.lock pins it: an `akku install` tree, else the locked archive
+	@if [ -f .akku/lib/cmark/gfm.sls ]; then \
+	  echo "site-deps: using .akku/lib (akku install)"; \
+	else \
+	  AKKU_DEST=build/akku sh scripts/fetch-akku-lock chez-cmark-gfm; \
+	fi
+
+# Renders with no suite's libraries on its path: the generator imports
+# (rnrs), a few of Chez's own bindings, (site ...) and (cmark gfm), so any
+# Chez runs it, CI's site job and the Pages workflow on apt's, which is below
+# chez-curl's floor.
+site: site-deps ## Render docs/ into build/site/ (open build/site/index.html); SITE_REF=<tag> pins links to repository files
+	@scripts/require-tools "$(GOAL)" $(CHEZ)
+	@mkdir -p build/site
+	@SITE_REF="$(SITE_REF)" SITE_OUT=build/site \
+	  $(CHEZ) --libdirs $(SITE_LIBDIRS) --program build-site.sps
+	@cp site/style.css build/site/style.css
+	@echo "site: build/site ready (open build/site/index.html)"
+
+# The generator's own suites, each in turn, stopping at the first that
+# fails, then the real site, rendered in memory and checked by
+# tests/check-site.sps, which exits 1 naming the first invariant that fails,
+# and prints one line only when every one held.
+check-site: site-deps deps ## Test the site generator, then render docs/ in memory: nav, links, anchors, no .md leak, no <pre> reflow
+	@scripts/require-tools "$(GOAL)" $(CHEZ)
+	@if [ -z "$(SITE_SUITES)" ]; then echo "check-site: no suites: nothing matches tests/site-*.sps" >&2; exit 1; fi; \
+	for t in $(SITE_SUITES); do \
+	  case $$t in \
+	    tests/site-unit.sps) libs=".:tests:$(SRFI_LIBS)" ;; \
+	    *) libs="$(SITE_LIBDIRS):tests:$(SRFI_LIBS)" ;; \
+	  esac; \
+	  $(CHEZ) --libdirs "$$libs" --program $$t || exit 1; \
+	done
+	@SITE_REF="$(SITE_REF)" $(CHEZ) --libdirs $(SITE_LIBDIRS) --program tests/check-site.sps
+
+check-site-deps: ## Test scripts/fetch-akku-lock offline, against a local archive and lock of its own
+	@sh tests/fetch-akku-lock.sh
 
 # Removes build/, and nothing else: make deps' links (the links, never what
 # they name, since rm does not follow a link), the memory gate's logs and

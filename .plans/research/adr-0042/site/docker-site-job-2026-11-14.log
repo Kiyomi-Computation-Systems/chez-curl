@@ -1,0 +1,58 @@
++ image ubuntu:24.04; apt-get install chezscheme cmark-gfm xz-utils make curl ca-certificates
+chez: 9.5.8
+Version: 0.29.0.gfm.6-6build1
++ make check-site-deps
+PASS: the pinned archive is unpacked and its sha256 recorded
+PASS: a tree whose archive is gone from dl/ has it downloaded again, and is held to it
+PASS: a tree whose archive under dl/ is damaged has it downloaded again, and is held to it
+PASS: offline, a tree whose archive is gone from dl/ fails, naming the download, and is left as it was
+PASS: an archive whose sha256 differs from the lock is refused, and nothing is unpacked
+PASS: a package missing from the lock fails by name
+PASS: a failed download fails by name and unpacks nothing
+PASS: a re-pinned archive replaces the old tree whole
+PASS: an archive tar cannot read is refused, and the tree from before stays
+PASS: without xz the run fails, and the tree from before stays
+PASS: an archive that unpacks to nothing is refused
+PASS: a tree its archive under dl/ holds is left alone, offline
+PASS: a file deleted from the tree is put back from its archive, offline
+PASS: a file changed in the tree is put back from its archive, offline
+PASS: a file added to the tree is removed, the tree unpacked again from its archive, offline
+PASS: --check passes a tree that is its archive, and changes nothing
+PASS: --check fails on a file changed in the tree, naming it, and changes nothing
+PASS: --check fails on a file deleted from the tree, naming it, and changes nothing
+PASS: --check fails on a file added to the tree, naming it, and changes nothing
+PASS: --check fails on a tree that records another sha256, and changes nothing
+PASS: --check fails on a tree that records no sha256, and changes nothing
+PASS: --check fails on a tree that isn't there, and changes nothing
+PASS: --check fails on an archive gone from dl/, downloading nothing
+PASS: --check fails on an archive damaged in dl/, downloading nothing
+PASS: --check fails on an archive tar can't unpack, and changes nothing
+PASS: --check on an AKKU_DEST that isn't there fails, and makes nothing
+PASS: --check goes on past a package that fails, and fails
+PASS: --check-record passes a tree that records the lock's sha256, with no tar, xz or diff, and changes nothing
+PASS: --check-record fails on a tree that records another sha256, and changes nothing
+PASS: --check-record fails on a tree that isn't there, and changes nothing
+fetch-akku-lock: all checks passed
++ make site-deps
+fetch-akku-lock: chez-cmark-gfm unpacked to build/akku/chez-cmark-gfm
++ make check-site CHEZ=chezscheme
+fetch-akku-lock: chez-cmark-gfm is up to date (build/akku/chez-cmark-gfm)
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+%%%% Starting test site-render-unit
+# of expected passes      19
+%%%% Starting test site-unit
+# of expected passes      83
+check-site: nav, anchors, no .md leak, every link written, repository links exist, nav is the home page's list, no <pre> reflow -- all green
++ make site CHEZ=chezscheme
+fetch-akku-lock: chez-cmark-gfm is up to date (build/akku/chez-cmark-gfm)
+site: wrote 16 pages to build/site
+site: build/site ready (open build/site/index.html)
++ make site CHEZ=chezscheme SITE_REF=v0.1.2
+fetch-akku-lock: chez-cmark-gfm is up to date (build/akku/chez-cmark-gfm)
+site: wrote 16 pages to build/site
+site: build/site ready (open build/site/index.html)
++ set +x
+files in build/site: 17
+repository links by ref:
+     16 href="https://github.com/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.2/

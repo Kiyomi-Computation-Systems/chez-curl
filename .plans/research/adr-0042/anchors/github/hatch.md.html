@@ -1,0 +1,122 @@
+<div id="file" class="md" data-path="docs/hatch.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">The hatch: <code>(curl unsupported)</code></h1><a id="user-content-the-hatch-curl-unsupported" class="anchor" aria-label="Permalink: The hatch: (curl unsupported)" href="#the-hatch-curl-unsupported"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>(curl unsupported)</code> attaches a libcurl option to a request by its name, for
+anything the request's own keys do not cover:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(import (rnrs) (curl) (curl unsupported))
+
+(curl-request-with-options
+ (make-curl-request &quot;https://example.com/&quot;)
+ '((&quot;LOW_SPEED_LIMIT&quot; . 1000) (&quot;LOW_SPEED_TIME&quot; . 30)))"><pre>(import (rnrs) (curl) (curl unsupported))
+
+(curl-request-with-options
+ (make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span>)
+ <span class="pl-s">'</span>((<span class="pl-s"><span class="pl-pds">"</span>LOW_SPEED_LIMIT<span class="pl-pds">"</span></span> . <span class="pl-c1">1000</span>) (<span class="pl-s"><span class="pl-pds">"</span>LOW_SPEED_TIME<span class="pl-pds">"</span></span> . <span class="pl-c1">30</span>)))</pre></div>
+<p dir="auto">It answers a new request, with the options after any it carried.
+<code>curl-request-with</code> keeps them. The high level takes no hatch options.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">What it is</h2><a id="user-content-what-it-is" class="anchor" aria-label="Permalink: What it is" href="#what-it-is"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><strong>It is unsupported.</strong> No promise it stays the same. An option is set last,
+after every option chez-curl sets, so one can change what chez-curl tests.</li>
+<li><strong>A name is libcurl's,</strong> without <code>CURLOPT_</code>, in any case.</li>
+<li><strong>A value is plain data,</strong> as the option's type says: an exact integer for a
+long, an enumerated or an <code>off_t</code> option, a string, a list of strings, or a
+bytevector for a blob, which libcurl copies. A value of the wrong shape or
+range is an assertion violation.</li>
+<li><strong>It is checked when you attach it,</strong> and the request keeps its own copy, so
+changing your string later changes nothing. libcurl still judges the value
+as the transfer is set up: one it refuses fails the transfer,
+<code>setopt-failed</code>, naming the option.</li>
+<li><strong><code>VERBOSE</code> and <code>NOPROGRESS</code> write to your program's stderr.</strong> <code>VERBOSE</code>
+writes every header it sends, a password in one too.</li>
+<li><strong>A path is opened as given,</strong> unchecked: <code>/dev/stdin</code> names your program's
+stdin.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">What it refuses</h2><a id="user-content-what-it-refuses" class="anchor" aria-label="Permalink: What it refuses" href="#what-it-refuses"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A refusal is <code>&amp;curl-request-error</code>, field <code>options</code>, naming the option:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Reason</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unknown-option</code></td>
+<td>a name the loaded libcurl does not know</td>
+</tr>
+<tr>
+<td><code>unsupported-type</code></td>
+<td>an option that takes a pointer, an object or a callback</td>
+</tr>
+<tr>
+<td><code>embedded-nul</code>, <code>line-break</code></td>
+<td>a string, or a string of a list, holding NUL, or CR or LF</td>
+</tr>
+<tr>
+<td><code>repeated-option</code></td>
+<td>an option the request carries already, by any of its names</td>
+</tr>
+<tr>
+<td><code>owned-option</code></td>
+<td>an option chez-curl owns, compared by its id, so an alias too</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">chez-curl owns:</p>
+<ul dir="auto">
+<li><strong>every option it sets,</strong> for every transfer or for a request's key: the
+URL, the method, the body, the headers, the timeouts, the TLS checks, the
+proxy, the credentials, the cookie jar, the HTTP version, the callbacks,
+and <code>MAXREDIRS</code>, pinned at 30;</li>
+<li><strong>each one's twin,</strong> an option that does the same job another way:
+<code>TIMEOUT</code>, <code>MAXFILESIZE</code>, <code>POSTFIELDS</code>, <code>PORT</code>, <code>USERPWD</code>, <code>NETRC</code>, <code>HSTS</code>,
+<code>PRE_PROXY</code>, <code>PROXYHEADER</code>, every <code>PROXY_</code> TLS option, and the rest;</li>
+<li><strong>two that would undo its own work:</strong> <code>MIME_OPTIONS</code>, which changes how a
+multipart part's name and filename are escaped, and
+<code>SUPPRESS_CONNECT_HEADERS</code>, which hides a proxy's <code>CONNECT</code> answer from the
+cap on response headers;</li>
+<li><strong>a few that reach past your request:</strong> <code>COOKIEFILE</code>, <code>COOKIEJAR</code> and
+<code>RESUME_FROM</code>, which can read stdin or write stdout; <code>COOKIELIST</code>, which
+reaches a jar every holder shares; <code>RESOLVE</code>, which steers later requests;
+<code>DOH_URL</code>, which skips the <code>proxy</code> key; <code>SSLENGINE_DEFAULT</code>, which sets
+OpenSSL's default for the whole process; and <code>CONNECT_ONLY</code>, which sends no
+request.</li>
+</ul>
+<p dir="auto">By topic, it refuses, besides:</p>
+<ul dir="auto">
+<li><strong>credentials:</strong> <code>HTTPAUTH</code>, <code>USERNAME</code>, <code>PASSWORD</code>, <code>XOAUTH2_BEARER</code>,
+<code>AWS_SIGV4</code>, <code>USERPWD</code> and <code>NETRC</code>;</li>
+<li><strong>proxies:</strong> <code>PROXY</code>, <code>NOPROXY</code>, <code>PROXYAUTH</code>, <code>PROXYUSERPWD</code>,
+<code>PROXYUSERNAME</code>, <code>PROXYPASSWORD</code>, <code>HTTPPROXYTUNNEL</code>, <code>HAPROXYPROTOCOL</code>,
+<code>HAPROXY_CLIENT_IP</code>, <code>FORBID_REUSE</code>, <code>PRE_PROXY</code>, <code>PROXYPORT</code>, <code>PROXYTYPE</code>,
+<code>PROXYHEADER</code>, <code>HEADEROPT</code>, <code>SUPPRESS_CONNECT_HEADERS</code> and every <code>PROXY_</code>
+TLS option;</li>
+<li><strong>cookies:</strong> <code>SHARE</code>, <code>COOKIE</code>, <code>COOKIEFILE</code>, <code>COOKIEJAR</code>, <code>COOKIELIST</code> and
+<code>COOKIESESSION</code>: <code>COOKIELIST</code> would clear or fill the jar of every transfer
+that holds it;</li>
+<li><strong>the HTTP version:</strong> <code>HTTP_VERSION</code>, <code>SSL_ENABLE_ALPN</code>, <code>ALTSVC</code> and
+<code>ALTSVC_CTRL</code>, which can change the version or the server a request
+reaches;</li>
+<li><strong>the response:</strong> <code>HEADERFUNCTION</code>, <code>HEADERDATA</code>, <code>WRITEFUNCTION</code>,
+<code>HEADER</code> and the other callbacks.</li>
+</ul>
+<p dir="auto">On 7.85.0, which does not know <code>HAPROXY_CLIENT_IP</code> or <code>QUICK_EXIT</code>, those
+are refused <code>unknown-option</code>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">What stays the hatch's</h2><a id="user-content-what-stays-the-hatchs" class="anchor" aria-label="Permalink: What stays the hatch's" href="#what-stays-the-hatchs"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">These were measured, and stay attachable:</p>
+<ul dir="auto">
+<li><code>FAILONERROR</code>, which makes a wrong password's 401 a failure, code 22;
+<code>AUTOREFERER</code>, <code>KEEP_SENDING_ON_ERROR</code>, <code>UNRESTRICTED_AUTH</code>,
+<code>DISALLOW_USERNAME_IN_URL</code>, <code>LOGIN_OPTIONS</code>, <code>SASL_AUTHZID</code>, <code>SASL_IR</code>,
+<code>SERVICE_NAME</code> and <code>NETRC_FILE</code>, each changing nothing the <code>credentials</code> key
+sends;</li>
+<li><code>PIPEWAIT</code>, <code>HTTP09_ALLOWED</code> and <code>HTTP200ALIASES</code>, whose alias status line
+the cap counts as a header line;</li>
+<li><code>HTTP_TRANSFER_DECODING</code>: at 0 a chunked body's trailers stay in the body,
+where <code>body-limit</code> bounds them, and none is kept as a header;</li>
+<li><code>CONNECT_TO</code>, which moves the host and port a request reaches, a proxy's
+<code>CONNECT</code> among them; a jar's cookies still follow the URL's host;</li>
+<li><code>HSTS_CTRL</code>, <code>PROXY_SERVICE_NAME</code>, <code>SOCKS5_AUTH</code> and <code>EXPECT_100_TIMEOUT_MS</code>.</li>
+</ul>
+<p dir="auto">A blob option's answer can <a href="libcurl-versions.md#the-hatch">vary by TLS library</a>.</p>
+</article></div>

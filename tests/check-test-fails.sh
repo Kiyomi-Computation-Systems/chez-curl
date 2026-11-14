@@ -246,8 +246,11 @@ fail=0
 ok()  { pass=$((pass + 1)); printf 'check-test-fails: ok %s\n' "$1"; }
 bad() { fail=$((fail + 1)); printf 'check-test-fails: FAILED %s\n' "$1" >&2; }
 
+# checked N: check-suites' line for a copy holding N tests/test-*.sps, and
+# the tree's two docs site suites, tests/site-unit.sps and
+# tests/site-render-unit.sps, which the Makefile always names to it.
 checked() {
-  printf 'check-suites: every suite ends with (exit (suite-exit-status runner)) (%d checked)\n' "$1"
+  printf 'check-suites: every suite ends with (exit (suite-exit-status runner)), and every site suite with (exit (site-exit-status runner)) (%d checked)\n' "$(($1 + 2))"
 }
 
 # expected PLANT-LINE FAILED HUNG: the lines a run must print with a plant

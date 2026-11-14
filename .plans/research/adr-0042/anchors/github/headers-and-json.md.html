@@ -1,0 +1,275 @@
+<div id="file" class="md" data-path="docs/headers-and-json.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Headers and JSON</h1><a id="user-content-headers-and-json" class="anchor" aria-label="Permalink: Headers and JSON" href="#headers-and-json"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A header is a <code>(NAME . VALUE)</code> pair of strings. This page says how to send
+them, what is refused, how to read a response's, and then how to call a JSON
+API.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Setting headers</h2><a id="user-content-setting-headers" class="anchor" aria-label="Permalink: Setting headers" href="#setting-headers"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>headers</code> is a list of <code>(NAME . VALUE)</code> strings. A session's go with every
+call it makes; a call's go with that call; the low level's
+<code>make-curl-request</code> takes the same key, for that request alone.</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(call-with-http-session 'headers '((&quot;Accept&quot; . &quot;application/json&quot;))
+  (lambda (session)
+    (http-get session &quot;https://example.com/items&quot; 'headers '((&quot;X-Request-Id&quot; . &quot;42&quot;)))))"><pre>(call-with-http-session <span class="pl-c1">'headers</span> <span class="pl-s">'</span>((<span class="pl-s"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span> . <span class="pl-s"><span class="pl-pds">"</span>application/json<span class="pl-pds">"</span></span>))
+  (<span class="pl-k">lambda</span> (<span class="pl-v">session</span>)
+    (http-get session <span class="pl-s"><span class="pl-pds">"</span>https://example.com/items<span class="pl-pds">"</span></span> <span class="pl-c1">'headers</span> <span class="pl-s">'</span>((<span class="pl-s"><span class="pl-pds">"</span>X-Request-Id<span class="pl-pds">"</span></span> . <span class="pl-s"><span class="pl-pds">"</span>42<span class="pl-pds">"</span></span>)))))</pre></div>
+<ul dir="auto">
+<li><strong>A call's header replaces every session header of its name,</strong> in any A to
+Z case. The session's others go first, in their order, then the call's.
+Two keys alone drop a session's header from a call: <code>user-agent</code>, below,
+drops its <code>User-Agent</code>, and <code>multipart</code> its <code>Content-Type</code>. Any other a
+call can send empty.</li>
+<li><strong>Two headers of one name</strong> are both sent, in order. A second <code>Host</code> is
+refused.</li>
+<li><strong><code>user-agent</code></strong> is a key of its own, which sets libcurl's <code>User-Agent</code>. A
+<code>User-Agent</code> header beside it, in one request, is refused. A call's
+<code>User-Agent</code> header replaces a session's <code>user-agent</code>. A call's
+<code>user-agent</code> replaces a session's, and drops a session's <code>User-Agent</code>
+header, so a call's <code>user-agent</code> of <code>#f</code> sends none.</li>
+<li><strong>libcurl adds <code>Host</code> and <code>Accept: */*</code></strong> to every request, <code>Host</code> as
+<code>:authority</code> over HTTP/2, and frames a body: its <code>Content-Length</code>, or for
+a <a href="streams.md">stream</a> with no <code>body-length</code>, <code>Transfer-Encoding: chunked</code>
+over HTTP/1.1. It sends no <code>User-Agent</code> unless you give one. A header you
+name replaces libcurl's of that name: your <code>Host</code>, your <code>Accept</code>.</li>
+<li><strong>A body has no <code>Content-Type</code> unless you name one.</strong> chez-curl takes away
+the form type libcurl would add. A <code>form</code> sends
+<code>application/x-www-form-urlencoded</code> unless your headers, a session's among
+them, name a <code>Content-Type</code>, and <code>multipart</code> writes its own. A session's
+<code>Content-Type</code> goes with every call, a <code>GET</code>'s and a form's too.</li>
+<li><strong>An empty value is sent empty:</strong> <code>("Accept" . "")</code> sends <code>Accept:</code> with
+nothing after it, and libcurl's <code>*/*</code> goes.</li>
+<li><strong>A header libcurl adds cannot be dropped:</strong> name it to replace it, or
+send it empty. But libcurl's framing, <code>Content-Length</code> and
+<code>Transfer-Encoding</code>, cannot be named at all (<code>framing-header</code>, below).
+chez-curl takes away two itself: a body's form type, and the
+<code>Expect: 100-continue</code> libcurl adds to a body past 1 MiB
+(<a href="high-level.md#bodies-forms-and-params">The high level</a>).</li>
+<li><strong>A redirect keeps your headers,</strong> but for two cases. To another origin it
+drops <code>Authorization</code>, <code>Cookie</code> and, when the host changes, <code>Host</code>. And a
+redirect that sends the next request as a <code>get</code> with no body, a 303 of any
+method but <code>head</code>, or a 301 or 302 of a <code>post</code>, drops the body's headers
+with it: <code>Content-*</code>, a JSON <code>Content-Type</code> among them, <code>Digest</code>,
+<code>Last-Modified</code> and <code>Expect</code>
+(<a href="redirects-and-retries.md#redirects">Redirects and retries</a>).</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">What is refused</h2><a id="user-content-what-is-refused" class="anchor" aria-label="Permalink: What is refused" href="#what-is-refused"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A header is checked as you make the request, or the session or the call,
+before anything is sent. A refusal raises <code>&amp;curl-request-error</code>
+(<a href="errors.md">Errors</a>): its <code>curl-request-error-field</code> is <code>header-name</code>,
+<code>header-value</code> or <code>user-agent</code>, and for a header its
+<code>curl-request-error-value</code> is the header's name, never its value, which can
+be a secret.</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Reason</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not-a-token</code></td>
+<td>a name that is empty, or holds a char no HTTP token holds: a space, a <code>:</code>, a char past ASCII</td>
+</tr>
+<tr>
+<td><code>embedded-nul</code></td>
+<td>a value holding U+0000, where C would end it</td>
+</tr>
+<tr>
+<td><code>line-break</code></td>
+<td>a value holding CR or LF, which would end its line</td>
+</tr>
+<tr>
+<td><code>not-latin-1</code></td>
+<td>a value holding a char above U+00FF, which has no byte</td>
+</tr>
+<tr>
+<td><code>surrounding-whitespace</code></td>
+<td>a value that starts or ends with a space, a tab, VT or FF, which libcurl would trim; one inside is the value's</td>
+</tr>
+<tr>
+<td><code>duplicates-field</code></td>
+<td>a <code>User-Agent</code> header beside <code>user-agent</code>, or a second <code>Host</code></td>
+</tr>
+<tr>
+<td><code>framing-header</code></td>
+<td>a <code>Content-Length</code> or <code>Transfer-Encoding</code>: libcurl frames the body itself</td>
+</tr>
+<tr>
+<td><code>proxy-authorization-header</code></td>
+<td>a <code>Proxy-Authorization</code>: a proxy's credentials go in its URL (<a href="auth-and-proxies.md">Auth and proxies</a>)</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">A name is matched in any case. <code>user-agent</code> takes the value rules, and is a
+non-empty string or <code>#f</code>: anything else, <code>""</code> among it, is an assertion
+violation, and so are headers that are no list of string pairs. Other keys
+refuse a header beside them: <code>credentials</code> an <code>Authorization</code>, a cookie jar a
+<code>Cookie</code> or a <code>Host</code>, <code>multipart</code> a call's <code>Content-Type</code>, and
+<code>stream-buffer</code>, a streamed response's, an <code>Expect</code> that holds
+<code>100-continue</code> (<a href="errors.md">Errors</a> lists each). Every high-level stream
+sets <code>stream-buffer</code>: <code>call-with-response-port</code>'s, and a call whose body is a
+producer. The low level's <code>body 'stream</code> with no <code>stream-buffer</code> takes such
+an <code>Expect</code>.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Reading response headers</h2><a id="user-content-reading-response-headers" class="anchor" aria-label="Permalink: Reading response headers" href="#reading-response-headers"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li>
+<p dir="auto"><strong><code>http-response-headers</code></strong> is every header of the response, as
+<code>(NAME . VALUE)</code> strings, in libcurl's order. A redirect's are its own, in
+<code>http-response-history</code>.</p>
+</li>
+<li>
+<p dir="auto"><strong><code>http-response-header RESPONSE NAME</code></strong> is the first header of that name,
+in any A to Z case, or <code>#f</code>. For a name that comes more than once, such as
+<code>Set-Cookie</code>, read the list.</p>
+</li>
+<li>
+<p dir="auto"><strong>Each name and value is Latin-1:</strong> one char per byte, so no byte is lost.
+A value the server wrote in UTF-8 comes as one char per byte; to read it
+as UTF-8:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(utf8-&gt;string (string-&gt;bytevector value (make-transcoder (latin-1-codec))))"><pre>(utf8-&gt;string (string-&gt;bytevector value (make-transcoder (latin-1-codec))))</pre></div>
+</li>
+<li>
+<p dir="auto"><strong>Every transfer caps its response headers</strong> at 1,000 lines or 102,400
+bytes, else it raises <code>&amp;curl-too-large</code>, reason <code>header-limit</code>
+(<a href="high-level.md#timeouts-and-limits">The high level</a>).</p>
+</li>
+<li>
+<p dir="auto">At the low level, <code>curl-response-headers</code> is the same list.</p>
+</li>
+<li>
+<p dir="auto">On libcurl 8.5.0 an empty value comes as a lone CR, in both lists
+(<a href="libcurl-versions.md#responses-and-requests">What varies by libcurl</a>).</p>
+</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">A JSON API</h2><a id="user-content-a-json-api" class="anchor" aria-label="Permalink: A JSON API" href="#a-json-api"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><strong>chez-curl has no JSON of its own.</strong> A body is bytes, and what they hold is
+yours. To send and read JSON, use a JSON library: the example uses
+<a href="https://github.com/Kiyomi-Computation-Systems/jsonparse">jsonparse</a>, an
+R6RS one, through <code>(jsonparse easy)</code>.</p>
+<p dir="auto"><strong>Getting jsonparse:</strong> it is a submodule of this repository, for the example
+alone, with byte-machine, which its parser imports, a submodule of its own.
+Fetch both once, on a clone, and link them into <code>build/scheme-libs</code>; then
+start the test server, in a terminal of its own, and run the example against
+the address after <code>"http":</code> in the line it prints
+(<a href="README.md#the-examples">the examples</a>):</p>
+<div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="git submodule update --init --recursive
+make deps
+node tests/origin.mjs        # in its own terminal; prints the http address
+scheme --libdirs src:build/scheme-libs --program examples/json-api.sps http://127.0.0.1:PORT"><pre>git submodule update --init --recursive
+make deps
+node tests/origin.mjs        <span class="pl-c"><span class="pl-c">#</span> in its own terminal; prints the http address</span>
+scheme --libdirs src:build/scheme-libs --program examples/json-api.sps http://127.0.0.1:PORT</pre></div>
+<p dir="auto">In a program of your own, put jsonparse's <code>src</code> and byte-machine's on the
+library path, beside chez-curl's: here, <code>vendor/jsonparse/src</code> and
+<code>vendor/jsonparse/vendor/byte-machine/src</code>, whose libraries <code>make deps</code>
+links into <code>build/scheme-libs</code>.</p>
+<p dir="auto">The test server's <code>/json</code> stands in for an API that insists on its headers:
+a 406 unless <code>Accept</code> names <code>application/json</code>, and for a body a 415 unless
+its <code>Content-Type</code> does. A session's <code>Accept</code> goes with every call; the
+<code>POST</code> adds its <code>Content-Type</code>, and sends the bytes <code>json-&gt;bytevector</code> writes:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content=";; Every call of this session sends its Accept.
+(call-with-http-session 'headers '((&quot;Accept&quot; . &quot;application/json&quot;)) 'timeout-ms 10000
+  (lambda (session)
+    (define url (string-append base &quot;/json&quot;))
+    ;; A GET: the API answers what it got.
+    (let ((got (json-answer (http-get session url) 200)))
+      (show (list (json-ref got &quot;method&quot;) (json-ref got &quot;accept&quot;))))
+    ;; A POST adds its Content-Type, and sends JSON's bytes.
+    (let ((got (json-answer
+                (http-post session url
+                           'headers '((&quot;Content-Type&quot; . &quot;application/json&quot;))
+                           'body (json-&gt;bytevector '((&quot;name&quot; . &quot;Ada&quot;) (&quot;langs&quot; . #(&quot;Scheme&quot; &quot;C&quot;)))))
+                201)))
+      (show (list (json-ref got &quot;bytes&quot;) (json-ref got &quot;json&quot; &quot;name&quot;) (json-ref got &quot;json&quot; &quot;langs&quot; 1))))
+    ;; A call's header replaces the session's of its name: this API says 406.
+    (let ((got (json-answer (http-get session url 'headers '((&quot;Accept&quot; . &quot;text/html&quot;))) 406)))
+      (show (list (json-ref got &quot;error&quot;) (json-ref got &quot;accept&quot;))))
+    ;; A body that is no JSON raises &amp;json-error, its reason and byte offset.
+    (show (guard (e ((json-error? e) (list (json-error-reason e) (json-error-offset e))))
+            (bytevector-&gt;json (http-response-body (http-get session (string-append base &quot;/status/200&quot;))))))))"><pre><span class="pl-c"><span class="pl-c">;</span>; Every call of this session sends its Accept.</span>
+(call-with-http-session <span class="pl-c1">'headers</span> <span class="pl-s">'</span>((<span class="pl-s"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span> . <span class="pl-s"><span class="pl-pds">"</span>application/json<span class="pl-pds">"</span></span>)) <span class="pl-c1">'timeout-ms</span> <span class="pl-c1">10000</span>
+  (<span class="pl-k">lambda</span> (<span class="pl-v">session</span>)
+    (<span class="pl-k">define</span> <span class="pl-smi">url</span> (string-append base <span class="pl-s"><span class="pl-pds">"</span>/json<span class="pl-pds">"</span></span>))
+    <span class="pl-c"><span class="pl-c">;</span>; A GET: the API answers what it got.</span>
+    (<span class="pl-k">let</span> ((got (json-answer (http-get session url) <span class="pl-c1">200</span>)))
+      (show (<span class="pl-c1">list</span> (json-ref got <span class="pl-s"><span class="pl-pds">"</span>method<span class="pl-pds">"</span></span>) (json-ref got <span class="pl-s"><span class="pl-pds">"</span>accept<span class="pl-pds">"</span></span>))))
+    <span class="pl-c"><span class="pl-c">;</span>; A POST adds its Content-Type, and sends JSON's bytes.</span>
+    (<span class="pl-k">let</span> ((got (json-answer
+                (http-post session url
+                           <span class="pl-c1">'headers</span> <span class="pl-s">'</span>((<span class="pl-s"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span> . <span class="pl-s"><span class="pl-pds">"</span>application/json<span class="pl-pds">"</span></span>))
+                           <span class="pl-c1">'body</span> (json-&gt;bytevector <span class="pl-s">'</span>((<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> . <span class="pl-s"><span class="pl-pds">"</span>Ada<span class="pl-pds">"</span></span>) (<span class="pl-s"><span class="pl-pds">"</span>langs<span class="pl-pds">"</span></span> . #(<span class="pl-s"><span class="pl-pds">"</span>Scheme<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>C<span class="pl-pds">"</span></span>)))))
+                <span class="pl-c1">201</span>)))
+      (show (<span class="pl-c1">list</span> (json-ref got <span class="pl-s"><span class="pl-pds">"</span>bytes<span class="pl-pds">"</span></span>) (json-ref got <span class="pl-s"><span class="pl-pds">"</span>json<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>) (json-ref got <span class="pl-s"><span class="pl-pds">"</span>json<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>langs<span class="pl-pds">"</span></span> <span class="pl-c1">1</span>))))
+    <span class="pl-c"><span class="pl-c">;</span>; A call's header replaces the session's of its name: this API says 406.</span>
+    (<span class="pl-k">let</span> ((got (json-answer (http-get session url <span class="pl-c1">'headers</span> <span class="pl-s">'</span>((<span class="pl-s"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span> . <span class="pl-s"><span class="pl-pds">"</span>text/html<span class="pl-pds">"</span></span>))) <span class="pl-c1">406</span>)))
+      (show (<span class="pl-c1">list</span> (json-ref got <span class="pl-s"><span class="pl-pds">"</span>error<span class="pl-pds">"</span></span>) (json-ref got <span class="pl-s"><span class="pl-pds">"</span>accept<span class="pl-pds">"</span></span>))))
+    <span class="pl-c"><span class="pl-c">;</span>; A body that is no JSON raises &amp;json-error, its reason and byte offset.</span>
+    (show (guard (e ((json-error? e) (<span class="pl-c1">list</span> (json-error-reason e) (json-error-offset e))))
+            (bytevector-&gt;json (http-response-body (http-get session (string-append base <span class="pl-s"><span class="pl-pds">"</span>/status/200<span class="pl-pds">"</span></span>))))))))</pre></div>
+<p dir="auto">Each answer is checked by its status and its <code>Content-Type</code>'s media type,
+its parameters left aside, then decoded:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content=";; media-type : String -&gt; String
+;; A Content-Type's type and subtype: its text before any ;, which begins
+;; its parameters, such as charset, with no space or tab at either end, and
+;; A to Z as a to z.
+(define (media-type value)
+  (define (before-semicolon cs)
+    (if (or (null? cs) (char=? (car cs) #\;)) '() (cons (car cs) (before-semicolon (cdr cs)))))
+  (define (drop-blanks cs)
+    (if (and (pair? cs) (memv (car cs) '(#\space #\tab))) (drop-blanks (cdr cs)) cs))
+  (list-&gt;string
+   (map (lambda (c) (if (char&lt;=? #\A c #\Z) (integer-&gt;char (+ (char-&gt;integer c) 32)) c))
+        (reverse (drop-blanks (reverse (drop-blanks (before-semicolon (string-&gt;list value)))))))))
+
+;; json-answer : Response Integer -&gt; Any
+;; The response's body, decoded from its bytes, once its status is STATUS
+;; and its Content-Type's media type application/json; else an error.
+(define (json-answer response status)
+  (let ((type (http-response-header response &quot;Content-Type&quot;)))
+    (unless (and (= (http-response-status response) status)
+                 type (string=? (media-type type) &quot;application/json&quot;))
+      (error 'json-answer &quot;not the JSON answer expected&quot; (http-response-status response) type))
+    (bytevector-&gt;json (http-response-body response))))"><pre><span class="pl-c"><span class="pl-c">;</span>; media-type : String -&gt; String</span>
+<span class="pl-c"><span class="pl-c">;</span>; A Content-Type's type and subtype: its text before any ;, which begins</span>
+<span class="pl-c"><span class="pl-c">;</span>; its parameters, such as charset, with no space or tab at either end, and</span>
+<span class="pl-c"><span class="pl-c">;</span>; A to Z as a to z.</span>
+(<span class="pl-k">define</span> (<span class="pl-en">media-type</span><span class="pl-smi"> value</span>)
+  (<span class="pl-k">define</span> (<span class="pl-en">before-semicolon</span><span class="pl-smi"> cs</span>)
+    (<span class="pl-k">if</span> (<span class="pl-k">or</span> (<span class="pl-c1">null?</span> cs) (<span class="pl-c1">char=?</span> (<span class="pl-c1">car</span> cs) <span class="pl-cce">#\;</span>)) <span class="pl-c1">'()</span> (<span class="pl-c1">cons</span> (<span class="pl-c1">car</span> cs) (before-semicolon (<span class="pl-c1">cdr</span> cs)))))
+  (<span class="pl-k">define</span> (<span class="pl-en">drop-blanks</span><span class="pl-smi"> cs</span>)
+    (<span class="pl-k">if</span> (<span class="pl-k">and</span> (<span class="pl-c1">pair?</span> cs) (<span class="pl-c1">memv</span> (<span class="pl-c1">car</span> cs) <span class="pl-s">'</span>(<span class="pl-c1">#\space</span> <span class="pl-c1">#\tab</span>))) (drop-blanks (<span class="pl-c1">cdr</span> cs)) cs))
+  (<span class="pl-c1">list-&gt;string</span>
+   (<span class="pl-c1">map</span> (<span class="pl-k">lambda</span> (<span class="pl-v">c</span>) (<span class="pl-k">if</span> (<span class="pl-c1">char&lt;=?</span> <span class="pl-cce">#\A</span> c <span class="pl-cce">#\Z</span>) (<span class="pl-c1">integer-&gt;char</span> (<span class="pl-k">+</span> (<span class="pl-c1">char-&gt;integer</span> c) <span class="pl-c1">32</span>)) c))
+        (<span class="pl-c1">reverse</span> (drop-blanks (<span class="pl-c1">reverse</span> (drop-blanks (before-semicolon (<span class="pl-c1">string-&gt;list</span> value)))))))))
+
+<span class="pl-c"><span class="pl-c">;</span>; json-answer : Response Integer -&gt; Any</span>
+<span class="pl-c"><span class="pl-c">;</span>; The response's body, decoded from its bytes, once its status is STATUS</span>
+<span class="pl-c"><span class="pl-c">;</span>; and its Content-Type's media type application/json; else an error.</span>
+(<span class="pl-k">define</span> (<span class="pl-en">json-answer</span><span class="pl-smi"> response status</span>)
+  (<span class="pl-k">let</span> ((type (http-response-header response <span class="pl-s"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>)))
+    (unless (<span class="pl-k">and</span> (<span class="pl-k">=</span> (http-response-status response) status)
+                 type (<span class="pl-c1">string=?</span> (media-type type) <span class="pl-s"><span class="pl-pds">"</span>application/json<span class="pl-pds">"</span></span>))
+      (error <span class="pl-c1">'json-answer</span> <span class="pl-s"><span class="pl-pds">"</span>not the JSON answer expected<span class="pl-pds">"</span></span> (http-response-status response) type))
+    (bytevector-&gt;json (http-response-body response))))</pre></div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="(&quot;GET&quot; &quot;application/json&quot;)
+(37 &quot;Ada&quot; &quot;C&quot;)
+(&quot;not-acceptable&quot; &quot;text/html&quot;)
+(unexpected-byte 0)"><pre lang="text" class="notranslate"><code>("GET" "application/json")
+(37 "Ada" "C")
+("not-acceptable" "text/html")
+(unexpected-byte 0)
+</code></pre></div>
+<ul dir="auto">
+<li><strong>Decode the body's bytes,</strong> <code>http-response-body</code> with <code>bytevector-&gt;json</code>,
+not <code>http-response-text</code> with <code>string-&gt;json</code>. The text puts U+FFFD in place
+of a malformed sequence and drops a leading byte-order mark, so a broken
+body reads as a whole one. <code>bytevector-&gt;json</code> refuses both, at the byte.</li>
+<li><strong>A body that is no JSON raises <code>&amp;json-error</code>:</strong> <code>json-error-reason</code>, such
+as <code>unexpected-byte</code>, <code>invalid-utf8</code> or <code>unexpected-eof</code>, and
+<code>json-error-offset</code>, its byte. The last line above is <code>/status/200</code>'s
+body, <code>status 200</code>, which is no JSON from its first byte.</li>
+<li><strong>Check the status and the type first.</strong> A 404 or a proxy's error page can
+be HTML.</li>
+<li><strong>Name <code>Content-Type</code> on the call that sends the body.</strong> A session's
+headers go with every call, a <code>GET</code> among them.</li>
+</ul>
+</article></div>

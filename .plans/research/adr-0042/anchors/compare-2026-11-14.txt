@@ -1,0 +1,1 @@
+compare: 16 pages, 175 headings on GitHub; 0 page-rule pairs differ

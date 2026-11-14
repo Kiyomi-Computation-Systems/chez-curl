@@ -1,0 +1,217 @@
+<div id="file" class="md" data-path="docs/streams.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Streams</h1><a id="user-content-streams" class="anchor" aria-label="Permalink: Streams" href="#streams"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">A stream moves a body a piece at a time, so a big download or upload is
+never held whole. Each level streams both ways.</p>
+<p dir="auto">The examples on this page call the test server: start it first, with
+<code>node tests/origin.mjs</code>, and give an example the address after <code>"http":</code> in
+the line it prints, not <code>raw</code>'s or <code>h2c</code>'s (<a href="README.md#the-examples">The examples</a>).</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Reading a response as it arrives</h2><a id="user-content-reading-a-response-as-it-arrives" class="anchor" aria-label="Permalink: Reading a response as it arrives" href="#reading-a-response-as-it-arrives"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><strong>At the high level,</strong> <code>call-with-response-port</code> makes the call, and hands
+your procedure the response and a binary input port over its body:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="    (call-with-response-port session 'get (string-append base &quot;/pattern/1000000&quot;)
+      (lambda (response port)
+        (display (http-response-status response))
+        (newline)
+        (let loop ((count 0) (ok #t))
+          (let ((piece (get-bytevector-some port)))
+            (if (eof-object? piece)
+                (begin
+                  (display count)
+                  (display (if ok &quot; bytes, pattern ok&quot; &quot; bytes, pattern bad&quot;))
+                  (newline))
+                (loop (+ count (bytevector-length piece))
+                      (and ok (pattern? piece count))))))))))"><pre>    (call-with-response-port session <span class="pl-c1">'get</span> (string-append base <span class="pl-s"><span class="pl-pds">"</span>/pattern/1000000<span class="pl-pds">"</span></span>)
+      (<span class="pl-k">lambda</span> (<span class="pl-v">response port</span>)
+        (<span class="pl-c1">display</span> (http-response-status response))
+        (newline)
+        (<span class="pl-k">let</span> loop ((count <span class="pl-c1">0</span>) (ok <span class="pl-c1">#t</span>))
+          (<span class="pl-k">let</span> ((piece (get-bytevector-some port)))
+            (<span class="pl-k">if</span> (<span class="pl-c1">eof-object?</span> piece)
+                (<span class="pl-k">begin</span>
+                  (<span class="pl-c1">display</span> count)
+                  (<span class="pl-c1">display</span> (<span class="pl-k">if</span> ok <span class="pl-s"><span class="pl-pds">"</span> bytes, pattern ok<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span> bytes, pattern bad<span class="pl-pds">"</span></span>))
+                  (newline))
+                (loop (<span class="pl-k">+</span> count (bytevector-length piece))
+                      (<span class="pl-k">and</span> ok (pattern? piece count))))))))<span class="pl-ii">))</span></pre></div>
+<ul dir="auto">
+<li><strong>The response is its head:</strong> status, headers, URL and history. Its body and
+timings are <code>#f</code>, and <code>http-response-text</code> refuses it: read the port.</li>
+<li><strong>Your procedure's values are the call's.</strong> When it returns or escapes, the
+port is closed and the transfer cancelled. A Chez engine's expiry during the
+call is an escape too: once resumed, the port's reads raise that cancel,
+then Chez's error for a closed port.</li>
+<li><strong><code>timeout-ms</code> bounds the whole call, your reading included,</strong> as Go's
+<code>http.Client.Timeout</code> does. A reader slower than the bound meets
+<code>&amp;http-timeout</code>. Read slowly by design? Pass a longer bound, or <code>#f</code>.</li>
+<li><strong><code>stream-buffer</code> sets how much is held,</strong> 64 KiB unless you say. A full
+buffer pauses the transfer.</li>
+<li><strong>Redirects and retries are decided as each response's head arrives,</strong>
+its status line and headers. A redirect's or a retry's response is read
+whole into the history. One whose request sent a body is cut off as soon
+as its head arrives instead, and its history entry's body and timings are
+<code>#f</code>.</li>
+<li><strong>A retry that runs out of time</strong> having sent nothing hands your procedure
+the response it retried, with a port over its body, read already. If that
+response was cut off at its head, the call raises <code>&amp;http-timeout</code> instead.</li>
+</ul>
+<p dir="auto"><strong>At the low level,</strong> a request's <code>stream-buffer</code>, a size in bytes, makes its
+token hand you the body in pieces:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(define token
+  (curl-submit engine (make-curl-request &quot;https://example.com/big&quot; 'stream-buffer 65536)))
+
+(when (curl-token-head-wait token 10000)     ; the final head came, or the end
+  (let ((head (curl-token-head token)))      ; #f when the transfer failed first
+    (when head (display (curl-head-status head)))))
+
+(let loop ()
+  (let ((piece (curl-token-next-piece token 10000)))
+    (when (bytevector? piece)                ; the eof object at the end, #f at the bound
+      (loop))))
+
+(curl-token-outcome token)                   ; the response, its body #f, or the failure"><pre>(<span class="pl-k">define</span> <span class="pl-smi">token</span>
+  (curl-submit engine (make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/big<span class="pl-pds">"</span></span> <span class="pl-c1">'stream-buffer</span> <span class="pl-c1">65536</span>)))
+
+(when (curl-token-head-wait token <span class="pl-c1">10000</span>)     <span class="pl-c"><span class="pl-c">;</span> the final head came, or the end</span>
+  (<span class="pl-k">let</span> ((head (curl-token-head token)))      <span class="pl-c"><span class="pl-c">;</span> #f when the transfer failed first</span>
+    (when head (<span class="pl-c1">display</span> (curl-head-status head)))))
+
+(<span class="pl-k">let</span> loop ()
+  (<span class="pl-k">let</span> ((piece (curl-token-next-piece token <span class="pl-c1">10000</span>)))
+    (when (bytevector? piece)                <span class="pl-c"><span class="pl-c">;</span> the eof object at the end, #f at the bound</span>
+      (loop))))
+
+(curl-token-outcome token)                   <span class="pl-c"><span class="pl-c">;</span> the response, its body #f, or the failure</span></pre></div>
+<ul dir="auto">
+<li><strong>A 1xx head and a proxy's <code>CONNECT</code> head are passed over:</strong> the head is the
+final one.</li>
+<li><strong>Each wait answers as data</strong> and never raises the transfer's failure: the
+outcome holds it.</li>
+<li><strong><code>curl-token-body-port</code></strong> reads the pieces through a binary input port,
+made once per token. At the end it answers the eof object, and for a
+failure it raises the failure, every time.</li>
+</ul>
+<p dir="auto"><strong>The rules both levels share:</strong></p>
+<ul dir="auto">
+<li><strong>A full buffer pauses the transfer,</strong> and reading resumes it. Over
+HTTP/1.1 the server then waits too. Over HTTP/2, a paused stream that shares
+its connection with a busy one keeps receiving into libcurl's memory, up to
+its window. Where no stream shares a connection, see
+<a href="http-version.md#connections">Choosing the HTTP version</a>.</li>
+<li><strong>The timeout runs while you are not reading.</strong></li>
+<li><strong>Read with <code>get-bytevector-some</code> or <code>get-u8</code>.</strong> When the transfer fails,
+the read raises its failure, every time after, and a <code>get-bytevector-n</code>,
+<code>-n!</code> or <code>-all</code> call loses the bytes it had read.</li>
+<li><strong>The port is its thread's:</strong> read and close it on the thread that made
+it, the call's at the high level. Another thread that tries is refused: at
+the low level it raises <code>&amp;curl-wrong-thread</code>, and at the high level it is
+an assertion violation from the call. The one exception is bytes the port
+had already buffered, which any thread's read takes, so keep reads to the
+one thread.</li>
+<li><strong>Closing the port cancels the transfer.</strong> A low-level port you never close
+leaves its transfer paused until its timeout, or its engine's stop.</li>
+<li><strong>One answer per transfer.</strong> A stream is refused beside an <code>Expect</code> header
+holding <code>100-continue</code>, whose 417 would make libcurl send the request twice,
+<code>stream-with-rounds</code>; and beside Digest credentials, <code>digest-with-stream</code>.
+libcurl's own resend after a dead connection can still make a second
+request, which brings one head alone.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Sending a body as it is produced</h2><a id="user-content-sending-a-body-as-it-is-produced" class="anchor" aria-label="Permalink: Sending a body as it is produced" href="#sending-a-body-as-it-is-produced"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><strong>At the high level,</strong> a call's <code>body</code> may be a producer: a procedure of no
+arguments that answers the next bytes, or the eof object at the end.
+<code>body-length</code> sends its length; without it the body goes chunked over
+HTTP/1.1, and as plain DATA frames over HTTP/2.</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(call-with-http-session
+ (lambda (s)
+   (call-with-port (open-file-input-port &quot;big.bin&quot;)
+     (lambda (file)
+       (http-put s &quot;https://example.com/big.bin&quot;
+                 'body (lambda () (get-bytevector-some file))   ; the eof object ends it
+                 'timeout-ms 60000)))))"><pre>(call-with-http-session
+ (<span class="pl-k">lambda</span> (<span class="pl-v">s</span>)
+   (call-with-port (open-file-input-port <span class="pl-s"><span class="pl-pds">"</span>big.bin<span class="pl-pds">"</span></span>)
+     (<span class="pl-k">lambda</span> (<span class="pl-v">file</span>)
+       (http-put s <span class="pl-s"><span class="pl-pds">"</span>https://example.com/big.bin<span class="pl-pds">"</span></span>
+                 <span class="pl-c1">'body</span> (<span class="pl-k">lambda</span> () (get-bytevector-some file))   <span class="pl-c"><span class="pl-c">;</span> the eof object ends it</span>
+                 <span class="pl-c1">'timeout-ms</span> <span class="pl-c1">60000</span>)))))</pre></div>
+<ul dir="auto">
+<li><strong>It runs on your thread,</strong> only once libcurl asks for the body, and never
+after it answered the eof object. It answers a bytevector of a byte or
+more, or the eof object; anything else is an assertion violation.</li>
+<li><strong>The length is checked.</strong> A body short of <code>body-length</code> fails the
+transfer, <code>body-length-mismatch</code>; a piece past it raises that reason as
+<code>&amp;http-request-error</code>, before any of it is sent.</li>
+<li><strong>It is sent at most once.</strong> Once libcurl has asked for it, no retry takes
+the call, and a redirect that would resend it raises <code>body-not-replayable</code>.</li>
+<li><strong>Its raise leaves the call as raised,</strong> once the transfer is cancelled.</li>
+<li><strong>Through <code>call-with-response-port</code>, the port feeds the producer while you
+read,</strong> so a server that answers as the body arrives gets the rest. It feeds
+only when no bytes are waiting: a server that sends faster than you read
+holds the upload back, and a procedure that never reads, and never returns,
+starves it. A producer's raise inside the port's read sticks: every later
+read raises it. A producer that reads its own port is refused.</li>
+<li><strong>A request group takes no producer:</strong> <code>go</code> and <code>http-parallel</code> refuse one,
+<code>stream-in-group</code>.</li>
+</ul>
+<p dir="auto"><strong>At the low level,</strong> a request's <code>body 'stream</code> makes its token take the
+body from your puts, into a buffer of 64 KiB. <code>body-length</code> sends its
+length; <code>#f</code> sends it chunked over HTTP/1.1, as plain DATA frames over HTTP/2.
+A <code>body-length</code> beside a body that does not stream is refused,
+<code>body-length-without-stream</code>.</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(define token
+  (curl-submit engine
+               (make-curl-request (string-append base &quot;/sink?key=example-upload&quot;)
+                                  'method 'put 'body 'stream 'body-length size
+                                  'timeout-ms 10000)))
+
+;; Each put waits while the token's buffer is full; the end says the body
+;; is whole.
+(let loop ((at 0))
+  (when (&lt; at size)
+    (let ((count (min 65536 (- size at))))
+      (curl-token-put-piece! token (piece at count))
+      (loop (+ at count)))))
+(curl-token-end-body! token)"><pre>(<span class="pl-k">define</span> <span class="pl-smi">token</span>
+  (curl-submit engine
+               (make-curl-request (string-append base <span class="pl-s"><span class="pl-pds">"</span>/sink?key=example-upload<span class="pl-pds">"</span></span>)
+                                  <span class="pl-c1">'method</span> <span class="pl-c1">'put</span> <span class="pl-c1">'body</span> <span class="pl-c1">'stream</span> <span class="pl-c1">'body-length</span> size
+                                  <span class="pl-c1">'timeout-ms</span> <span class="pl-c1">10000</span>)))
+
+<span class="pl-c"><span class="pl-c">;</span>; Each put waits while the token's buffer is full; the end says the body</span>
+<span class="pl-c"><span class="pl-c">;</span>; is whole.</span>
+(<span class="pl-k">let</span> loop ((at <span class="pl-c1">0</span>))
+  (when (<span class="pl-k">&lt;</span> at size)
+    (<span class="pl-k">let</span> ((count (<span class="pl-c1">min</span> <span class="pl-c1">65536</span> (<span class="pl-k">-</span> size at))))
+      (curl-token-put-piece! token (piece at count))
+      (loop (<span class="pl-k">+</span> at count)))))
+(curl-token-end-body! token)</pre></div>
+<ul dir="auto">
+<li><strong>A put waits while the buffer is full.</strong> Give it a bound, in milliseconds,
+and it answers <code>#f</code> when the bound passes. <code>curl-token-room-wait</code> answers
+<code>#t</code> once libcurl has asked for the body and there is room.</li>
+<li><strong><code>done</code> means the transfer has ended:</strong> a put that answers <code>done</code> took
+nothing, and <code>curl-token-outcome</code> tells how it ended.</li>
+<li><strong>The length is checked.</strong> An end short of <code>body-length</code>, or a piece past
+it, fails the transfer, <code>body-length-mismatch</code>; the put past it raises.</li>
+<li><strong><code>curl-token-body-count</code></strong> tells what your puts committed to the buffer,
+not what reached the server.</li>
+</ul>
+<p dir="auto"><strong>The rules both levels share:</strong></p>
+<ul dir="auto">
+<li><strong>It is sent at most once, on a fresh connection.</strong> A piece handed to
+libcurl is gone, so a resend libcurl wants after that, for a dead connection
+or a refused HTTP/2 stream, fails the transfer, <code>body-not-replayable</code>. The
+upload never reuses a pooled connection: each opens one, and over TLS a
+handshake. Once it ends, a later transfer may reuse that connection.</li>
+<li><strong>The timeout runs while you are not putting.</strong></li>
+<li><strong>An early answer ends the upload.</strong> A server may answer, a 413 say, before
+the body is sent; then every later put answers <code>done</code>. When the transfer
+ends, and whether libcurl still asks for the rest, varies by libcurl, as
+does whether an early 200 can end it as a success with the body cut. A
+server that must have the whole body should say so in its answer.</li>
+<li><strong>Over HTTP/2, a transfer that streams both ways sends only while you read</strong>
+the response's pieces: else the upload stops at the peer's window.</li>
+<li><strong>Over HTTP/2, pass a <code>timeout-ms</code>:</strong> on some libcurls an answer that comes
+before the body is sent whole never ends the transfer.</li>
+</ul>
+<p dir="auto"><a href="libcurl-versions.md#streams">What varies by libcurl</a> has each of these by
+version.</p>
+</article></div>

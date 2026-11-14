@@ -14,6 +14,12 @@
    "node" "openssl"
    ;; The memory gate (ADR-0014).
    "valgrind"
-   ;; What the Makefile and scripts shell out to. The container has nothing
-   ;; else.
-   "bash" "coreutils" "make" "grep" "sed" "gawk" "findutils" "diffutils"))
+   ;; `make site` renders docs/ through chez-cmark-gfm, which loads this C
+   ;; library by the absolute paths scripts/guix-env-enter exports (ADR-0042).
+   "cmark-gfm"
+   ;; What the Makefile and scripts shell out to; tar and xz unpack the
+   ;; archive scripts/fetch-akku-lock holds chez-cmark-gfm's tree to, and
+   ;; build the ones tests/fetch-akku-lock.sh makes. The container has
+   ;; nothing else.
+   "bash" "coreutils" "make" "grep" "sed" "gawk" "findutils" "diffutils"
+   "tar" "xz"))

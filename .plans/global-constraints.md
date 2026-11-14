@@ -988,3 +988,23 @@ provisional. They bind until that record is accepted or amended.
   `src/` imports it, and chez-curl has no JSON of its own (ADR-0041; ADR-0025).
 - **The release:** `Akku.manifest`'s version is CHANGELOG.md's latest release, held by a test. A
   tag is made and pushed only when the maintainer asks (ADR-0038; the M8 plan, §3.6).
+
+## The docs site, Releases and archives
+
+- **The site renders `docs/` alone,** through `site/` and `build-site.sps`, with chez-cmark-gfm
+  from the archive `Akku.lock` pins, a `depends/dev`. Nothing under `src/`, `examples/` or
+  `tests/test-*.sps` imports `(cmark gfm)` or a `(site ...)` library, so `make test` needs none
+  of it (ADR-0042).
+- **The generator and its suites import nothing under `src/`:** CI's site job and `pages.yml`
+  run them on apt's Chez, below the floor. `tests/site-*.sps` end with `(site-testing)`'s
+  `site-exit-form`, and every other suite with the shared form, which `check-suites` holds
+  (ADR-0042).
+- **The nav is `docs/README.md`'s "The pages",** after the home page, in its order and under its
+  labels, and names every `docs/*.md`: a new page goes in both (`tests/check-site.sps`,
+  ADR-0042).
+- **The site deploys from a `v*` tag,** or by hand, its links to repository files pinned to the
+  ref; every action in `pages.yml` is pinned by SHA (ADR-0042).
+- **Every tag gets a GitHub Release,** on the maintainer's ask: from the tag with
+  `--verify-tag`, a draft first, titled by the tag message's subject, its notes the tag's
+  CHANGELOG entry, read back byte for byte. From v0.1.2 on, a release archive leaves out
+  `.plans/` and `AGENTS.md` (ADR-0042).

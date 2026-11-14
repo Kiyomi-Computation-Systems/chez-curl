@@ -1,0 +1,191 @@
+<div id="file" class="md" data-path="docs/auth-and-proxies.md"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Auth and proxies</h1><a id="user-content-auth-and-proxies" class="anchor" aria-label="Permalink: Auth and proxies" href="#auth-and-proxies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">How to send a server's credentials, and how to go through a proxy. Both
+levels take the same keys: a request's at the low level, a session's or a
+call's at the high level.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Credentials</h2><a id="user-content-credentials" class="anchor" aria-label="Permalink: Credentials" href="#credentials"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>credentials</code> names one scheme, and what it sends:</p>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(make-curl-request &quot;https://example.com/&quot; 'credentials '(basic &quot;user&quot; &quot;pass&quot;))
+(make-curl-request &quot;https://example.com/&quot; 'credentials '(digest &quot;user&quot; &quot;pass&quot;))
+(make-curl-request &quot;https://example.com/&quot; 'credentials '(bearer &quot;token&quot;))
+(http-get session &quot;https://example.com/&quot; 'credentials '(basic &quot;user&quot; &quot;pass&quot;))"><pre>(make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span> <span class="pl-c1">'credentials</span> <span class="pl-s">'</span>(basic <span class="pl-s"><span class="pl-pds">"</span>user<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>pass<span class="pl-pds">"</span></span>))
+(make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span> <span class="pl-c1">'credentials</span> <span class="pl-s">'</span>(digest <span class="pl-s"><span class="pl-pds">"</span>user<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>pass<span class="pl-pds">"</span></span>))
+(make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span> <span class="pl-c1">'credentials</span> <span class="pl-s">'</span>(bearer <span class="pl-s"><span class="pl-pds">"</span>token<span class="pl-pds">"</span></span>))
+(http-get session <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span> <span class="pl-c1">'credentials</span> <span class="pl-s">'</span>(basic <span class="pl-s"><span class="pl-pds">"</span>user<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>pass<span class="pl-pds">"</span></span>))</pre></div>
+<ul dir="auto">
+<li><strong>Basic and Bearer</strong> go out on the first request.</li>
+<li><strong>Digest</strong> sends a bare request first, and its credentials once the server
+answers with a challenge: a second request inside the transfer. So a
+request with a body, a <code>post</code> or a <code>put</code>, to a server that never
+challenges is sent twice, the first time with no body. Which Digest
+algorithms work <a href="libcurl-versions.md#auth">varies by libcurl</a>.</li>
+<li><strong>Each string is sent as UTF-8.</strong> libcurl 8.23.0 percent-encodes a Digest
+user name's bytes outside ASCII and still hashes the raw ones, so a server
+refuses a non-ASCII Digest user name from it.</li>
+<li><strong>A wrong password is no failure:</strong> you get the server's 401.</li>
+<li><strong>No length is checked.</strong> libcurl sends what fits: a 1 MiB Basic password
+or Bearer token fails before anything is sent, with libcurl's own code,
+which <a href="libcurl-versions.md#auth">varies by libcurl</a>.</li>
+</ul>
+<p dir="auto"><strong>Refused when you make the request,</strong> <code>&amp;curl-request-error</code>:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Reason</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>credentials-bytes</code></td>
+<td>a control character, U+0000 to U+001F or U+007F, in any string, which libcurl would write into the header as it is; or a <code>:</code> in a Basic user name, where Basic ends the user</td>
+</tr>
+<tr>
+<td><code>credentials-empty</code></td>
+<td>an empty token, or a user and a password both empty</td>
+</tr>
+<tr>
+<td><code>credentials-beside-authorization</code></td>
+<td>credentials beside your own <code>Authorization</code> header: libcurl would send one or both</td>
+</tr>
+<tr>
+<td><code>digest-with-stream</code></td>
+<td>Digest beside a streamed body or response: its second request would break the stream. Basic and Bearer stream fine</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><strong>Refused when you submit:</strong> credentials beside a URL that holds a user or a
+password, <code>credentials-beside-userinfo</code>. Give them one way. Whether an empty
+<code>@</code> counts <a href="libcurl-versions.md#auth">varies by libcurl</a>.</p>
+<p dir="auto">A refusal never holds your secret, only its scheme and part, such as
+<code>(basic password)</code>.</p>
+<p dir="auto"><strong>At the high level,</strong> a session's and a call's <code>credentials</code> are the same
+key: a call's replaces its session's, <code>#f</code> too. A redirect keeps them within
+one origin, and drops them for another, as it drops <code>Authorization</code>. A
+redirect within the origin to a URL holding a user or a password fails the
+call, <code>credentials-beside-userinfo</code>.</p>
+<p dir="auto"><strong>A transfer makes at most 30 requests inside itself,</strong> an auth round's, a
+stale Digest challenge's and a 417's resend among them. So a server that
+answers 417, or a stale challenge, for ever ends it with 47; or sooner with
+<code>header-limit</code>, when those answers' heads together pass the cap on response
+headers (<a href="errors.md">Errors</a>). libcurl's resend of a request a dead
+connection lost does not count.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">Proxies</h2><a id="user-content-proxies" class="anchor" aria-label="Permalink: Proxies" href="#proxies"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>proxy</code> names how a request reaches the server:</p>
+<ul dir="auto">
+<li><strong><code>environment</code>, the default,</strong> goes through the proxy a variable names
+(below), or direct when none does.</li>
+<li><strong><code>#f</code></strong> goes direct, whatever the variables say.</li>
+<li><strong>A URL,</strong> <code>http://</code> or <code>https://</code>, takes every transfer through that proxy.
+<code>no_proxy</code>, <code>NO_PROXY</code> and the proxy variables send nothing around it.</li>
+</ul>
+<div class="highlight highlight-source-scheme notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="(make-curl-request &quot;https://example.com/&quot; 'proxy &quot;http://proxy.example:3128&quot;)
+(make-curl-request &quot;https://example.com/&quot;
+                   'proxy &quot;https://user:pass@proxy.example&quot;
+                   'proxy-ca-file &quot;/etc/ssl/proxy-ca.pem&quot;)"><pre>(make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span> <span class="pl-c1">'proxy</span> <span class="pl-s"><span class="pl-pds">"</span>http://proxy.example:3128<span class="pl-pds">"</span></span>)
+(make-curl-request <span class="pl-s"><span class="pl-pds">"</span>https://example.com/<span class="pl-pds">"</span></span>
+                   <span class="pl-c1">'proxy</span> <span class="pl-s"><span class="pl-pds">"</span>https://user:pass@proxy.example<span class="pl-pds">"</span></span>
+                   <span class="pl-c1">'proxy-ca-file</span> <span class="pl-s"><span class="pl-pds">"</span>/etc/ssl/proxy-ca.pem<span class="pl-pds">"</span></span>)</pre></div>
+<ul dir="auto">
+<li><strong>A proxy URL's credentials are its user and password,</strong> percent-decoded,
+sent by Basic on the first request.</li>
+<li><strong>An <code>http://</code> request goes to the proxy whole;</strong> an <code>https://</code> one goes
+through a <code>CONNECT</code> tunnel, the proxy seeing only the <code>CONNECT</code>.</li>
+<li><strong>A proxy URL with no port gets its scheme's,</strong> 80 or 443, on every libcurl.</li>
+<li><strong>An <code>https://</code> proxy's TLS is its own.</strong> <code>proxy-ca-file</code> is its only CA
+file, else libcurl's own store, and <code>proxy-verify</code>, <code>#t</code> by default, checks
+its certificate and name. A request's <code>ca-file</code> and <code>verify</code> never reach the
+proxy, nor these the server. A <code>proxy-ca-file</code> is refused against the
+environment as a <code>ca-file</code> is (<a href="tls-and-environment.md">TLS and the environment</a>).</li>
+</ul>
+<p dir="auto"><strong>Refused when you submit,</strong> naming the field, never the URL, which can hold
+a password:</p>
+<markdown-accessiblity-table><table>
+<thead>
+<tr>
+<th>Reason</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>proxy-url</code></td>
+<td>a URL that does not parse, or whose user or password holds a <code>%</code> not followed by two hex digits</td>
+</tr>
+<tr>
+<td><code>proxy-scheme</code></td>
+<td>a scheme but <code>http</code> or <code>https</code>, <code>socks5://</code> among them</td>
+</tr>
+<tr>
+<td><code>proxy-url-parts</code></td>
+<td>a path, a query or a fragment</td>
+</tr>
+<tr>
+<td><code>credentials-bytes</code></td>
+<td>a user or password that decodes to a control byte, or to bytes that are not UTF-8, or a user that decodes to a <code>:</code></td>
+</tr>
+<tr>
+<td><code>credentials-empty</code></td>
+<td>a user and a password both empty</td>
+</tr>
+<tr>
+<td><code>proxy-tls-without-https-proxy</code></td>
+<td>a <code>proxy-ca-file</code>, or <code>proxy-verify #f</code>, beside any proxy but an <code>https://</code> URL</td>
+</tr>
+<tr>
+<td><code>prior-knowledge-through-proxy</code></td>
+<td><code>http/2-prior-knowledge</code>, which libcurl ignores through a proxy</td>
+</tr>
+<tr>
+<td><code>https-proxy-unsupported</code></td>
+<td>an <code>https://</code> proxy on a libcurl built without HTTPS-proxy support, which would write the whole URL into its error buffer</td>
+</tr>
+<tr>
+<td><code>proxy-tls-in-tls</code></td>
+<td>an <code>https://</code> URL through an <code>https://</code> proxy where TLS inside TLS stalls until the timeout: Ubuntu's 8.5.0 with GnuTLS always, and 7.85.0 unless the request asks <code>http/1.1</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto"><strong>Refused when you make the request:</strong> a <code>Proxy-Authorization</code> header, in any
+case, <code>proxy-authorization-header</code>: inside a tunnel libcurl would send it to
+the server. A proxy's credentials go in its URL.</p>
+<p dir="auto"><strong>A refused <code>CONNECT</code></strong> fails the transfer with libcurl's code, which
+<a href="libcurl-versions.md#proxies">varies by libcurl</a>.
+<code>curl-transfer-error-connect-code</code> holds the proxy's status, 403, 407, 502
+and the like, on every version. A retry policy treats it as a response with
+that status, so the default one never retries a 403 or a 407.</p>
+<p dir="auto"><strong>Tunnels before libcurl 8.19.0</strong> are never shared: each <code>https://</code> request
+through a proxy URL opens a connection of its own, and with credentials
+closes it as it ends, so no later request rides a tunnel someone's
+credentials opened. Credentials in a proxy URL there also stop HTTP/2
+multiplexing on that engine, for good, from its first such request: no two
+requests share a connection at once. A request that starts after another
+ended can still reuse its connection.</p>
+<p dir="auto"><strong>At the high level,</strong> sessions and calls take <code>proxy</code>, <code>proxy-ca-file</code> and
+<code>proxy-verify</code>. A call's replaces its session's, and a call that names its
+own <code>proxy</code> drops the session's <code>proxy-ca-file</code> and <code>proxy-verify</code>. Every
+request a redirect makes goes through the same proxy, another server's too,
+with the proxy's credentials.</p>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The environment's proxy</h2><a id="user-content-the-environments-proxy" class="anchor" aria-label="Permalink: The environment's proxy" href="#the-environments-proxy"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto">With <code>proxy environment</code>, libcurl reads the variables for each transfer:
+<code>http_proxy</code>, <code>https_proxy</code>, <code>HTTPS_PROXY</code>, <code>all_proxy</code> and <code>ALL_PROXY</code> name
+the proxy, and <code>no_proxy</code> and <code>NO_PROXY</code> list hosts that go direct.
+<code>HTTP_PROXY</code>, upper case, is ignored.</p>
+<ul dir="auto">
+<li><strong>Its user and password are libcurl's to read;</strong> chez-curl checks none of
+it. One that decodes to a control byte, <code>%00</code> to <code>%1F</code>, sends some
+libcurls around the proxy, direct (<a href="libcurl-versions.md#proxies">What varies</a>).
+Put a proxy's credentials in a request's proxy URL, which is checked.</li>
+<li><strong>Its <code>https://</code> proxy is checked against libcurl's own store:</strong> on Guix,
+the one <code>SSL_CERT_FILE</code> names. <code>proxy-ca-file</code> and <code>proxy-verify</code> belong to
+a proxy URL.</li>
+<li><strong>Through a proxy that does not tunnel,</strong> an <code>http://</code> request's, libcurl
+ignores prior knowledge and sends HTTP/1.1 to the proxy. Beside a proxy URL
+that is refused when you submit; beside the environment's, nothing knows a
+proxy is there.</li>
+<li><strong>No submit knows the environment's proxy,</strong> so a stalling TLS-inside-TLS
+proxy a variable names is not refused.</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 class="heading-element" dir="auto">The hatch</h2><a id="user-content-the-hatch" class="anchor" aria-label="Permalink: The hatch" href="#the-hatch"><svg data-component="Octicon" class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><code>(curl unsupported)</code> refuses every libcurl option the keys on this page set,
+and their twins: <a href="hatch.md">The hatch</a> lists them, and the few it leaves.</p>
+</article></div>
