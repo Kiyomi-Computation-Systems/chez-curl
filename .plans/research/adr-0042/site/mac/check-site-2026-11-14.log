@@ -1,0 +1,8 @@
+fetch-akku-lock: chez-cmark-gfm is up to date (build/akku/chez-cmark-gfm)
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+deps: vendor/jsonparse and vendor/jsonparse/vendor/byte-machine linked into build/scheme-libs
+%%%% Starting test site-render-unit
+# of expected passes      19
+%%%% Starting test site-unit
+# of expected passes      83
+check-site: nav, anchors, no .md leak, every link written, repository links exist, nav is the home page's list, no <pre> reflow -- all green
