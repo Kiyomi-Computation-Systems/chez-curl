@@ -1,0 +1,17 @@
+<p>A documentation release: the libraries are 0.1.0's, unchanged.</p>
+<h3>Changed</h3>
+<ul>
+<li><strong>Running the examples.</strong> Each example's head comment, README.org, the<br>
+<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.1/docs/README.md#the-examples">docs index</a>, the <a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.1/docs/quickstart.md">quick start</a><br>
+and each page with an example say to start the test server first, with<br>
+<code>node tests/origin.mjs</code>, and to give an example the address after <code>"http":</code> in<br>
+the line it prints: <code>raw</code>'s and <code>h2c</code>'s speak other protocols. <code>json-api.sps</code><br>
+alone needs <code>make deps</code>, and <code>src:build/scheme-libs</code> as its library path.</li>
+<li><strong>Node.js</strong> runs only the test server, which the tests and the examples call:<br>
+a program using chez-curl never needs it. The tests also need <code>openssl</code> and GNU<br>
+<code>timeout</code>.</li>
+<li><strong>Installing</strong> clones the release's tag, in README.org and the quick start,<br>
+not <code>main</code>.</li>
+<li>README.org's mentions of libcurl link <a href="https://curl.se/libcurl/" rel="nofollow">its site</a>, and<br>
+its Status names no version.</li>
+</ul>

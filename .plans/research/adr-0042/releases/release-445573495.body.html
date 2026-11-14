@@ -1,0 +1,213 @@
+<p>The first release: an HTTP client for Chez Scheme, built on libcurl. It binds<br>
+libcurl through Chez's foreign interface, and checks what you hand it before any<br>
+of it reaches C. It has two levels: <code>(http-client)</code>, a session and a call per<br>
+request, and <code>(curl)</code> beneath it, where a request is data, an engine runs it,<br>
+and a token hands you the response. There is nothing to build: libcurl is<br>
+loaded when your program runs. It needs Chez Scheme 10.4.0 or later, built with<br>
+threads, and libcurl 7.85.0 or later, built with TLS; the tests need Node.js 20<br>
+or later.</p>
+<h3>Added</h3>
+<ul>
+<li><strong>Sessions.</strong> <code>call-with-http-session</code> makes a session, hands it to your<br>
+procedure, and closes it after; <code>make-http-session</code> makes one that lives until<br>
+<code>http-session-close</code>. A session holds one engine, its one thread, and the<br>
+defaults its calls share. A call's value replaces its session's<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/high-level.md">The high level</a>).</li>
+<li><strong>A call per request.</strong> <code>http-request</code> takes a method, <code>get</code>, <code>head</code>, <code>post</code>,<br>
+<code>put</code>, <code>patch</code> or <code>delete</code>, and <code>http-get</code>, <code>http-head</code>, <code>http-post</code>,<br>
+<code>http-put</code>, <code>http-patch</code> and <code>http-delete</code> name it for you. A call blocks<br>
+until the response, and answers it whatever the status: a 404 is data, not an<br>
+error. A response holds its status, version, URL, headers, body, timings and<br>
+the redirects it followed. A call that is escaped, by a Ctrl-C's handler or a<br>
+timer, cancels its transfer (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/high-level.md">The high level</a>).</li>
+<li><strong>Bodies, forms and params.</strong> <code>body</code> is a bytevector, a string sent as UTF-8,<br>
+or a producer. <code>form</code> sends <code>(NAME . VALUE)</code> strings as<br>
+<code>application/x-www-form-urlencoded</code>, and <code>params</code> appends them to the URL's<br>
+query. No body waits for a 100: chez-curl takes away the<br>
+<code>Expect: 100-continue</code> libcurl adds to a body past 1 MiB<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/high-level.md">The high level</a>).</li>
+<li><strong>Multipart.</strong> <code>multipart</code> sends a <code>multipart/form-data</code> body, its parts a<br>
+string, a bytevector or <code>(file PATH)</code>, each with an optional <code>filename</code> and<br>
+<code>type</code>. Names, filenames and types are checked, and a file part must be a<br>
+regular file as the call starts, at each submit, and as the engine starts the<br>
+transfer. The low level takes the same parts as a request's <code>body</code><br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/high-level.md">The high level</a>).</li>
+<li><strong>Timeouts and limits.</strong> <code>timeout-ms</code> bounds the whole call, its redirects and<br>
+retries among it, and raises <code>&amp;http-timeout</code>; a retry that runs out of time<br>
+having sent nothing answers the last response, or raises the last failure.<br>
+<code>connect-timeout-ms</code> bounds each connection, and <code>body-limit</code> the response<br>
+body's bytes, past which a call raises <code>&amp;curl-too-large</code> (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/high-level.md">The high<br>
+level</a>).</li>
+<li><strong>A cap on response headers.</strong> Every transfer caps its response headers at<br>
+1,000 lines or 102,400 bytes, counted over the whole transfer: every head, a<br>
+1xx, a proxy's <code>CONNECT</code> answer and each auth round's among them, and the<br>
+trailers. Past either it raises <code>&amp;curl-too-large</code>, reason <code>header-limit</code>.<br>
+Some heads meet one of libcurl's own limits first, and fail with its code<br>
+instead, by version (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/high-level.md">The high level</a>,<br>
+<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/libcurl-versions.md#errors">What varies</a>).</li>
+<li><strong>Headers.</strong> <code>headers</code> is a list of <code>(NAME . VALUE)</code> strings, on a session, a<br>
+call or a request, and <code>user-agent</code> is a key of its own. A call's header<br>
+replaces every session header of its name. Each is checked before anything is<br>
+sent, and a refusal names the header, never its value. <code>http-response-header</code><br>
+reads a response's first header of a name, in any case<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/headers-and-json.md">Headers and JSON</a>).</li>
+<li><strong>A JSON API, through a JSON library.</strong> chez-curl has no JSON of its own: a<br>
+body is bytes. <code>examples/json-api.sps</code> calls a JSON API with jsonparse, a<br>
+submodule for the example alone, and the page shows how to put it on the<br>
+library path (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/headers-and-json.md">Headers and JSON</a>).</li>
+<li><strong>Redirects, by chez-curl's own rules.</strong> A call follows a 301, 302, 303, 307<br>
+or 308, up to <code>redirects</code> times, 20 unless you say. To another origin it drops<br>
+<code>Authorization</code>, <code>Cookie</code> and its <code>credentials</code>. From <code>https</code> to <code>http</code> is<br>
+refused unless <code>allow-downgrade</code> is <code>#t</code>, and a redirect the rules do not<br>
+follow raises <code>&amp;http-redirect-error</code><br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/redirects-and-retries.md">Redirects and retries</a>).</li>
+<li><strong>Retries, by a policy you give.</strong> Nothing is retried unless the session or<br>
+the call names a policy, made by <code>make-http-retry</code>: its attempts, a backoff<br>
+that doubles, with jitter, and the statuses and methods it retries. A retried<br>
+status's <code>Retry-After</code> sets the wait<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/redirects-and-retries.md">Redirects and retries</a>).</li>
+<li><strong>Credentials.</strong> <code>credentials</code> sends Basic, Digest or Bearer:<br>
+<code>(basic USER PASSWORD)</code>, <code>(digest USER PASSWORD)</code> or <code>(bearer TOKEN)</code>. Each<br>
+string is checked, and a refusal names only the scheme and part, such as<br>
+<code>(basic password)</code> (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/auth-and-proxies.md">Auth and proxies</a>).</li>
+<li><strong>Proxies.</strong> <code>proxy</code> is <code>environment</code>, the default, through the proxy<br>
+<code>http_proxy</code> and the like name; <code>#f</code>, direct; or an <code>http://</code> or <code>https://</code><br>
+proxy URL, whose user and password are its credentials. An <code>https://</code> proxy's<br>
+TLS is its own: <code>proxy-ca-file</code> and <code>proxy-verify</code>. A refused proxy URL is<br>
+named by its field, never its text<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/auth-and-proxies.md">Auth and proxies</a>).</li>
+<li><strong>Cookies.</strong> A session made with <code>cookies #t</code> keeps a jar:<br>
+<code>http-session-cookies</code> reads it out, and <code>http-session-load-cookies!</code> loads<br>
+lines into it. At the low level, <code>make-curl-cookie-jar</code> makes an engine's jar,<br>
+which each request takes as <code>cookie-jar</code>. A jar holds cookies alone, in<br>
+memory, and a load checks every line before it loads any<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/cookies.md">Cookies</a>).</li>
+<li><strong>The HTTP version.</strong> <code>http-version</code> asks for <code>http/1.1</code>, <code>http/2</code> or<br>
+<code>http/2-prior-knowledge</code>. <code>#f</code>, the default, lets libcurl choose: HTTP/2 over<br>
+<code>https://</code> when the server offers it, else HTTP/1.1. A response tells which<br>
+version answered (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/http-version.md">Choosing the HTTP version</a>).</li>
+<li><strong>Streams, both ways, at both levels.</strong> <code>call-with-response-port</code> hands your<br>
+procedure the response's head and a binary input port over its body, and a<br>
+call's <code>body</code> may be a producer, sent as it is made. At the low level, a<br>
+request's <code>stream-buffer</code> hands its body over in pieces, and <code>body 'stream</code><br>
+takes its body from your puts. A full buffer pauses the transfer<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/streams.md">Streams</a>).</li>
+<li><strong>Many calls at once, on one thread.</strong> An engine's one thread drives every<br>
+transfer submitted to it. <code>call-with-request-group</code> hands your procedure <code>go</code>,<br>
+which starts a call and answers its pending at once, and <code>http-await</code> gives<br>
+its response. <code>http-parallel</code> runs a list of calls, at most <code>limit</code> at once,<br>
+and answers in the list's order (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/groups.md">Groups</a>).</li>
+<li><strong>The low level: engines, requests and tokens.</strong> <code>make-curl-engine</code> starts a<br>
+thread that runs every transfer submitted to it, and <code>curl-engine-stop</code> ends<br>
+it. <code>make-curl-request</code> makes a request, checked as you make it and again as<br>
+you submit it. <code>curl-submit</code> answers a token at once: <code>curl-token-await</code> waits<br>
+for its response, and <code>curl-token-cancel</code> ends it. Nothing is followed or<br>
+retried for you (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/low-level.md">The low level</a>).</li>
+<li><strong>Mailboxes.</strong> <code>make-curl-mailbox</code> makes a mailbox, which collects finished<br>
+tokens, from any number of engines, oldest first. <code>curl-mailbox-take</code> takes<br>
+the next, and <code>curl-mailbox-deliver</code> calls its callback on your thread<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/low-level.md">The low level</a>).</li>
+<li><strong>URLs, by libcurl's parser.</strong> <code>curl-url-part</code>, <code>curl-url-append-query</code>,<br>
+<code>curl-url-resolve</code> and <code>curl-url-with-fragment</code> read and build URLs with the<br>
+parser a transfer uses. It is not RFC 3986's: compare origins by scheme,<br>
+lower-cased host and port, never as strings<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/low-level.md">The low level</a>).</li>
+<li><strong>Errors.</strong> Every chez-curl condition type but <code>&amp;http-exchange</code>, which a<br>
+call's raise carries, is a <code>&amp;curl-error</code>, under R6RS's <code>&amp;error</code>: a refused<br>
+libcurl, request or URL; a failed transfer, by class, a timeout, a connect,<br>
+send-receive, TLS or protocol error, or too large; an engine stopped or<br>
+failed; a wrong thread; a string holding U+0000; and the high level's own. A<br>
+reason is a symbol, chez-curl's and alike on every libcurl, but a refused<br>
+URL's, which is libcurl's code's name, and the hatch's <code>unknown-option</code> on<br>
+7.85.0. A refusal names a field, a kind or an index, never your secret. A<br>
+printed request, token or engine shows its type alone<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/errors.md">Errors</a>).</li>
+<li><strong>TLS.</strong> A request checks the server's certificate and name by default.<br>
+<code>ca-file</code> names the only CA file to trust, and <code>verify #f</code> turns the check<br>
+off. Where another anchor could sit beside your CA file, Guix's libcurl with<br>
+<code>SSL_CERT_FILE</code> or <code>SSL_CERT_DIR</code> set, or Apple's LibreSSL, a request with a<br>
+<code>ca-file</code> and <code>verify</code> on is refused, <code>environment-override</code> or<br>
+<code>keychain-fallback</code> (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/tls-and-environment.md">TLS and the environment</a>).</li>
+<li><strong>Finding libcurl.</strong> chez-curl loads the system's libcurl itself, once per<br>
+process: Guix's profile on Guix, the usual library directories elsewhere on<br>
+Linux, and Apple's on macOS. <code>CHEZ_CURL_LIBCURL</code> names another, by its<br>
+absolute path. <code>loaded-libcurl</code> tells what was loaded, and a refusal,<br>
+<code>&amp;curl-library-unavailable</code>, says why<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/tls-and-environment.md">TLS and the environment</a>).</li>
+<li><strong>The hatch.</strong> <code>(curl unsupported)</code>'s <code>curl-request-with-options</code> attaches a<br>
+libcurl option to a request by its name, for what the keys do not cover. It<br>
+refuses every option chez-curl owns, and each one's twin<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/hatch.md">The hatch</a>).</li>
+<li><strong>The docs and the examples.</strong> <a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/README.org">README.org</a>,<br>
+<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/quickstart.md">a quick start</a>, a page per topic, what varies by<br>
+libcurl, and <a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/reference.md">a reference</a> with every export, its type and<br>
+what it raises (<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/README.md">the docs' index</a>). <code>examples/</code><br>
+holds eleven small programs to copy from, and <code>make test</code> runs each against<br>
+the test server, its output held to <code>examples/expected/</code>.</li>
+</ul>
+<h3>Known limitations</h3>
+<ul>
+<li><strong>Platforms.</strong> The suites run on Linux on amd64, on curl's own 7.85.0 and<br>
+8.23.0, built from source, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, and<br>
+Guix's 8.20.0; and on macOS on arm64, with Apple's libcurl 8.7.1. Linux on<br>
+arm64 and macOS on amd64 have not run them. Windows is not supported.</li>
+<li><strong>Older distributions.</strong> Ubuntu 22.04, Debian 11 and RHEL 9 ship a libcurl<br>
+older than the floor: on them, build or install a newer one and set<br>
+<code>CHEZ_CURL_LIBCURL</code> to it<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/tls-and-environment.md">TLS and the environment</a>).</li>
+<li><strong>One plain error.</strong> A libcurl that refuses a cookie jar's make, read-out or<br>
+load raises Chez's <code>&amp;error</code>, no chez-curl condition<br>
+(<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/cookies.md">Cookies</a>).</li>
+<li><strong>Some behaviour varies by libcurl.</strong> chez-curl hands most of a transfer to<br>
+libcurl, so some of what a caller meets depends on which libcurl is loaded.<br>
+<a href="/Kiyomi-Computation-Systems/chez-curl/blob/v0.1.0/docs/libcurl-versions.md">What varies by libcurl</a> lists each, by topic. The<br>
+ones you are most likely to meet:
+<ul>
+<li>A failed transfer's code moves with the version, and its class with the<br>
+code: a refused <code>CONNECT</code> fails 56, <code>&amp;curl-send-receive-error</code>, on 7.85.0,<br>
+8.5.0 and 8.7.1, and 7, <code>&amp;curl-connect-error</code>, on 8.20.0 and 8.23.0. Catch<br>
+<code>&amp;curl-transfer-error</code>, then read its reason.</li>
+<li>On libcurl 8.7.0 and 8.7.1, the Mac's, a transfer's size is unknown, so one<br>
+that ran counts as sent: a <code>post</code> there is not retried after a refused<br>
+connect. There the engine does not multiplex.</li>
+<li>An HTTP/2 3xx that comes before a body is sent whole never ends on 8.20.0<br>
+and 8.23.0: over HTTP/2, pass a <code>timeout-ms</code>.</li>
+<li>libcurl before 7.87.0 cannot leave a stalled lookup's thread behind, so<br>
+there a cancel, a timeout or a stop during one waits for it, up to the<br>
+resolver's own timeout.</li>
+<li>Which cookies are kept, and which go to which host and path, are libcurl's<br>
+rules, and vary by version.</li>
+</ul>
+</li>
+<li><strong>Not supported.</strong>
+<ul>
+<li>A method is <code>get</code>, <code>head</code>, <code>post</code>, <code>put</code>, <code>patch</code> or <code>delete</code>.</li>
+<li>A multipart part is a string, a bytevector or a file: no part streams,<br>
+nests parts, is encoded, or takes headers of its own.</li>
+<li>No key sets the cap on response headers.</li>
+<li>A <code>proxy</code> URL is <code>http://</code> or <code>https://</code>: <code>socks5://</code> is refused,<br>
+<code>proxy-scheme</code>.</li>
+<li>A cookie jar holds cookies in memory alone: no file, and no HSTS entry. A<br>
+transfer reads no <code>.netrc</code>.</li>
+<li>The hatch is unsupported: no promise it stays the same. The high level<br>
+takes no hatch options.</li>
+</ul>
+</li>
+<li><strong>What chez-curl does not prevent.</strong>
+<ul>
+<li>A second Ctrl-C, or a timer, that interrupts a session's close can leave<br>
+its engine running until the process exits; one during a group's wait for<br>
+its cancelled calls leaves their transfers running.</li>
+<li>An interrupt handler that escapes from a mailbox's take can leave that<br>
+token out of the mailbox for good, though its outcome is kept.</li>
+<li>A file part that changes after its last check is yours, and a path swapped<br>
+for a FIFO then holds the engine's thread until a writer comes. If you<br>
+cannot trust the file system, send the file's bytes as a bytevector part.</li>
+<li>A call's checks pause Ctrl-C and every other thread's garbage collection,<br>
+for longer the more you pass: bound what you take from untrusted input.</li>
+<li>The environment's proxy is libcurl's to read: chez-curl checks none of its<br>
+user and password, and does not refuse a stalling TLS-inside-TLS proxy a<br>
+variable names.</li>
+</ul>
+</li>
+</ul>

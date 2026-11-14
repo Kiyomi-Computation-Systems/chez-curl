@@ -6,10 +6,23 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **0.1.1, a documentation release:** in progress on `release/v0.1.1`. The libraries are
-  0.1.0's; the docs PR #58 (`c0bb0d2`) is its change. `test-manifest` now holds README.org's
-  and the quick start's clone lines to `Akku.manifest`'s version's tag, so a release bumps
-  them with the manifest and the changelog, or fails.
+- **A docs site, Releases and archives** ([ADR-0042](decisions/0042-a-docs-site-and-github-releases.md)):
+  **decided by the maintainer, 2026-11-14,** each the recommended option, from a reading of
+  circuit's site and releases, the newest in the family. `docs/` is rendered by circuit's
+  generator, with chez-cmark-gfm from the locked Akku archive, and served on GitHub Pages,
+  first deployed from v0.1.2, a docs release. Every tag gets a GitHub Release, and
+  `v0.1.0`'s and `v0.1.1`'s come first. From v0.1.2 on, a release archive leaves out
+  `.plans/` and `AGENTS.md`. Akku is still out. **The Releases for `v0.1.0` and `v0.1.1`
+  are published,** on 2026-11-14, `v0.1.1` the latest; their close-out is below. Next, each
+  on the maintainer's ask:
+  - the site's PR;
+  - Pages turned on;
+  - v0.1.2's release PR.
+- **0.1.1, a documentation release:** **done on 2026-11-13,** merged as PR #59 (`79c6ced`) and
+  tagged `v0.1.1` on it, signed and annotated. The libraries are 0.1.0's; the docs PR #58
+  (`c0bb0d2`) is its change. `test-manifest` now holds README.org's and the quick start's
+  clone lines to `Akku.manifest`'s version's tag, so a release bumps them with the manifest
+  and the changelog, or fails. Its close-out is below.
 - **M8, multipart, the header cap, the docs and v0.1.0:** **done on 2026-11-11.** Its six slices
   are merged (PRs #50 to #55): the memory job in two, the header cap, multipart, the docs, headers
   and JSON, and the release, per the [M8 plan](2026-11-06-m8-plan.md), merged as PR #49
@@ -29,6 +42,10 @@ close-out under **Close-outs**, newest first.
     - M7's still carried, under M7 below: the curl bug report, slice 1's floor flake, and #47's
       fix round's six minors;
     - no `.akkuignore`, which both siblings have, for when Akku is decided;
+    - two timing bounds the memory gate broke on slow runners, each passing on a rerun
+      (0.1.1's close-out): `test-engine`'s second stop "at once", under 50 ms, which took 52;
+      and `call-with-origin`'s 5,000 ms wait for the origin's announcement, whose line came
+      after it;
     - what the comment sweep left: about 50 test names and printed messages that still cite
       plans, slices or reviews, the tables' `where` strings, and the comments in `scripts/`, the
       `Makefile` and `.github/`.
@@ -272,6 +289,77 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-14 — ADR-0042, and the Releases for `v0.1.0` and `v0.1.1`
+
+- **Asked by the maintainer, 2026-11-14:** whether the release was cut, the site made and
+  Pages set; then an ADR, after circuit's setup; then "ship them", the Releases.
+- **Decided:** [ADR-0042](decisions/0042-a-docs-site-and-github-releases.md), each choice
+  the recommended option. [ADR-0038](decisions/0038-m8s-scope.md) gains an amendment pointing
+  to it.
+- **The Releases,** each by ADR-0042's recipe, made on the host with `gh`:
+  - each made from its tag with `--verify-tag`, first as a draft;
+  - the title is the tag message's subject;
+  - the notes are the tag's CHANGELOG entry, intro to last bullet (`extract.py`): 13,447 bytes
+    for 0.1.0, 923 for 0.1.1;
+  - the stored body was checked byte for byte against the notes and title (`check.py`), as a
+    draft and again once published.
+
+  `v0.1.0` (release 445573495) was published with `make_latest` false, then `v0.1.1`
+  (445573877) with it true. `releases/latest` answers `v0.1.1`, and neither is a draft or a
+  prerelease. Both tags are unmoved on origin: `75d5aa0`, then `b55243e`, peeling to
+  `ecfdbf1` and `79c6ced`.
+- **Their links:**
+  - GitHub renders an entry's relative links as `blob/<tag>/`: 31 in 0.1.0's body name
+    `blob/v0.1.0/`, and 2 in 0.1.1's name `blob/v0.1.1/`, beside its one link to curl.se.
+  - Each of the 21 distinct URLs answers 200. That shows a page, not an anchor; `test-docs`
+    held the anchors at each tag.
+- **Kept:**
+  - the notes, both scripts, each Release's JSON and rendered body, and the checks' log, in
+    [`research/adr-0042/releases/`](research/adr-0042/releases/);
+  - a secret scan of the JSON and the log, whose hits are the CHANGELOG's own prose.
+- **Learned:** a Release body renders each newline as a line break, as circuit's do. A draft's
+  links name `untagged-…` until it is published, so links are checked after publishing.
+- **No agents ran.**
+
+### 2026-11-13 — 0.1.1, a documentation release (PR #59, `79c6ced`), tagged `v0.1.1`
+
+- **Asked by the maintainer, 2026-11-13:** a clean v0.1.1, so a reader who clones the tag
+  gets #58's docs. `v0.1.0`, a signed tag in a public repository, stays where it is.
+- **Built:** CHANGELOG.md's `[0.1.1]` entry, dated 2026-11-13, and its link references;
+  `Akku.manifest` at 0.1.1; README.org and the quick start cloning `v0.1.1`, the quick start
+  having cloned `main`; README.org's Status naming no version. `test-manifest` holds each `git
+  clone` line of the two, one in each, to the manifest's version's tag.
+- **Watched failing:** the new check on the quick start's `main` clone, on the manifest and the
+  changelog bumped alone, and on a second clone line and a missing one, planted in copies.
+- **Checked:** `test-manifest`, 69 of 69; `check-floors`; `test-docs`; `make test`, 46 of 46;
+  `check-test-fails`. No Mac run: no code changed since `v0.1.0`.
+- **CI:** at `f721243`, three attempts, the maintainer choosing a rerun after each failure; neither
+  failure was the PR's, which touched no code. Attempt 1: `memory-1` failed `test-engine`'s
+  second stop "at once", 52 ms against 50, Valgrind clean
+  ([jobs](research/v0.1.1/ci/pr59-run-43437734134-jobs-attempt1.txt),
+  [log](research/v0.1.1/ci/pr59-run-43437734134-memory-1-attempt1.log)), `memory-1` 22 min
+  38 s. Attempt 2: `test-engine` passed, and `test-auth`'s first check failed, the origin's
+  announcement read past 5,000 ms though its whole line came, Valgrind clean
+  ([jobs](research/v0.1.1/ci/pr59-run-43437734134-jobs-attempt2.txt),
+  [log](research/v0.1.1/ci/pr59-run-43437734134-memory-1-attempt2.log)). Attempt 3: all nine
+  passed ([jobs](research/v0.1.1/ci/pr59-run-43437734134-jobs-attempt3.txt)), `memory-1` 17
+  min 46 s.
+- **The release:**
+  1. The squash's tree, `faafc2f`, the same as the tested branch's.
+  2. `main`'s push run for `79c6ced`, read: all nine passed
+     ([jobs](research/v0.1.1/ci/main-run-43481419667-jobs.txt)), `memory-1` 17 min 41 s,
+     `memory-2` 18 min 0 s.
+  3. `v0.1.1` on `79c6ced`, annotated and signed by the release key, made and pushed by me as
+     the maintainer asked, 2026-11-13.
+  4. CI's run on the tag, read: all nine passed
+     ([jobs](research/v0.1.1/ci/tag-v0.1.1-run-43484492213-jobs.txt)), `memory-1` 18 min 13 s,
+     `memory-2` 13 min 34 s.
+- **Learned:**
+  - a release whose code is unchanged still meets the gate's timing bounds on slow runners:
+    both are carried;
+  - Claude Code's auto mode took "do the process" as no request to commit: each commit, push
+    and pull request is asked for on its own.
 
 ### 2026-11-12 — the examples' test server, in the docs (PR #58, `c0bb0d2`)
 

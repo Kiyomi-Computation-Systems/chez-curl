@@ -1,7 +1,8 @@
 # ADR-0038: M8's scope
 
 - **Status:** Accepted; amended 2026-11-08: where the docs keep the records' promises;
-  amended 2026-11-10: the repository is public, and v0.1.0 is its tag alone
+  amended 2026-11-10: the repository is public, and v0.1.0 is its tag alone;
+  amended 2026-11-14: a site, Releases and archives, by ADR-0042
 - **Date:** 2026-11-06
 - **Scope:** chez-curl v1, M8: multipart/form-data, docs and the v0.1.0 release (the brief, §8),
   and the cap on response headers carried into M8's plan
@@ -151,3 +152,11 @@ public. The maintainer chose on 2026-11-10, the recommended option where one was
 - **Rejected, "public alone,"** is what the maintainer has now done, by an act of their own. Its
   reason, that a publish cannot be taken back, stands for a GitHub Release and for Akku.
 - **Every commit pushed is public,** the history's too.
+
+## Amendment, 2026-11-14: a site, Releases and archives
+
+[ADR-0042](0042-a-docs-site-and-github-releases.md) settles three of the later decisions
+the amendment of 2026-11-10 left. `docs/` is served on GitHub Pages, deployed first from
+v0.1.2. Every tag gets a GitHub Release, `v0.1.0`'s and `v0.1.1`'s among them. From v0.1.2
+on, a release archive leaves out `.plans/` and `AGENTS.md`. Akku is still a later decision,
+and its reason stands.
