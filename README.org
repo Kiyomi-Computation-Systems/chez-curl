@@ -57,7 +57,7 @@ Clone a release's tag, and put its =src= directory on Chez's library path.
 There is nothing to build: [[https://curl.se/libcurl/][libcurl]] is loaded when your program runs.
 
 #+begin_src sh
-git clone --branch v0.1.1 https://github.com/Kiyomi-Computation-Systems/chez-curl.git
+git clone --branch v0.1.2 https://github.com/Kiyomi-Computation-Systems/chez-curl.git
 scheme --libdirs chez-curl/src --program app.sps
 #+end_src
 
@@ -90,7 +90,7 @@ URL, with no trailing =/=
 
 ** Documentation
 
-The pages are in [[file:docs/README.md][docs/]]:
+The pages are in [[file:docs/README.md][docs/]], and on the [[https://kiyomi-computation-systems.github.io/chez-curl/][docs site]]:
 
 - [[file:docs/quickstart.md][Quick start]]: from a clone to a first request.
 - [[file:docs/high-level.md][The high level]]: sessions, verbs, responses, bodies, forms, multipart,

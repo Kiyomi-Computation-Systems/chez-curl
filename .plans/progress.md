@@ -13,11 +13,11 @@ close-out under **Close-outs**, newest first.
   first deployed from v0.1.2, a docs release. Every tag gets a GitHub Release, and
   `v0.1.0`'s and `v0.1.1`'s come first. From v0.1.2 on, a release archive leaves out
   `.plans/` and `AGENTS.md`. Akku is still out. **The Releases for `v0.1.0` and `v0.1.1`
-  are published,** on 2026-11-14, `v0.1.1` the latest; their close-out is below. Next, each
-  on the maintainer's ask:
-  - the site's PR;
-  - Pages turned on;
-  - v0.1.2's release PR.
+  are published,** on 2026-11-14, `v0.1.1` the latest; their close-out is below. **The site
+  is merged** as PR #66 (`473f1f2`), after the records as PR #65 (`ce14953`), and **Pages is
+  on**, built from GitHub Actions, its `github-pages` environment taking `main` and `v*`
+  tags. **v0.1.2, a documentation release, is in progress:** its tag's push deploys the
+  site first.
 - **0.1.1, a documentation release:** **done on 2026-11-13,** merged as PR #59 (`79c6ced`) and
   tagged `v0.1.1` on it, signed and annotated. The libraries are 0.1.0's; the docs PR #58
   (`c0bb0d2`) is its change. `test-manifest` now holds README.org's and the quick start's

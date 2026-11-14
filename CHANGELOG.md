@@ -6,6 +6,11 @@ All notable changes to chez-curl are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-14
+
+A documentation release: the libraries are 0.1.1's, unchanged. The docs are a
+site now, at <https://kiyomi-computation-systems.github.io/chez-curl/>.
+
 ### Added
 
 - **A docs site.** `docs/` is rendered into a site, served on GitHub Pages from
@@ -14,10 +19,13 @@ All notable changes to chez-curl are recorded here. The format follows
   nav, links and anchors. Building it needs chez-cmark-gfm, which
   `make site-deps` fetches, and the system cmark-gfm library: a program using
   chez-curl needs neither.
+- **GitHub Releases.** Each tag has one, from `v0.1.0` on, its notes the tag's
+  entry here.
 
 ### Changed
 
 - **Release archives** leave out `.plans/` and `AGENTS.md`.
+- **README.org** links the site.
 
 ## [0.1.1] - 2026-11-13
 
@@ -246,6 +254,7 @@ or later.
     user and password, and does not refuse a stalling TLS-inside-TLS proxy a
     variable names.
 
-[Unreleased]: https://github.com/Kiyomi-Computation-Systems/chez-curl/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Kiyomi-Computation-Systems/chez-curl/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Kiyomi-Computation-Systems/chez-curl/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Kiyomi-Computation-Systems/chez-curl/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Kiyomi-Computation-Systems/chez-curl/releases/tag/v0.1.0
