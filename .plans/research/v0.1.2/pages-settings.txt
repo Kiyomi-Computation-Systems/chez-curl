@@ -1,0 +1,5 @@
+# 2026-11-14: read back after turning Pages on and adding the v* tag rule
+{"build_type":"workflow","html_url":"https://kiyomi-computation-systems.github.io/chez-curl/","https_enforced":true,"public":true,"source":{"branch":"main","path":"/"}}
+{"deployment_branch_policy":{"custom_branch_policies":true,"protected_branches":false},"name":"github-pages","protection_rules":["branch_policy"]}
+{"name":"main","type":"branch"}
+{"name":"v*","type":"tag"}

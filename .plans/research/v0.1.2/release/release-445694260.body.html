@@ -1,0 +1,18 @@
+<p>A documentation release: the libraries are 0.1.1's, unchanged. The docs are a<br>
+site now, at <a href="https://kiyomi-computation-systems.github.io/chez-curl/" rel="nofollow">https://kiyomi-computation-systems.github.io/chez-curl/</a>.</p>
+<h3>Added</h3>
+<ul>
+<li><strong>A docs site.</strong> <code>docs/</code> is rendered into a site, served on GitHub Pages from<br>
+each release's tag, its links to the repository's files pinned to that tag.<br>
+<code>make site</code> builds it into <code>build/site/</code>, and <code>make check-site</code> checks its<br>
+nav, links and anchors. Building it needs chez-cmark-gfm, which<br>
+<code>make site-deps</code> fetches, and the system cmark-gfm library: a program using<br>
+chez-curl needs neither.</li>
+<li><strong>GitHub Releases.</strong> Each tag has one, from <code>v0.1.0</code> on, its notes the tag's<br>
+entry here.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>Release archives</strong> leave out <code>.plans/</code> and <code>AGENTS.md</code>.</li>
+<li><strong>README.org</strong> links the site.</li>
+</ul>

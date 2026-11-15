@@ -1,0 +1,12 @@
+# 2026-11-14: the v0.1.2 Release, published
+tag v0.1.2 name ok draft False prerelease False
+body bytes 768 notes bytes 768
+ok: body is the notes, byte for byte
+releases/latest: v0.1.2
+# rendered links, by target, then each fetched (status, URL)
+      1 href="https://kiyomi-computation-systems.github.io/chez-curl/"
+200 https://kiyomi-computation-systems.github.io/chez-curl/
+# every Release
+chez-curl v0.1.2 — the docs site	Latest	v0.1.2	2026-11-15T00:12:48Z
+chez-curl v0.1.1 — running the examples		v0.1.1	2026-11-14T20:36:07Z
+chez-curl v0.1.0 — the first release		v0.1.0	2026-11-14T20:35:44Z
