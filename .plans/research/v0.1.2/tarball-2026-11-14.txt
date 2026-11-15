@@ -1,0 +1,10 @@
+# 2026-11-14: GitHub's source tarball for v0.1.2, listed, not unpacked
+entries: 933
+.plans/ entries: 0
+AGENTS.md entries: 0
+docs pages: 16
+site/ entries: 9
+vendor/chez-srfi entries below it: 0
+vendor/jsonparse entries below it: 0
+Akku.manifest: (akku-package ("chez-curl" "0.1.2")
+for comparison, v0.1.1's tarball .plans/ entries: 3822

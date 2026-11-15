@@ -16,8 +16,11 @@ close-out under **Close-outs**, newest first.
   are published,** on 2026-11-14, `v0.1.1` the latest; their close-out is below. **The site
   is merged** as PR #66 (`473f1f2`), after the records as PR #65 (`ce14953`), and **Pages is
   on**, built from GitHub Actions, its `github-pages` environment taking `main` and `v*`
-  tags. **v0.1.2, a documentation release, is in progress:** its tag's push deploys the
-  site first.
+  tags.
+- **0.1.2, a documentation release, the docs site:** **done on 2026-11-14,** merged as PR #67
+  (`15197e8`) and tagged `v0.1.2` on it, signed and annotated. The tag's push deployed the
+  site, live at <https://kiyomi-computation-systems.github.io/chez-curl/>, and its GitHub
+  Release is the latest. The libraries are 0.1.1's. Its close-out, and the site's, are below.
 - **0.1.1, a documentation release:** **done on 2026-11-13,** merged as PR #59 (`79c6ced`) and
   tagged `v0.1.1` on it, signed and annotated. The libraries are 0.1.0's; the docs PR #58
   (`c0bb0d2`) is its change. `test-manifest` now holds README.org's and the quick start's
@@ -289,6 +292,112 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-14 — 0.1.2, the docs site (PR #67, `15197e8`), tagged `v0.1.2`, deployed and released
+
+- **Asked by the maintainer, 2026-11-14:** "make the release PR and merge it, then push the
+  tag to deploy the site and follow up with the close out", after Pages was turned on at
+  their ask (the site's close-out, below).
+- **Built:**
+  - CHANGELOG.md's `[0.1.2]`, dated 2026-11-14, from `[Unreleased]`, with its link references;
+  - `Akku.manifest` at 0.1.2, and the clone lines of README.org and the quick start at
+    `v0.1.2`;
+  - README.org's Documentation linking the site;
+  - the ledger.
+- **Checked:** in the container, `make test` passed 47 of 47 (`test-manifest` 71, `test-docs`
+  46), and `check-site` passed. The Mac was not run: no code changed since #66, which it ran.
+- **CI:** #67 passed 10 of 10 ([run 43653492571](https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/runs/43653492571),
+  `research/v0.1.2/ci/`).
+- **The release, in order:**
+  - the squash `15197e8` (pinned to `a4f96fb`), its tree equal to the branch's (`158c359`);
+  - `main`'s push run passed 10 of 10
+    ([43655056892](https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/runs/43655056892));
+  - the tag `v0.1.2`, tag object `bb70e9f`, on `15197e8`: annotated and signed with the
+    release key, a good signature by `git tag -v`, checked absent locally and on origin
+    first, then pushed alone;
+  - the tag's Pages run passed: build 42 s, deploy 11 s
+    ([43656883727](https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/runs/43656883727));
+  - the tag's CI run passed 10 of 10
+    ([43656883755](https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/runs/43656883755)).
+- **The site, live** (`research/v0.1.2/live-check.sh` and its log):
+  - all 16 pages and the stylesheet answer 200;
+  - all 16 links to repository files name `blob/v0.1.2/`, and none names another ref;
+  - the live quick start clones `--branch v0.1.2`;
+  - the check was watched failing first, before the deploy: 17 404s, exit 1.
+- **The GitHub Release** (release 445694260, `research/v0.1.2/release/`):
+  - made by ADR-0042's recipe: from the tag with `--verify-tag`, as a draft;
+  - its notes are `[0.1.2]` as the tag holds it, 768 bytes, and the stored body was checked
+    byte for byte, as a draft and once published;
+  - published as the latest, and `releases/latest` answers `v0.1.2`;
+  - its one link, to the site, answers 200.
+- **GitHub's source tarball**, listed, not unpacked: 933 entries, none under `.plans/` and no
+  `AGENTS.md`, where `v0.1.1`'s held 3,822 under `.plans/`. It holds the 16 docs pages and
+  `site/`, its submodule directories are empty, and `Akku.manifest` names 0.1.2.
+- **Learned:** creating Pages through the API made the `github-pages` environment take the
+  branch `main` alone. A tag's deploy needed the `v*` rule added, as the siblings' have it.
+- **No agents ran.**
+
+### 2026-11-14 — the docs site (PR #66, `473f1f2`), after the records (PR #65, `ce14953`)
+
+- **Asked by the maintainer, 2026-11-14:** "lets do the site PR", after ADR-0042, which says
+  to follow circuit, the newest in the family.
+- **Built:**
+  - circuit's generator, `site/` and `build-site.sps`, with its suites and check, adapted to
+    chez-curl's blob URL, names and nav;
+  - `make site-deps`, `site`, `check-site` and `check-site-deps`;
+  - chez-cmark-gfm as a `depends/dev`, its `Akku.lock` entry byte for byte circuit's;
+  - a seventh invariant in `tests/check-site.sps`: the nav is `docs/README.md`'s "The pages";
+  - `(site-testing)` and `test-site-testing`, with `check-suites` holding `tests/site-*.sps`
+    to `site-exit-form`;
+  - the container gaining cmark-gfm, tar and xz, and exporting `CHEZ_CMARK_GFM_LIBS`;
+  - CI's `site` job, the tenth, and `pages.yml`;
+  - `.gitattributes`.
+- **Found on the way:** the CI site job's steps, run in a `--rm` `ubuntu:24.04` container
+  with apt's Chez 9.5.8, refused the site's suites at once. They imported `(curl-testing)`,
+  whose `(curl private require-threaded)` refuses any Chez below 10.4.0. ADR-0042 decision 4
+  had already ruled it out. Hence `(site-testing)`, and `src/` on no site suite's path.
+- **Watched failing:**
+  - `test-manifest`, 3 rows, on the old manifest and lock;
+  - the launcher test's 7 new checks on the old entry script;
+  - the self-test's two cmark-gfm assertions, with the variable naming no file;
+  - 16 plants, each in a copy of the tree (`research/adr-0042/site/plants.sh` and its log).
+- **Measured** (`research/adr-0042/anchors/`, `research/adr-0042/site/`):
+  - both anchor rules give GitHub's anchor for each of the 175 headings in `docs/`;
+  - a directory link answers 301 to `tree/`, then 200.
+- **Checked:**
+  - in the container, `make test` 47 of 47, `check-site`, `check-test-fails`, `check-clean`,
+    `check-site-deps`, `check-memory-gate`, `check-floors` and `check-help`;
+  - from the host, `make check-guix` and `make check-pins`;
+  - the CI site job's steps in Docker, every command logged;
+  - the Mac: `make test` 47 of 47, and `make check-site` all green, so chez-cmark-gfm finds
+    Homebrew's cmark-gfm (`research/adr-0042/site/mac/`).
+- **Reviewed:** an adversarial review on Opus (read-only) found no blockers, 2 majors and 10
+  minors.
+  - Fixed: CI never ran `check-site-deps`; comments copied from circuit were false here; the
+    site suites were listed three ways by hand; `site-check.sps` matched the suites' name;
+    Pages' permissions were workflow-wide; `tar` and `xz` were missing from the self-test.
+  - Recorded in ADR-0042: from v0.1.2 on, an archive holds no `.plans/`, which
+    `test-collect-safe` reads, and a GitHub archive never held the submodules.
+  - Left, each with a reason: `check-site` needs every submodule; a copied suite's top-level
+    render dies unnamed on a failed load, though its exit is still non-zero.
+- **CI:** #65 passed 9 of 9, and #66 10 of 10, its site job in 43 s (`research/v0.1.2/ci/`).
+- **The merges:**
+  - #65 first, squash `ce14953`, its tree equal to the branch's; `main` then passed 9 of 9
+    ([43648702986](https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/runs/43648702986));
+  - #66 next, squash `473f1f2`. It sits on `ce14953`, so the check was the change: the two
+    diffs share a patch-id, and the squash adds #65's files alone over the tested head.
+    `main` passed 10 of 10
+    ([43650526872](https://github.com/Kiyomi-Computation-Systems/chez-curl/actions/runs/43650526872)).
+- **Pages turned on**, at the maintainer's ask (`research/v0.1.2/pages-settings.txt`):
+  - built from GitHub Actions, HTTPS enforced;
+  - the `github-pages` environment took `main` alone, and the `v*` tag rule was added.
+- **Agents:** one, the review: Opus, 273,422 tokens, 83 tool calls, 14 min 51 s.
+- **Learned:**
+  - The container cannot show what a CI lane on another toolchain refuses: run the job's
+    steps in its runner's image before the PR.
+  - When copying a sibling, diff its workflow steps as well as its files.
+  - Read a check's header before writing a file it reads: `check-suites` warns that a quoted
+    exit form trips it.
 
 ### 2026-11-14 — ADR-0042, and the Releases for `v0.1.0` and `v0.1.1`
 

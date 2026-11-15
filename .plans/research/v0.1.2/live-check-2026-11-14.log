@@ -1,0 +1,18 @@
+200 index.html  13 v0.1.2;
+200 quickstart.html  1 v0.1.2;
+200 high-level.html no repository links
+200 headers-and-json.html no repository links
+200 redirects-and-retries.html no repository links
+200 auth-and-proxies.html no repository links
+200 cookies.html no repository links
+200 http-version.html no repository links
+200 streams.html no repository links
+200 groups.html no repository links
+200 low-level.html no repository links
+200 errors.html no repository links
+200 tls-and-environment.html  1 v0.1.2;
+200 libcurl-versions.html no repository links
+200 hatch.html no repository links
+200 reference.html  1 v0.1.2;
+200 style.css no repository links
+live-check: 17 files fetched; 16 of 16 repository links name blob/v0.1.2/
